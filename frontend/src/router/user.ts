@@ -4,7 +4,7 @@ const user = [
     component: () => import('@/layouts/ClientLayout.vue'),
     children: [
       {
-        path: 'home',
+        path: '/',
         name: 'user.home',
         component: () => import('@/views/user/HomePage.vue')
       }
