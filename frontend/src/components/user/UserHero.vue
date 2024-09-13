@@ -15,24 +15,26 @@
                         </RouterLink>
                     </span>
                     <div class="">
-                        <Button variant="primary">Tham gia ngay</Button>
+                        <Router-link to="/course">
+                            <Button variant="primary">Tham gia ngay</Button></Router-link>
                     </div>
                 </div>
 
-                <img class="w-1/2" src="../../assets/images/OBJECTS.png" alt="">
+                <img class="w-1/2" :src="imgBaner" alt="">
             </div>
         </div>
     </section>
 </template>
 <script setup lang="ts">
 import Button from '../ui/button/Button.vue';
-
+import imgBaner from '../../assets/images/OBJECTS.png'
 
 </script>
 <style scoped>
 .background-section {
     background-image: url('../../assets/images/Banner.png');
     /* Update this path to your image */
+
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
