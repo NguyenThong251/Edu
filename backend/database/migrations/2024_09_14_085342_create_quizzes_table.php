@@ -13,6 +13,10 @@ return new class extends Migration {
         Schema::create('quizzes', function (Blueprint $table) {
             $table->id();
             $table->string('title', 255);
+            $table->softDeletes();
+            $table->is_deleted()->default(0);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
+
             $table->timestamps();
         });
     }

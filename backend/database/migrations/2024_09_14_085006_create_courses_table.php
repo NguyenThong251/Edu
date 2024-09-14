@@ -18,8 +18,12 @@ return new class extends Migration
             $table->text('description');
             $table->string('thumbnail');
             $table->double('price');
+            $table->enum('type_sale', ['percent', 'price'])->default('price');
+            $table->double('sale_value');
+            $table->softDeletes();
+            $table->is_deleted()->default(0);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->timestamps();
-
             // Foreign key
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
         });

@@ -14,6 +14,10 @@ return new class extends Migration {
             $table->unsignedBigInteger('user_id');
             $table->string('bank_name');
             $table->string('account_number');
+            $table->softDeletes();
+            $table->is_deleted()->default(0);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
+
             $table->timestamps();
 
             // Primary key

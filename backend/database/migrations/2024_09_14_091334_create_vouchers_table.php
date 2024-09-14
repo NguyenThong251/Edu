@@ -21,6 +21,10 @@ return new class extends Migration {
             $table->date('start_date');
             $table->date('end_date');
             $table->boolean('status')->default(true);
+            $table->softDeletes();
+            $table->is_deleted()->default(0);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
+
             $table->timestamps();
         });
     }

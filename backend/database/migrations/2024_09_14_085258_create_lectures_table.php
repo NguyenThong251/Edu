@@ -16,6 +16,10 @@ return new class extends Migration {
             $table->string('title', 255);
             $table->text('content');
             $table->string('link_url')->nullable();
+            $table->softDeletes();
+            $table->is_deleted()->default(0);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
+
             $table->timestamps();
 
             // Foreign key

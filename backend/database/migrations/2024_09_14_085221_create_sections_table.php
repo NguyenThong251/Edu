@@ -14,6 +14,10 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('course_id');
             $table->tinyInteger('type_section');
+            $table->softDeletes();
+            $table->is_deleted()->default(0);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
+
             $table->timestamps();
 
             // Foreign key

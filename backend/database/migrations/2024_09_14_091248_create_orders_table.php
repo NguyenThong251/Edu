@@ -16,6 +16,10 @@ return new class extends Migration {
             $table->double('total_price');
             $table->string('order_code')->unique();
             $table->string('payment_method');
+            $table->softDeletes();
+            $table->is_deleted()->default(0);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
+
             $table->timestamps();
 
             // Foreign key

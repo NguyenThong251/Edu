@@ -19,6 +19,9 @@ return new class extends Migration
             $table->string('password');
             $table->boolean('email_verified')->default(false);
             $table->string('reset_token')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
+            $table->softDeletes();
+            $table->is_deleted()->default(0);
             $table->timestamps();
         });
     }

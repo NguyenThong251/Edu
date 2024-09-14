@@ -15,6 +15,9 @@ return new class extends Migration {
             $table->unsignedBigInteger('user_id');
             $table->boolean('usage_status')->default(false);
             $table->timestamps();
+            $table->softDeletes();
+            $table->is_deleted()->default(0);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
 
             // Primary key
             $table->primary(['voucher_id', 'user_id']);

@@ -15,8 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100);
             $table->text('description');
-            $table->boolean('status')->default(1);
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
+            $table->unsignedBigInteger('parent_id')->nullable(); // Cho phép parent_id có thể null
+            $table->softDeletes();
+            $table->is_deleted()->default(0);
             $table->timestamps();
+            $table->foreign('parent_id')->references('id')->on('categories')->onDelete('set null');
         });
     }
 
