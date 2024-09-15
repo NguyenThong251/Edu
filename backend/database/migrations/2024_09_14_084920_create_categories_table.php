@@ -11,18 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string('username', 255)->unique();
-            $table->string('email', 255)->unique();
-            $table->string('role', 50);
-            $table->string('password');
-            $table->boolean('email_verified')->default(false);
-            $table->string('reset_token')->nullable();
+            $table->string('name', 100);
+            $table->text('description');
             $table->enum('status', ['active', 'inactive'])->default('inactive');
+            $table->unsignedBigInteger('parent_id')->nullable(); // Cho phép parent_id có thể null
             $table->softDeletes();
             $table->is_deleted()->default(0);
             $table->timestamps();
+            $table->foreign('parent_id')->references('id')->on('categories')->onDelete('set null');
         });
     }
 
@@ -31,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('categories');
     }
 };
