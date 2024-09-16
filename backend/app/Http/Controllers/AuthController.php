@@ -81,33 +81,11 @@ class AuthController extends Controller
 
     public function profile()
     {
-        try {
-            // Kiểm tra và xác thực token
-            $user = JWTAuth::parseToken()->authenticate();
-
-            return $user;
-        } catch (Exception $e) {
-            if ($e instanceof TokenInvalidException) {
-                return response()->json(['error' => trans('messages.token_invalid')], 401);
-            } elseif ($e instanceof TokenExpiredException) {
-                return response()->json(['error' => trans('messages.token_expired')], 401);
-            } else {
-                return response()->json(['error' => trans('messages.token_not_found')], 401);
-            }
+        $user = JWTAuth::parseToken()->authenticate();     
+        if (!$user) {
+            return formatResponse('FAIL', '', '', 'User not found');
         }
-//        try {
-//            $user = auth()->userOrFail();
-//            return $user;
-//        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
-//            // do something
-//            return 1;
-//        }
-//        return 2;
-//        $user = auth('api')->user();
-//        if (!$user) {
-//            return formatResponse('FAIL', '', '', 'User not found');
-//        }
-//        return formatResponse('OK', $user, '', 'Get user info successfully');
+        return formatResponse('OK', $user, '', 'Get user info successfully');
     }
 
 
