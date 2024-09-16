@@ -21,7 +21,7 @@ return new class extends Migration
             $table->enum('type_sale', ['percent', 'price'])->default('price');
             $table->double('sale_value');
             $table->softDeletes();
-            $table->is_deleted()->default(0);
+            $table->boolean('is_deleted')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->timestamps();
             // Foreign key

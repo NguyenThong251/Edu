@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('question_id');
             $table->text('content');
             $table->softDeletes();
-            $table->is_deleted()->default(0);
+            $table->boolean('is_deleted')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('inactive');
 
             $table->timestamps();

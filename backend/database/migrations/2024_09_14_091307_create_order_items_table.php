@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('course_id');
             $table->double('price');
             $table->softDeletes();
-            $table->is_deleted()->default(0);
+            $table->boolean('is_deleted')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('inactive');
 
             $table->timestamps();

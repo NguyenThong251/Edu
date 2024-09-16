@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->text('content');
             $table->string('link_url')->nullable();
             $table->softDeletes();
-            $table->is_deleted()->default(0);
+            $table->boolean('is_deleted')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('inactive');
 
             $table->timestamps();
