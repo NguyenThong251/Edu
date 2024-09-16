@@ -26,7 +26,8 @@
     },
     "autoload": {
         "files": [
-            "app/Helpers/ResponseHelper.php"
+            "app/Helpers/ResponseHelper.php",
+            "app/Helpers/ApiConstant.php"
         ],
         "psr-4": {
             "App\\": "app/",
