@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->boolean('usage_status')->default(false);
             $table->timestamps();
             $table->softDeletes();
-            $table->is_deleted()->default(0);
+            $table->boolean('is_deleted')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('inactive');
 
             // Primary key
