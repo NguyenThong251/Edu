@@ -14,8 +14,19 @@ const user = [
         component: () => import('@/views/user/CoursePage.vue')
       },
       {
+        path: '/course/detail',
+        name: 'user.course.detail',
+        component: () => import('@/views/user/CourseDetailView.vue')
+      },
+      // {
+      //   path: '/course/:id',
+      //   name: 'user.course.detail',
+      //   component: () => import('@/views/user/CourseDetailView.vue'),
+      //   prop: true
+      // },
+      {
         path: '/cart',
-        name: 'user.course',
+        name: 'user.cart',
         component: () => import('@/views/user/CartPage.vue')
       }
     ]

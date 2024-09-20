@@ -88,13 +88,12 @@ const fillter = ref(false)
 
                             <UserCourseFilter />
                         </div>
-                        <el-drawer direction="ltr" v-model="fillter" title="I am the title" :with-header="false"
-                            size="30%">
-                            <UserCourseFilter />
-                        </el-drawer>
 
                     </div>
                 </div>
+                <el-drawer direction="ltr" v-model="fillter" title="I am the title" :with-header="false" size="50%">
+                    <UserCourseFilter />
+                </el-drawer>
 
                 <!-- RESUILT -->
                 <div class="">

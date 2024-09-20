@@ -13,3 +13,14 @@ export interface AuthState {
   loading: boolean
   error: string | null
 }
+
+export interface CourseDetailUser {
+  image?: string
+  name: string
+  job: string
+  rate: string | number
+  review: string | number
+  students: string | number
+  course: string | number
+  introduce: string
+}
