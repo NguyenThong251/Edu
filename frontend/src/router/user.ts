@@ -1,3 +1,5 @@
+import UserDashboard from '@/layouts/UserDashboard.vue'
+
 const user = [
   {
     path: '/',
@@ -28,6 +30,32 @@ const user = [
         path: '/cart',
         name: 'user.cart',
         component: () => import('@/views/user/CartPage.vue')
+      },
+      {
+        path: '/login',
+        name: 'login',
+        component: () => import('@/views/user/Login.vue')
+      },
+      {
+        path: '/register',
+        name: 'register',
+        component: () => import('@/views/user/Register.vue')
+      },
+      {
+        path: '',
+        component: UserDashboard,
+        children: [
+          {
+            path: '/mycourses',
+            name: 'mycourses',
+            component: () => import('@/views/user/MyCourses.vue')
+          },
+          {
+            path: '/myprofile',
+            name: 'myprofile',
+            component: () => import('@/views/user/MyProfile.vue')
+          }
+        ]
       }
     ]
   }

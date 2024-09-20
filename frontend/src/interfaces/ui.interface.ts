@@ -37,3 +37,10 @@ export interface CourseComment {
   rate: number | string
   content: string
 }
+export interface Input {
+  modelValue: string
+  label: string
+  error: string
+  type: string
+  placeholder: string
+}
