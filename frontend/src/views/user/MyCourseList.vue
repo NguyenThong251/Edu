@@ -1,5 +1,7 @@
 <template>
-    <div class="">My course</div>
+    <div>
+        my couse list
+    </div>
 </template>
 
 <script setup lang="ts">

@@ -54,6 +54,26 @@ const user = [
             path: '/myprofile',
             name: 'myprofile',
             component: () => import('@/views/user/MyProfile.vue')
+          },
+          {
+            path: '/mycourselist',
+            name: 'mycourselist',
+            component: () => import('@/views/user/MyCourseList.vue')
+          },
+          {
+            path: '/wishlist',
+            name: 'wishlist',
+            component: () => import('@/views/user/MyWishlist.vue')
+          },
+          {
+            path: '/history',
+            name: 'history',
+            component: () => import('@/views/user/MyHistory.vue')
+          },
+          {
+            path: '/security',
+            name: 'security',
+            component: () => import('@/views/user/Security.vue')
           }
         ]
       }

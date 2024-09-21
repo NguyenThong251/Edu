@@ -44,3 +44,8 @@ export interface Input {
   type: string
   placeholder: string
 }
+export interface MenuItem {
+  path: string
+  label: string
+  icon: any
+}

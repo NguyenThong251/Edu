@@ -1,5 +1,7 @@
 <template>
-    <div class="">My course</div>
+    <div>
+        Bảo mật
+    </div>
 </template>
 
 <script setup lang="ts">
