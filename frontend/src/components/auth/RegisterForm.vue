@@ -3,7 +3,7 @@
         <Input v-model="name" label="Email" type="text" :error="nameError ?? ''" placeholder="Nhập họ và tên" />
         <Input v-model="email" label="Email" type="email" :error="emailError ?? ''" placeholder="Nhập email " />
         <Input v-model="password" label="Mật khẩu" type="password" :error="passwordError ?? ''"
-            placeholder="Nhập password" />
+            placeholder="Nhập mật khẩu" />
         <Button class="w-full" variant="primary">Đăng ký</Button>
     </form>
 </template>
@@ -28,7 +28,7 @@ const handleSubmit = () => {
         emailError.value = 'Bạn cần nhập email';
     }
     if (!password.value) {
-        passwordError.value = 'Bạn cần nhập password';
+        passwordError.value = 'Bạn cần nhập mật khẩu';
     }
 
     // Thực hiện logic  đăng ký ở đây

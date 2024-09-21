@@ -3,18 +3,16 @@
         <div class="relative -z-10 bg-gradient-to-t from-indigo-300 via-indigo-200 to-indigo-50 w-full h-72">
 
         </div>
-        <div class="container-user -mt-64 z-10 flex flex-row gap-5">
-            <div class="border-2 border-indigo-600 bg-white  rounded-lg p-5  w-1/4">
+        <div class="container-user -mt-64 z-10 flex lg:flex-row flex-col gap-5">
+            <div class="border-2 border-indigo-600 bg-white  rounded-lg p-5 w-full sm:w-full lg:w-1/4 ">
                 <UserSidebar />
             </div>
             <main class="w-full">
                 <div class="flex flex-col gap-5">
-
                     <h3 class="text-2xl font-bold">{{ title }}</h3>
-                    <div class="w-full bg-white p-5 rounded-lg h-96 shadow-lg">
+                    <div class="w-full bg-white p-5 rounded-md  shadow-lg">
                         <router-view />
                     </div>
-
                 </div>
             </main>
         </div>

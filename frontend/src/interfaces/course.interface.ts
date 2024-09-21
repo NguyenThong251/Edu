@@ -11,3 +11,11 @@ export interface CardCourse {
   rate?: number
   status: 'Bán chạy' | 'Mới'
 }
+
+export interface CardMyCourse {
+  image: string
+  name: string
+  lecture: string
+  completed: number
+  total: number
+}

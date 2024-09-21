@@ -11,4 +11,5 @@
 import type { Input } from '@/interfaces/ui.interface';
 import { defineProps } from 'vue';
 defineProps<Input>()
+
 </script>

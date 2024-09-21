@@ -56,11 +56,6 @@ const user = [
             component: () => import('@/views/user/MyProfile.vue')
           },
           {
-            path: '/mycourselist',
-            name: 'mycourselist',
-            component: () => import('@/views/user/MyCourseList.vue')
-          },
-          {
             path: '/wishlist',
             name: 'wishlist',
             component: () => import('@/views/user/MyWishlist.vue')

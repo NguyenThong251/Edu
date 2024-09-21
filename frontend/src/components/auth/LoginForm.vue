@@ -2,9 +2,9 @@
     <form class="flex flex-col gap-5" @submit.prevent="handleSubmit">
         <Input v-model="email" label="Email" type="email" :error="emailError ?? ''" placeholder="Nhập email " />
         <Input v-model="password" label="Mật khẩu" type="password" :error="passwordError ?? ''"
-            placeholder="Nhập password" />
+            placeholder="Nhập mật khẩu" />
         <RouterLink class="text-indigo-600 text-end" to="/">Quên mật khẩu</RouterLink>
-        <Button class="w-full" variant="primary">Đăng ký</Button>
+        <Button class="w-full" variant="primary">Đăng nhập</Button>
     </form>
 </template>
 
@@ -23,7 +23,7 @@ const handleSubmit = () => {
         emailError.value = 'Bạn cần nhập email';
     }
     if (!password.value) {
-        passwordError.value = 'Bạn cần nhập password';
+        passwordError.value = 'Bạn cần nhập mật khẩu';
     }
 
     // Thực hiện logic đăng nhập ở đây
