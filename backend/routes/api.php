@@ -27,12 +27,20 @@ Route::group([
 
     Route::post('login', [AuthController::class, 'login'])->name('login');
     Route::post('register', [AuthController::class, 'register']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
 
     Route::middleware(['jwt'])->group(function () {
         Route::get('profile', [AuthController::class, 'profile']);
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('update-profile', [AuthController::class, 'updateProfile']);
+
+        //admin
+        Route::post('admin-update-user', [AuthController::class, 'adminUpdateUser']);
+        Route::delete('delete-user/{id}', [AuthController::class, 'deleteUser']);
+        Route::post('restore-user/{id}', [AuthController::class, 'restoreUser']);
+        Route::post('force-delete-user/{id}', [AuthController::class, 'forceDeleteUser']);
+
     });
 
-    Route::get('logout', [AuthController::class, 'logout']);
-    Route::post('refresh', [AuthController::class, 'refresh']);
 
 });
