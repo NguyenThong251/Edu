@@ -1,4 +1,13 @@
 <template>
+    <div class="">
+        <h1>{{ $t('home.title') }}</h1>
+        <p>{{ $t('home.welcomeMessage') }}</p>
+        <button>{{ $t('home.buttonText') }}</button>
+    </div>
+    <select @change="changeLanguage($event)">
+        <option value="vi">Tiếng Việt</option>
+        <option value="en">English</option>
+    </select>
 
     <main class="py-16">
         <UserHero />
@@ -126,6 +135,11 @@ import CardCourse from '@/components/ui/card/CardCourse.vue';
 import { RouterLink } from 'vue-router';
 import UserHero2 from '@/components/user/UserHero2.vue';
 import UserNewsLetter from '@/components/user/UserNewsLetter.vue';
-
+import { useI18n } from 'vue-i18n';
+const { locale } = useI18n();
+const changeLanguage = (event: Event) => {
+    const selectedLanguage = (event.target as HTMLSelectElement).value;
+    locale.value = selectedLanguage;
+};
 
 </script>
