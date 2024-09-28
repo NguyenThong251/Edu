@@ -1,10 +1,11 @@
 <?php
 if (!function_exists('formatResponse')) {
     function formatResponse(
-        $status,
+        $status = STATUS_OK,
         $data = null,
         $error = null,
         $message = null,
+        $code = null,
         $token = null,
         $refreshToken = null
     ): \Illuminate\Http\JsonResponse {
@@ -13,6 +14,7 @@ if (!function_exists('formatResponse')) {
             'data' => $data,
             'error' => $error,
             'message' => $message,
+            'code' => $code,
         ];
 
         // Thêm thông tin token nếu có

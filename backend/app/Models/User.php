@@ -13,6 +13,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable implements JWTSubject
 {
+    const USER_ACTIVE = 'active';
+    const USER_INACTIVE = 'inactive';
+    const ROLE_STUDENT = 'student';
+
     const STATUS_DEFAULT = 0;
     const STATUS_DELETED = 1;
 
@@ -29,10 +33,18 @@ class User extends Authenticatable implements JWTSubject
         'username',
         'email',
         'password',
+        'full_name',
+        'avatar',
+        'gender',
+        'date_of_birth',
+        'email_verified',
+        'verification_token',
         'role',
         'status',
         'email_verified',
         'reset_token',
+        'provider',
+        'provider_id'
     ];
 
 
@@ -56,6 +68,8 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
         'created_at',
         'updated_at',
+        'verification_token',
+        'reset_token',
     ];
 
     /**
