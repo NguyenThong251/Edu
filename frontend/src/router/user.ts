@@ -1,3 +1,4 @@
+import LayoutCourseVideo from '@/layouts/LayoutCourseVideo.vue'
 import UserDashboard from '@/layouts/UserDashboard.vue'
 
 const user = [
@@ -69,8 +70,24 @@ const user = [
             path: '/security',
             name: 'security',
             component: () => import('@/views/user/Security.vue')
+          },
+          {
+            path: '/mymessage',
+            name: 'mymessage',
+            component: () => import('@/views/user/MyMessage.vue')
           }
         ]
+      }
+    ]
+  },
+  {
+    path: '/',
+    component: LayoutCourseVideo,
+    children: [
+      {
+        path: '/mylearncourse',
+        name: 'mylearncourse',
+        component: () => import('@/views/user/MyLearnCourse.vue')
       }
     ]
   }

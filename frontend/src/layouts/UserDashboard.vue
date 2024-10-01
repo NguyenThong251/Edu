@@ -41,6 +41,8 @@ const getTitleByRoute = (path: string) => {
             return 'Bảo mật'
         case '/history':
             return 'Lịch sử mua hàng'
+        case '/mymessage':
+            return 'Tin nhắn'
         default:
             return 'Trang cá nhân';
     }

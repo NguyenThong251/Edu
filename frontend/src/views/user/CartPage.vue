@@ -15,9 +15,7 @@
                 <!-- TOTAL -->
                 <div class="md:w-2/6 w-full">
                     <div class="p-5 sticky top-0 shadow-lg rounded-lg">
-
                         <div class="flex flex-col gap-5">
-
                             <div class="flex flex-col">
                                 <span class="text-2xl font-medium">Tổng</span>
                                 <div class="text-4xl font-bold">788.000 vnđ</div>
