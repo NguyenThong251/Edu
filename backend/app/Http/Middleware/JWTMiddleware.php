@@ -14,8 +14,8 @@ class JWTMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle(Request $request, Closure $next): Response
@@ -24,16 +24,12 @@ class JWTMiddleware
             // Xác thực token JWT
             $user = JWTAuth::parseToken()->authenticate();
         } catch (TokenInvalidException $e) {
-            // Token không hợp lệ
-            return formatResponse(401, STATUS_FAIL, '', '', 'Token không hợp lệ');
+            return formatResponse(STATUS_FAIL, '', '', 'Token không hợp lệ');
         } catch (TokenExpiredException $e) {
-            // Token hết hạn
-            return formatResponse(401, STATUS_FAIL, '', '', 'Token đã hết hạn');
+            return formatResponse(STATUS_FAIL, '', '', 'Token đã hết hạn');
         } catch (\Exception $e) {
-            // Lỗi khác (Token không tìm thấy hoặc lỗi không xác định)
-            return formatResponse(401, STATUS_FAIL, '', '', 'Không tìm thấy Token');
+            return formatResponse(STATUS_FAIL, '', '', 'Không tìm thấy Token');
         }
-        // Tiếp tục xử lý request
         return $next($request);
     }
 }

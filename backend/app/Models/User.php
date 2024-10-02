@@ -8,22 +8,43 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    const USER_ACTIVE = 'active';
+    const USER_INACTIVE = 'inactive';
+    const ROLE_STUDENT = 'student';
+
+    const STATUS_DEFAULT = 0;
+    const STATUS_DELETED = 1;
+
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
+    protected $dates = ['deleted_at'];
+
     protected $fillable = [
         'username',
         'email',
         'password',
+        'full_name',
+        'avatar',
+        'gender',
+        'date_of_birth',
+        'email_verified',
+        'verification_token',
         'role',
+        'status',
+        'email_verified',
+        'reset_token',
+        'provider',
+        'provider_id'
     ];
 
 
@@ -45,6 +66,10 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'created_at',
+        'updated_at',
+        'verification_token',
+        'reset_token',
     ];
 
     /**

@@ -25,6 +25,6 @@ class RoleCheck
         }
 
         // Nếu không đúng role, trả về lỗi
-        return formatResponse(403, STATUS_FAIL, '', '', 'Bạn không có quyền thực hiện hành động này');
+        return formatResponse(STATUS_FAIL, '', '', 'Bạn không có quyền thực hiện hành động này');
     }
 }

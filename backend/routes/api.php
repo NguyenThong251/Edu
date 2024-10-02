@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\GoogleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,15 +20,17 @@ use App\Http\Controllers\AuthController;
 //     return $request->user();
 // });
 
-Route::group([
-    'middleware' => 'api',
-    'prefix' => 'auth'
-
-], function ($router) {
-
+Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     Route::post('login', [AuthController::class, 'login'])->name('login');
     Route::post('register', [AuthController::class, 'register']);
-
+    Route::post('refresh', [AuthController::class, 'refresh']);
+    Route::post('verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('verify.email');
+    Route::post('reset-password/{token}', [AuthController::class, 'resetPassword'])->name('reset.password');
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    //google
+    Route::post('/get-google-sign-in-url', [AuthController::class, 'getGoogleSignInUrl']);
+    Route::get('/google/call-back', [AuthController::class, 'loginGoogleCallback']);
+    //Logged in
     Route::middleware(['jwt'])->group(function () {
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
@@ -44,8 +47,4 @@ Route::group([
             // Các route dành cho student có thể thêm tại đây
         });
     });
-
-    Route::get('logout', [AuthController::class, 'logout']);
-    Route::post('refresh', [AuthController::class, 'refresh']);
-
 });
