@@ -29,7 +29,20 @@ Route::group([
     Route::post('register', [AuthController::class, 'register']);
 
     Route::middleware(['jwt'])->group(function () {
-        Route::get('profile', [AuthController::class, 'profile']);
+        // Routes cho admin
+        Route::middleware(['role:admin'])->group(function () {
+            // Các route dành cho admin có thể thêm tại đây
+        });
+    
+        // Routes cho instructor
+        Route::middleware(['role:instructor'])->group(function () {
+            Route::get('profile', [AuthController::class, 'profile']);
+        });
+    
+        // Routes cho student
+        Route::middleware(['role:student'])->group(function () {
+            // Các route dành cho student có thể thêm tại đây
+        });
     });
 
     Route::get('logout', [AuthController::class, 'logout']);

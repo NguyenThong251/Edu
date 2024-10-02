@@ -29,7 +29,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Validation failed');
+            return formatResponse(422, STATUS_FAIL, '', $validator->errors(), 'Validation failed');
         }
 
         $currentUser = auth()->user();
@@ -37,11 +37,11 @@ class AuthController extends Controller
 
         if ($currentUser) {
             if ($currentUser->role !== 'admin') {
-                return formatResponse(STATUS_FAIL, '', '', 'Unauthorized role assignment');
+                return formatResponse(403 , STATUS_FAIL, '', '', 'Unauthorized role assignment');
             }
         } else {
             if (!in_array($role, ['instructor', 'student'])) {
-                return formatResponse(STATUS_FAIL, '', '', 'Unauthorized role assignment');
+                return formatResponse(403 ,STATUS_FAIL, '', '', 'Unauthorized role assignment');
             }
         }
 
@@ -51,7 +51,7 @@ class AuthController extends Controller
             'password' => Hash::make(request()->input('password')),
             'role' => $role,
         ]);
-        return formatResponse(STATUS_OK, $user, '', 'Register successfully');
+        return formatResponse(200, STATUS_OK, $user, '', 'Register successfully');
     }
 
     public function login()
@@ -62,20 +62,20 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Validation failed');
+            return formatResponse(422, STATUS_FAIL, '', $validator->errors(), 'Validation failed');
         }
 
         $user = User::where(['username' => request()->input('username')])->first();
         if (!$user) {
-            return formatResponse(STATUS_FAIL, '', '', 'Username does not exist');
+            return formatResponse(404, STATUS_FAIL, '', '', 'Username does not exist');
         }
 
         $credentials = request(['username', 'password']);
         if (!$token = auth('api')->attempt($credentials)) {
-            return formatResponse(STATUS_FAIL, '', '', 'Incorrect password');
+            return formatResponse(401, STATUS_FAIL, '', '', 'Incorrect password');
         }
         $refreshToken = $this->createRefreshToken();
-        return formatResponse(STATUS_OK, $user, '', 'Login successfully', $token, $refreshToken);
+        return formatResponse(200 ,STATUS_OK, $user, '', 'Login successfully', $token, $refreshToken);
         //còn gửi mail verify và queue bổ sung sau
     }
 
@@ -83,16 +83,16 @@ class AuthController extends Controller
     {
         $user = JWTAuth::parseToken()->authenticate();     
         if (!$user) {
-            return formatResponse('FAIL', '', '', 'User not found');
+            return formatResponse(404, STATUS_FAIL, '', '', 'User not found');
         }
-        return formatResponse('OK', $user, '', 'Get user info successfully');
+        return formatResponse(200, STATUS_OK, $user, '', 'Get user info successfully');
     }
 
 
     public function logout()
     {
         auth('api')->logout();
-        return formatResponse(STATUS_OK, '', '', 'Logged out successfully');
+        return formatResponse(200, STATUS_OK, '', '', 'Logged out successfully');
     }
 
 
@@ -109,7 +109,7 @@ class AuthController extends Controller
         $token = auth('api')->login($user);
         $refreshToken = $this->createRefreshToken();
 
-        return formatResponse(STATUS_OK, $user, '', 'Login successfully', $token, $refreshToken);
+        return formatResponse(200, STATUS_OK, $user, '', 'Login successfully', $token, $refreshToken);
     }
 
     private function createRefreshToken()

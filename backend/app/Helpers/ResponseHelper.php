@@ -1,6 +1,7 @@
 <?php
 if (!function_exists('formatResponse')) {
     function formatResponse(
+        $code = 200,
         $status,
         $data = null,
         $error = null,
@@ -23,6 +24,6 @@ if (!function_exists('formatResponse')) {
             $response['expires_in'] = auth('api')->factory()->getTTL() * 60;
         }
 
-        return response()->json($response);
+        return response()->json($response, $code);
     }
 }
