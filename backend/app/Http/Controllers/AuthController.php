@@ -204,6 +204,7 @@ class AuthController extends Controller
 
     public function login()
     {
+        dd(__('messages.welcome'));
         $validator = Validator::make(request()->all(), [
             'email' => 'required|string|email|max:100',
             'password' => 'required|string|min:8',
