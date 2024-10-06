@@ -25,22 +25,29 @@ class CartController extends Controller
             ], 400);
         }
 
-        // Lấy người dùng đang đăng nhập
         $user = auth()->user();
-
-        // Lấy giỏ hàng của người dùng
         $cart = $user->cart;
 
-        // Nếu người dùng chưa có giỏ hàng, tạo giỏ hàng mới
         if (!$cart) {
+            // Nếu người dùng chưa có giỏ hàng, tạo giỏ hàng mới
             $cart = $user->cart()->create();
         }
 
-        // Thêm khóa học vào cart_items với cart_id đã được lấy
+        // Kiểm tra xem khóa học đã tồn tại trong giỏ hàng hay chưa
+        $existingCartItem = $cart->cartItems()->where('course_id', $request->input('course_id'))->first();
+
+        if ($existingCartItem) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Khóa học này đã tồn tại trong giỏ hàng của bạn',
+            ], 400);
+        }
+
+        // Thêm khóa học mới vào giỏ hàng
         $cartItem = $cart->cartItems()->create([
             'course_id' => $request->input('course_id'),
             'price' => $request->input('price'),
-            'cart_id' => $cart->id,  // Đảm bảo gán cart_id
+            'cart_id' => $cart->id,
         ]);
 
         return response()->json([
@@ -71,7 +78,6 @@ class CartController extends Controller
         ], 200);
     }
 
-    // Hàm xóa khóa học khỏi giỏ hàng
     public function removeFromCart($cartItemId)
     {
         $user = auth()->user();
@@ -84,19 +90,22 @@ class CartController extends Controller
             ], 404);
         }
 
-        $cartItem = CartItem::find($cartItemId);
+        // Tìm cartItem theo id
+        $cartItem = $cart->cartItems()->where('id', $cartItemId)->first();
+
         if (!$cartItem) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Không tìm thấy mục giỏ hàng'
+                'message' => 'Không tìm thấy khóa học trong giỏ hàng',
             ], 404);
         }
 
+        // Thực hiện xóa mềm
         $cartItem->delete();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Khóa học đã được xóa khỏi giỏ hàng'
+            'message' => 'Khóa học đã được xóa khỏi giỏ hàng (xóa mềm)',
         ], 200);
     }
 }
