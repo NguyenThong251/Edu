@@ -202,33 +202,39 @@ class AuthController extends Controller
         return formatResponse(STATUS_OK, $user, '', 'Thay đổi mật khẩu thành công', CODE_OK);
     }
 
-    public function login()
-    {
-        dd(__('messages.welcome'));
-        $validator = Validator::make(request()->all(), [
-            'email' => 'required|string|email|max:100',
-            'password' => 'required|string|min:8',
-        ]);
+        public function login()
+        {
+    //        dd(__('messages.welcome'));
+            $validator = Validator::make(request()->all(), [
+                'email' => 'required|string|email|max:100',
+                'password' => 'required|string|min:8',
+            ]);
 
-        if ($validator->fails()) {
-            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Xác thực thất bại');
-        }
+            if ($validator->fails()) {
+                return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Xác thực thất bại');
+            }
 
-        $user = User::where(['email' => request()->input('email')])->first();
-        if (!$user) {
-            return formatResponse(STATUS_FAIL, '', '', 'Email không tồn tại');
+            $user = User::where(['email' => request()->input('email')])->first();
+            if (!$user) {
+                return formatResponse(STATUS_FAIL, '', '', 'Email không tồn tại');
+            }
+            if (!$user->email_verified) {
+                return formatResponse(STATUS_FAIL, '', '',
+                    'Email chưa được xác thực, vui lòng kiểm tra email để xác thực tài khoản.');
+            }
+            $credentials = request(['email', 'password']);
+            if (!$token = auth('api')->attempt($credentials)) {
+                return formatResponse(STATUS_FAIL, '', '', 'Mật khẩu không chính xác');
+            }
+            $refreshToken = $this->createRefreshToken();
+
+            // Tạo cart cho người dùng nếu chưa có
+            if (!$user->cart) {
+                $user->cart()->create();
+            }
+
+            return formatResponse(STATUS_OK, $user, '', 'Đăng nhập thành công', CODE_OK, $token, $refreshToken);
         }
-        if (!$user->email_verified) {
-            return formatResponse(STATUS_FAIL, '', '',
-                'Email chưa được xác thực, vui lòng kiểm tra email để xác thực tài khoản.');
-        }
-        $credentials = request(['email', 'password']);
-        if (!$token = auth('api')->attempt($credentials)) {
-            return formatResponse(STATUS_FAIL, '', '', 'Mật khẩu không chính xác');
-        }
-        $refreshToken = $this->createRefreshToken();
-        return formatResponse(STATUS_OK, $user, '', 'Đăng nhập thành công', CODE_OK, $token, $refreshToken);
-    }
 
     public function logout()
     {

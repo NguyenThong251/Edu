@@ -36,12 +36,12 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::middleware(['role:admin'])->group(function () {
             // Các route dành cho admin có thể thêm tại đây
         });
-    
+
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
             Route::get('profile', [AuthController::class, 'profile']);
         });
-    
+
         // Routes cho student
         Route::middleware(['role:student'])->group(function () {
             // Các route dành cho student có thể thêm tại đây
