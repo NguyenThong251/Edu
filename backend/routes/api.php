@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\GoogleController;
+use App\Http\Controllers\CartController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,7 +45,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
         // Routes cho student
         Route::middleware(['role:student'])->group(function () {
-            // Các route dành cho student có thể thêm tại đây
+            Route::get('cart/items', [CartController::class, 'getCartItems']);
+            Route::post('cart/add', [CartController::class, 'addToCart']);
+            Route::delete('cart/remove/{cartItemId}', [CartController::class, 'removeFromCart']);
         });
     });
 });

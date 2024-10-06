@@ -228,11 +228,6 @@ class AuthController extends Controller
             }
             $refreshToken = $this->createRefreshToken();
 
-            // Tạo cart cho người dùng nếu chưa có
-            if (!$user->cart) {
-                $user->cart()->create();
-            }
-
             return formatResponse(STATUS_OK, $user, '', 'Đăng nhập thành công', CODE_OK, $token, $refreshToken);
         }
 
