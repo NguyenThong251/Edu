@@ -33,48 +33,69 @@ class CartController extends Controller
             $cart = $user->cart()->create();
         }
 
-        // Kiểm tra xem khóa học đã tồn tại trong giỏ hàng hay chưa
-        $existingCartItem = $cart->cartItems()->where('course_id', $request->input('course_id'))->first();
+        // Kiểm tra xem khóa học đã tồn tại trong giỏ hàng và bị xóa mềm hay không
+        $existingCartItem = $cart->cartItems()->withTrashed()->where('course_id', $request->input('course_id'))->first();
 
         if ($existingCartItem) {
+            if ($existingCartItem->trashed()) {
+                // Nếu khóa học đã bị xóa mềm, khôi phục nó
+                $existingCartItem->restore();
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Khóa học đã được khôi phục vào giỏ hàng',
+                    'data' => $existingCartItem,
+                ], 200);
+            }
+
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Khóa học này đã tồn tại trong giỏ hàng của bạn',
             ], 400);
         }
 
-        // Thêm khóa học mới vào giỏ hàng
+        // Thêm khóa học mới vào giỏ hàng nếu chưa tồn tại
         $cartItem = $cart->cartItems()->create([
             'course_id' => $request->input('course_id'),
             'price' => $request->input('price'),
-            'cart_id' => $cart->id,
         ]);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Khóa học đã được thêm vào giỏ hàng',
-            'data' => $cartItem
+            'data' => $cartItem,
         ], 200);
     }
 
     // Hàm lấy các khóa học trong giỏ hàng
     public function getCartItems()
     {
+        // Lấy người dùng hiện tại
         $user = auth()->user();
-        $cart = $user->cart;
 
-        if (!$cart) {
+        // Kiểm tra xem người dùng có giỏ hàng không
+        if (!$user || !$user->cart) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Không tìm thấy giỏ hàng',
             ], 404);
         }
 
-        $cartItems = $cart->cartItems;
+        // Lấy tất cả các mục trong giỏ hàng (bao gồm các mục chưa bị xóa mềm)
+        $cartItems = $user->cart->cartItems()->whereNull('deleted_at')->get();
+
+        // Kiểm tra xem giỏ hàng có mục nào không
+        if ($cartItems->isEmpty()) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Giỏ hàng trống',
+            ], 200); // Trả về 200 với thông báo là giỏ hàng trống
+        }
 
         return response()->json([
             'status' => 'success',
-            'data' => $cartItems
+            'message' => 'Lấy danh sách khóa học trong giỏ hàng thành công',
+            'data' => $cartItems,
         ], 200);
     }
 
