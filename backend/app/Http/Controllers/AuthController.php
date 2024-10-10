@@ -8,6 +8,7 @@ use App\Jobs\SendEmailForgotPassword;
 use App\Jobs\SendEmailVerification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
@@ -33,14 +34,8 @@ class AuthController extends Controller
                     'resetPassword',
                     'getGoogleSignInUrl',
                     'loginGoogleCallback',
-                    'test',
                 ]
             ]);
-    }
-
-    public function test()
-    {
-        render('emails.welcome');
     }
 
     public function register()
@@ -123,7 +118,7 @@ class AuthController extends Controller
                 [
                     'avatar' => $googleUser->avatar,
                     'email' => $googleUser->email,
-                    'full_name' => $googleUser->name,
+                    'last_name' => $googleUser->name,
                     'role' => $role,
                     'status' => User::USER_ACTIVE,
                     'email_verified' => $googleUser->user['email_verified'],
@@ -380,8 +375,7 @@ class AuthController extends Controller
     }
 
 
-    private
-    function createRefreshToken()
+    private function createRefreshToken()
     {
         $data = [
             'user_id' => auth('api')->user()->id,
@@ -392,11 +386,33 @@ class AuthController extends Controller
         return $refreshToken;
     }
 
-    protected
-    function respondWithToken(
-        $token,
-        $refreshToken
-    ) {
+    public function uploadImage(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+        if ($validator->fails()) {
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'xác thực thất bại');
+        }
+        $user = JWTAuth::parseToken()->authenticate();
+        if ($user->avatar) {
+            $currentFilePath = str_replace(env('URL_IMAGE_S3'), '', $user->avatar);
+            if (Storage::disk('s3')->exists($currentFilePath)) {
+                Storage::disk('s3')->delete($currentFilePath);
+            }
+        }
+        $path = $request->file('image')->storePublicly('image-user');
+        if ($path) {
+            $user->avatar = env('URL_IMAGE_S3') . $path;
+            $user->save();
+            return formatResponse(STATUS_OK, $user, '', 'Cập nhật hình ảnh thành công', CODE_OK);
+        }
+        return formatResponse(STATUS_FAIL, '', '', 'Cập nhật hình ảnh thất bại', CODE_BAD);
+    }
+
+
+    protected function respondWithToken($token, $refreshToken)
+    {
         return response()->json([
             'access_token' => $token,
             'refresh_token' => $refreshToken,
