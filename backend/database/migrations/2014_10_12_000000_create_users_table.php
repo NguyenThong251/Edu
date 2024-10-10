@@ -19,7 +19,6 @@ return new class extends Migration {
             $table->string('provider_id')->nullable();
             $table->string('first_name', 50)->nullable();
             $table->string('last_name', 50)->nullable();
-            $table->string('full_name', 100)->nullable();
             $table->string('avatar')->nullable();
             $table->enum('gender', ['male', 'female', 'unknown'])->default('unknown');
             $table->date('date_of_birth')->nullable();
