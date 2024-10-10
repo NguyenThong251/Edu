@@ -14,13 +14,12 @@ return new class extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->unsignedBigInteger('parent_id')->nullable(); // Cho phép parent_id có thể null
             $table->softDeletes();
             $table->boolean('is_deleted')->default(0);
             $table->timestamps();
-            $table->foreign('parent_id')->references('id')->on('categories')->onDelete('set null');
         });
     }
 
