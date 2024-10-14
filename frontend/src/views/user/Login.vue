@@ -17,17 +17,18 @@
                         <span class="text-center">Các tùy chọn đăng nhập khác</span>
                         <div class="h-0.5 w-28 bg-slate-300"></div>
                     </div>
-                    <div class="flex justify-center items-center gap-5">
-                        <div class="border rounded-md border-gray-900">
-                            <button class="p-2">
-                                <img class="w-10 h-1w-10" :src="Google" alt="">
+                    <div class="flex  justify-center items-center gap-5">
+                        <div class="border w-full flex justify-center rounded-md border-gray-900">
+                            <button class="p-2 flex items-center gap-3">
+                                <img class="w-8 h-1w-10" :src="Google" alt="">
+                                <span class="text-md font-medium">Đăng nhập bằng google</span>
                             </button>
                         </div>
-                        <div class="border rounded-md border-gray-900">
+                        <!-- <div class="border rounded-md border-gray-900">
                             <button class="p-2">
                                 <img class="w-10 h-1w-10" :src="Facebook" alt="">
                             </button>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="text-lg text-center">
                         Bạn chưa có tài khoản ? <RouterLink class="text-indigo-600 font-medium" to="/register"> Đăng ký

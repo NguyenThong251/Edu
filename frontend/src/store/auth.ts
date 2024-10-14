@@ -20,10 +20,11 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await api.post('/auth/login', { email, password })
       state.value.user = response.data.user
-      state.value.token = response.data.token
-      localStorage.setItem('token', response.data.token) // Lưu token vào localStorage
+      state.value.token = response.data.access_token
+      localStorage.setItem('token', response.data.access_token) // Lưu token vào localStorage
+      return response.data
     } catch (err: any) {
-      state.value.error = err.response?.data?.message || 'Login failed'
+      state.value.error = err.response?.data?.message || 'Đăng nhập thật bại'
     } finally {
       state.value.loading = false
     }
@@ -39,7 +40,8 @@ export const useAuthStore = defineStore('auth', () => {
     state.value.loading = true
     state.value.error = null
     try {
-      await api.post('/auth/register', userData)
+      const response = await api.post('/auth/register', userData)
+      return response.data
     } catch (err: any) {
       state.value.error = err.response?.data?.message || 'Registration failed'
     } finally {

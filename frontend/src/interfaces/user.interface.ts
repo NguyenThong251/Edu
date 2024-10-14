@@ -4,7 +4,7 @@ export interface User {
   image: string
   email: string
   passwrod: string
-  role: 'user' | 'admin' | 'teacher'
+  role: 'student' | 'admin' | 'teacher'
   createdAt: Date
 }
 export interface AuthState {

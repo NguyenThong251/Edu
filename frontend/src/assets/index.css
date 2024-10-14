@@ -10,6 +10,18 @@
     .animation{
         @apply hover:transition-all transition-all hover:duration-300 duration-300
     }
+    .input{
+        @apply w-full border-2 rounded-md p-2
+    }
+    .input-error-message{
+        @apply text-red-500
+    }
+    .input-label{
+        @apply text-lg font-medium
+    }
+    .input-group{
+        @apply flex flex-col gap-1
+    }
 }
 @layer utilities {
     .scrollable-container::-webkit-scrollbar {

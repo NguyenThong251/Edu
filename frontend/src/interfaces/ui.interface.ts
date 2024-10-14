@@ -40,7 +40,6 @@ export interface CourseComment {
 export interface Input {
   modelValue: string
   label: string
-  error?: string
   type: string
   placeholder: string
 }

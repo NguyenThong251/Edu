@@ -2,7 +2,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'https://your-api-url.com' // URL của API backend
+  baseURL: 'http://127.0.0.1:8000/api' // URL của API backend
 })
 
 api.interceptors.request.use(

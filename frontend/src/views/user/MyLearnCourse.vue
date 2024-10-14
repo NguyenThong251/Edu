@@ -2,22 +2,19 @@
     <main class="px-10 bg-indigo-100 py-10">
         <div class="flex gap-5">
             <div class="w-4/6">
-                <div class="p-1 border-2 bg-white  border-indigo-600 rounded-lg">
-                    <!-- <VideoCourse :src="videoUrl" /> -->
+                <div class=" border-2 bg-white  border-indigo-600 rounded-lg">
+                    <VideoCourse :src="videoUrl" />
                     <!-- Quizz -->
-                    <div class="min-h-screen bg-white flex items-center justify-center">
+                    <!-- <div class="min-h-screen bg-white flex items-center justify-center">
                         <div class="bg-white p-4 rounded-lg shadow-md max-w-md w-full">
                             <h2 class="text-xl font-semibold mb-4 text-center">Bài tập: Biến Python</h2>
 
-                            <!-- Progress Bar -->
                             <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
                                 <div class="bg-blue-500 h-2.5 rounded-full w-2/5"></div>
-                                <!-- Điều chỉnh độ dài của thanh tiến trình theo tỷ lệ -->
                             </div>
 
                             <p class="text-center mb-6">Cách chính xác để khai báo biến Python là gì?</p>
 
-                            <!-- Question Options -->
                             <form class="space-y-4">
                                 <label class="flex items-center bg-blue-50 p-3 rounded-lg cursor-pointer">
                                     <input type="radio" name="question" class="form-radio h-4 w-4 text-blue-600" />
@@ -39,14 +36,13 @@
                                     <span class="ml-2 text-gray-700">x = 5</span>
                                 </label>
 
-                                <!-- Submit Button -->
                                 <button type="submit"
                                     class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg text-center mt-4">
                                     Gửi câu trả lời
                                 </button>
                             </form>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="bg-white rounded-lg my-5 p-2">
                     <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
