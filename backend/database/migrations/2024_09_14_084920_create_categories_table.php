@@ -13,13 +13,17 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100);
+            $table->string('name', 100)->unique();
             $table->text('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('inactive');
-            $table->unsignedBigInteger('parent_id')->nullable(); // Cho phép parent_id có thể null
+            $table->unsignedBigInteger('parent_id')->nullable(); 
             $table->softDeletes();
+            $table->bigInteger('deleted_by')->nullable();
             $table->boolean('is_deleted')->default(0);
             $table->timestamps();
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
+            $table->foreign('parent_id')->references('id')->on('categories')->onDelete('set null'); // Thêm khóa ngoại
         });
     }
 

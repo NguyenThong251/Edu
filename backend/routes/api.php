@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Api\GoogleController;
 
 /*
@@ -34,7 +35,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     Route::middleware(['jwt'])->group(function () {
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
-            // Các route dành cho admin có thể thêm tại đây
+            Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+            Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+            Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         });
     
         // Routes cho instructor
@@ -48,3 +51,5 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         });
     });
 });
+Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');

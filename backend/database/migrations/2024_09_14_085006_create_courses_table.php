@@ -20,10 +20,13 @@ return new class extends Migration
             $table->double('price');
             $table->enum('type_sale', ['percent', 'price'])->default('price');
             $table->double('sale_value');
-            $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('inactive');
+            $table->softDeletes();
+            $table->bigInteger('deleted_by')->nullable();
+            $table->boolean('is_deleted')->default(0);
             $table->timestamps();
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
             // Foreign key
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
         });

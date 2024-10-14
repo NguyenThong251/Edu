@@ -16,15 +16,17 @@ class RoleCheck
      */
     public function handle(Request $request, Closure $next, $role): Response
     {
-        // Lấy user từ JWT token
         $user = Auth::user();
-
-        // Kiểm tra nếu user có role phù hợp với role của route
-        if ($user && $user->role === $role) {
+        if ($user && $user->role === 'admin') {
             return $next($request);
         }
-
-        // Nếu không đúng role, trả về lỗi
-        return formatResponse(STATUS_FAIL, '', '', 'Bạn không có quyền thực hiện hành động này');
+        if ($user && $user->role === 'instructor' && in_array($role, ['instructor', 'student'])) {
+            return $next($request);
+        }
+        if ($user && $user->role === 'student' && $role === 'student') {
+            return $next($request);
+        }
+        return formatResponse(STATUS_FAIL, '', '', __('messages.no_permission'));
     }
+
 }

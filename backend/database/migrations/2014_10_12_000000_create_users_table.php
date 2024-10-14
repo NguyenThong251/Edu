@@ -26,7 +26,7 @@ return new class extends Migration {
             $table->boolean('email_verified')->default(false);
             $table->string('reset_token')->nullable();
             $table->string('verification_token')->nullable();
-            $table->string('role', 50);
+            $table->enum('role', ['admin', 'instructor', 'student'])->default('student');
             $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->softDeletes();
             $table->boolean('is_deleted')->default(0);

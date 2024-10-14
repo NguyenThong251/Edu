@@ -24,12 +24,13 @@ class JWTMiddleware
             // Xác thực token JWT
             $user = JWTAuth::parseToken()->authenticate();
         } catch (TokenInvalidException $e) {
-            return formatResponse(STATUS_FAIL, '', '', 'Token không hợp lệ');
+            return formatResponse(STATUS_FAIL, '', '', __('messages.token_invalid'));
         } catch (TokenExpiredException $e) {
-            return formatResponse(STATUS_FAIL, '', '', 'Token đã hết hạn');
+            return formatResponse(STATUS_FAIL, '', '', __('messages.token_expired'));
         } catch (\Exception $e) {
-            return formatResponse(STATUS_FAIL, '', '', 'Không tìm thấy Token');
+            return formatResponse(STATUS_FAIL, '', '', __('messages.token_not_found'));
         }
         return $next($request);
+        
     }
 }
