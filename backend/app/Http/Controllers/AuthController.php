@@ -34,6 +34,7 @@ class AuthController extends Controller
                     'resetPassword',
                     'getGoogleSignInUrl',
                     'loginGoogleCallback',
+                    'updateProfile',
                 ]
             ]);
     }
@@ -41,29 +42,51 @@ class AuthController extends Controller
     public function register()
     {
         $validator = Validator::make(request()->all(), [
+            'first_name' => 'required|string|max:50',
+            'last_name' => 'required|string|max:50',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|in:admin,instructor,student',
+        ], [
+            'first_name.required' => __('messages.first_name_required'),
+            'first_name.string' => __('messages.first_name_string'),
+            'first_name.max' => __('messages.first_name_max'),
+            'last_name.required' => __('messages.last_name_required'),
+            'last_name.string' => __('messages.last_name_string'),
+            'last_name.max' => __('messages.last_name_max'),
+
+            'email.required' => __('messages.email_required'),
+            'email.string' => __('messages.email_string'),
+            'email.email' => __('messages.email_email'),
+            'email.max' => __('messages.email_max'),
+            'email.unique' => __('messages.email_unique'),
+
+            'password.required' => __('messages.password_required'),
+            'password.string' => __('messages.password_string'),
+            'password.min' => __('messages.password_min'),
+
+            'role.required' => __('messages.role_required'),
+            'role.in' => __('messages.role_in'),
+
         ]);
-
         if ($validator->fails()) {
-            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Xác thực thất bại');
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
-
         $currentUser = auth()->user();
         $role = request()->input('role');
 
         if ($currentUser) {
             if ($currentUser->role !== 'admin') {
-                return formatResponse(STATUS_FAIL, '', '', 'Không được phép tạo vai trò này');
+                return formatResponse(STATUS_FAIL, '', '', __('messages.validation_error_role'));
             }
         } else {
             if (!in_array($role, ['instructor', 'student'])) {
-                return formatResponse(STATUS_FAIL, '', '', 'Không được phép tạo vai trò này');
+                return formatResponse(STATUS_FAIL, '', '', __('messages.validation_error_role'));
             }
         }
-
         $user = User::create([
+            'first_name' => request()->input('first_name'),
+            'last_name' => request()->input('last_name'),
             'email' => request()->input('email'),
             'password' => Hash::make(request()->input('password')),
             'role' => $role,
@@ -71,25 +94,27 @@ class AuthController extends Controller
         ]);
 
         SendEmailVerification::dispatch($user);
-
-        return formatResponse(STATUS_OK, $user, '', 'Đăng ký thành công');
+        return formatResponse(STATUS_OK, $user, '', __('messages.user_signup_success'));
     }
 
     public function getGoogleSignInUrl(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
-                'role' => 'required|in:instructor,student',
+                'role' => 'required|in:instructor,student,admin',
+            ], [
+                'role.required' => __('messages.role_required'),
+                'role.in' => __('messages.role_in'),
             ]);
 
             if ($validator->fails()) {
-                return formatResponse(STATUS_FAIL, '', $validator->errors(), 'xác thực thất bại');
+                return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
             }
             $role = $request->input('role');
 
             $url = Socialite::driver('google')->stateless()->with(['state' => http_build_query(['role' => $role])])
                 ->redirect()->getTargetUrl();
-            return formatResponse(STATUS_OK, ['url' => $url], '', 'Lấy đường dẫn đăng ký thành công !', CODE_OK);
+            return formatResponse(STATUS_OK, ['url' => $url], '', __('messages.get_url_ok'), CODE_OK);
         } catch (\Exception $exception) {
             return $exception;
         }
@@ -107,11 +132,10 @@ class AuthController extends Controller
             $user = User::where('email', $googleUser->email)->first();
             if ($user) {
                 if (!$token = auth('api')->login($user)) {
-                    return formatResponse(STATUS_FAIL, '', '', 'Không thể tạo token cho tài khoản đã tồn tại',
-                        CODE_FAIL);
+                    return formatResponse(STATUS_FAIL, '', '', __('messages.create_token_failed'), CODE_FAIL);
                 }
                 $refreshToken = $this->createRefreshToken();
-                return formatResponse(STATUS_OK, $user, '', 'Đăng nhập thành công', CODE_OK, $token, $refreshToken);
+                return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
             }
 
             $user = User::create(
@@ -129,15 +153,13 @@ class AuthController extends Controller
             );
 
             if (!$token = auth('api')->login($user)) {
-                return formatResponse(STATUS_FAIL, '', '', 'Không thể tạo token cho tài khoản đã tồn tại',
-                    CODE_FAIL);
+                return formatResponse(STATUS_FAIL, '', '', __('messages.create_token_failed'), CODE_FAIL);
             }
             $refreshToken = $this->createRefreshToken();
-
             SendEmailWelcome::dispatch($user);
-            return formatResponse(STATUS_OK, $user, '', 'Đăng nhập thành công', CODE_OK, $token, $refreshToken);
+            return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
         } catch (\Exception $exception) {
-            return formatResponse(STATUS_FAIL, '', $exception, 'Đăng nhập tài khoản google thất bại', CODE_BAD);
+            return formatResponse(STATUS_FAIL, '', $exception, __('messages.login_google_success'), CODE_BAD);
         }
     }
 
@@ -145,13 +167,13 @@ class AuthController extends Controller
     {
         $user = User::where('verification_token', $token)->first();
         if (!$user) {
-            return formatResponse(STATUS_FAIL, '', '', 'Đường dẫn không tồn tại', CODE_NOT_FOUND);
+            return formatResponse(STATUS_FAIL, '', '', __('messages.url_not_found'), CODE_NOT_FOUND);
         }
         $user->email_verified = true;
         $user->status = USER::USER_ACTIVE;
         $user->verification_token = null;
         $user->save();
-        return formatResponse(STATUS_OK, $user, '', 'Xác thực tài khoản thành công');
+        return formatResponse(STATUS_OK, $user, '', __('messages.verify_email_ok'));
     }
 
 
@@ -159,36 +181,48 @@ class AuthController extends Controller
     {
         $validator = Validator::make(request()->all(), [
             'email' => 'required|string|email|max:100',
+        ], [
+            'email.required' => __('messages.email_required'),
+            'email.string' => __('messages.email_string'),
+            'email.email' => __('messages.email_email'),
+            'email.max' => __('messages.email_max'),
+            'email.unique' => __('messages.email_unique'),
         ]);
 
         if ($validator->fails()) {
-            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Xác thực thất bại');
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
 
         $user = User::where('email', request()->input('email'))->first();
         if (!$user) {
-            return formatResponse(STATUS_FAIL, '', '', 'Không có tài khoản nào thuộc email này');
+            return formatResponse(STATUS_FAIL, '', '', __('messages.email_exist'));
         }
-
         $user->reset_token = Str::random(60);
-        $user->save();
+
+        if (!$user->save()) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.error_save'));
+        }
         SendEmailForgotPassword::dispatch($user);
-        return formatResponse(STATUS_OK, '', '', 'Gửi email thành công', CODE_OK);
+        return formatResponse(STATUS_OK, '', '', __('messages.email_send_ok'), CODE_OK);
     }
 
     public function resetPassword($token)
     {
         $user = User::where('reset_token', $token)->first();
         if (!$user) {
-            return formatResponse(STATUS_FAIL, '', '', 'Đường dẫn không tồn tại', CODE_NOT_FOUND);
+            return formatResponse(STATUS_FAIL, '', '', __('messages.url_not_found'), CODE_NOT_FOUND);
         }
 
         $validator = Validator::make(request()->all(), [
             'password' => 'required|string|min:8',
+        ], [
+            'password.required' => __('messages.password_required'),
+            'password.string' => __('messages.password_string'),
+            'password.min' => __('messages.password_min'),
         ]);
 
         if ($validator->fails()) {
-            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Xác thực thất bại');
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
 
         $user->reset_token = null;
@@ -202,38 +236,47 @@ class AuthController extends Controller
         $validator = Validator::make(request()->all(), [
             'email' => 'required|string|email|max:100',
             'password' => 'required|string|min:8',
+        ], [
+            'email.required' => __('messages.email_required'),
+            'email.string' => __('messages.email_string'),
+            'email.email' => __('messages.email_email'),
+            'email.max' => __('messages.email_max'),
+            'email.unique' => __('messages.email_unique'),
+
+            'password.required' => __('messages.password_required'),
+            'password.string' => __('messages.password_string'),
+            'password.min' => __('messages.password_min'),
         ]);
 
         if ($validator->fails()) {
-            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Xác thực thất bại');
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
 
         $user = User::where(['email' => request()->input('email')])->first();
         if (!$user) {
-            return formatResponse(STATUS_FAIL, '', '', 'Email không tồn tại');
+            return formatResponse(STATUS_FAIL, '', '', __('messages.email_exist'));
         }
         if (!$user->email_verified) {
-            return formatResponse(STATUS_FAIL, '', '',
-                'Email chưa được xác thực, vui lòng kiểm tra email để xác thực tài khoản.');
+            return formatResponse(STATUS_FAIL, '', '', __('messages.email_not_verified'));
         }
         $credentials = request(['email', 'password']);
         if (!$token = auth('api')->attempt($credentials)) {
-            return formatResponse(STATUS_FAIL, '', '', 'Mật khẩu không chính xác');
+            return formatResponse(STATUS_FAIL, '', '', __('messages.password_incorrect'));
         }
         $refreshToken = $this->createRefreshToken();
-        return formatResponse(STATUS_OK, $user, '', 'Đăng nhập thành công', CODE_OK, $token, $refreshToken);
+        return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
     }
 
     public function logout()
     {
         auth('api')->logout();
-        return formatResponse(STATUS_OK, '', '', 'Đăng xuất thành công');
+        return formatResponse(STATUS_OK, '', '', __('messages.user_logout_success'));
     }
 
     public function profile()
     {
-        $user = JWTAuth::parseToken()->authenticate();
-        return formatResponse(STATUS_OK, $user, '', 'Lấy thông tin tài khoản thành công');
+        $user = auth()->user();
+        return formatResponse(STATUS_OK, $user, '', 'Lấy thông tin thành công');
     }
 
 
@@ -270,33 +313,56 @@ class AuthController extends Controller
         }
     }
 
-    public function updateProfile($id)
+    public function updateProfile()
     {
-        $user1 = auth()->user();
-        $user = User::where('id', $id)->first();
+        $user = auth()->user();
+        if (!$user) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.user_not_found'));
+        }
         $validator = Validator::make(request()->all(), [
-            'username' => 'string|max:50|unique:users',
-            'email' => 'string|email|max:100|unique:users',
+            'first_name' => 'string|max:50',
+            'last_name' => 'string|max:50',
+            'email' => 'string|email|max:100|unique:users,email,' . $user->id,
+            'gender' => 'nullable|string|in:male,female,unknown',
+            'date_of_birth' => 'nullable|date',
+            'password' => 'string|min:8',
+        ], [
+            'first_name.required' => __('messages.first_name_required'),
+            'first_name.string' => __('messages.first_name_string'),
+            'first_name.max' => __('messages.first_name_max'),
+            'last_name.required' => __('messages.last_name_required'),
+            'last_name.string' => __('messages.last_name_string'),
+            'last_name.max' => __('messages.last_name_max'),
+
+            'email.required' => __('messages.email_required'),
+            'email.string' => __('messages.email_string'),
+            'email.email' => __('messages.email_email'),
+            'email.max' => __('messages.email_max'),
+            'email.unique' => __('messages.email_unique'),
+
+            'password.required' => __('messages.password_required'),
+            'password.string' => __('messages.password_string'),
+            'password.min' => __('messages.password_min'),
+
+            'gender.in' => __('messages.gender_invalid'),
+            'date_of_birth.date' => __('messages.date_of_birth_invalid'),
         ]);
 
         if ($validator->fails()) {
-            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Xác thực thất bại');
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
-        $data = request()->except(['role', 'password', 'email_verified', 'reset_token', 'status']);
-
+        $data = request()->except(['role', 'email_verified', 'reset_token', 'status']);
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make(request()->input('password'));
+        }
         if (!$user->update($data)) {
-            return formatResponse(STATUS_FAIL, '', '', 'Cập nhật thông tin thất bại');
+            return formatResponse(STATUS_FAIL, '', '', __('messages.update_fail'));
         }
-
-        return formatResponse(STATUS_OK, $user, '', 'Cập nhật thông tin thành công');
+        return formatResponse(STATUS_OK, $user, '', __('messages.update_success'));
     }
 
     public function adminUpdateUser()
     {
-//        $auth = auth()->user();
-//        if ($auth->role != 'admin') {
-//            return formatResponse(STATUS_FAIL, '', '', 'Không có quyền chỉnh sửa tài khoản');
-//        }
         $validator = Validator::make(request()->all(), [
             'user_id' => 'required|integer',
             'username' => 'string|max:50|unique:users',
@@ -332,7 +398,7 @@ class AuthController extends Controller
         $user = User::where('id', $id)->first();
 
         if (!$user) {
-            return formatResponse(STATUS_FAIL, '', '', 'Tài khoản không tồn tại');
+            return formatResponse(STATUS_FAIL, '', '', __('messages.user_not_found'));
         }
 
         if ($user->delete()) {
@@ -347,11 +413,9 @@ class AuthController extends Controller
     public function restoreUser($id)
     {
         $user = User::withTrashed()->find($id);
-
         if (!$user) {
             return formatResponse(STATUS_FAIL, '', '', 'Tài khoản không tồn tại');
         }
-
         if ($user->trashed()) {
             $user->restore();
             $user->is_deleted = User::STATUS_DEFAULT;

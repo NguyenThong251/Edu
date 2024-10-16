@@ -32,7 +32,7 @@ class VerifyEmail extends Mailable
         return $this->subject('Xác thực tài khoản')
             ->view('emails.verify')
             ->with([
-                'username' => $this->user->username,
+                'username' => $this->user->first_name . " " . $this->user->last_name,
                 'verificationUrl' => $verificationUrl,
             ]);
     }
