@@ -41,6 +41,7 @@ export interface Input {
   modelValue: string
   label: string
   type: string
+  errorMessages: string | null
   placeholder: string
 }
 export interface MenuItem {

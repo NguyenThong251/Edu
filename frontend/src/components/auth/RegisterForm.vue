@@ -1,8 +1,13 @@
 <template>
     <form class="flex flex-col gap-5 " @submit.prevent="handleSubmit">
-        <Input v-model="name" label="Họ và tên" type="text" placeholder="Nhập họ và tên" />
-        <Input v-model="email" label="Email" type="email" placeholder="Nhập email" />
-        <Input v-model="password" label="Mật khẩu" type="password" placeholder="Nhập mật khẩu" />
+        <div class="grid grid-cols-2 gap-5">
+            <Input v-model="lname" label="Họ" type="text" placeholder="Nhập họ" :errorMessages="lnameError" />
+            <Input v-model="fname" label="Tên" type="text" placeholder="Nhập tên" :errorMessages="fnameError" />
+        </div>
+
+        <Input v-model="email" label="Email" type="email" placeholder="Nhập email" :errorMessages="emailError" />
+        <Input v-model="password" label="Mật khẩu" type="password" placeholder="Nhập mật khẩu"
+            :errorMessages="passwordError" />
         <Button class="w-full" variant="primary" :disabled="authStore.loading">Đăng ký</Button>
     </form>
 </template>
@@ -12,7 +17,9 @@ import { ref } from 'vue';
 import Button from '../ui/button/Button.vue';
 import Input from '../ui/input/Input.vue';
 import { useRegister } from '@/composables/user/useRegister';
-const { name, email, password, handleSubmit, authStore } = useRegister();
+const { lname, fname, email, password, handleSubmit, fnameError,
+    lnameError,
+    emailError, passwordError, authStore } = useRegister();
 
 
 </script>

@@ -1,14 +1,12 @@
-export interface User {
-  id: string
-  username: string
-  image: string
+export interface TUserAuth {
+  first_name: string
+  last_name: string
   email: string
-  passwrod: string
+  password: string
   role: 'student' | 'admin' | 'teacher'
-  createdAt: Date
 }
 export interface AuthState {
-  user: User | null
+  user: TUserAuth | null
   token: string | null
   loading: boolean
   error: string | null

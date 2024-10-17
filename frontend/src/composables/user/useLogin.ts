@@ -62,6 +62,8 @@ export function useLogin() {
   return {
     email,
     password,
+    emailError,
+    passwordError,
     handleSubmit,
     authStore
   }
