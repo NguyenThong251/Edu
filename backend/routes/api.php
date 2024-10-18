@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\Api\GoogleController;
 
 /*
@@ -56,17 +57,20 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
             Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         });
-    
+
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
             Route::get('profile', [AuthController::class, 'profile']);
         });
-    
+
         // Routes cho student
         Route::middleware(['role:student'])->group(function () {
             // Các route dành cho student có thể thêm tại đây
+            // Cart
         });
     });
 });
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
+
+Route::post('/cart/add', [CartController::class, 'addToCart']);

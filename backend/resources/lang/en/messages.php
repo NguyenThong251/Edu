@@ -66,4 +66,8 @@ return [
     'update_fail' => 'Update failed.',
     'update_success' => 'Update successfully.',
 
+    // CART: add course to cart
+    'course_not_exists' => 'Course not found.',
+    'course_exists' => 'Course is already in the cart.',
+    'add_to_cart_successfully' => 'Course added to cart successfully.',
 ];

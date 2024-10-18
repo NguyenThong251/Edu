@@ -40,7 +40,6 @@ return [
     'date_of_birth_invalid' => 'Phải đúng định YYYY-MM-DD.',
 
 
-
     'validation_error_role' => 'Không được phép vài trò này.',
 
     'url_not_found' => 'Không tìm thấy đường dẫn.',
@@ -68,6 +67,10 @@ return [
     'error_save' => 'Lưu không thành công.',
     'successful_save' => 'Lưu thành công.',
     'update_fail' => 'Cập nhật thành công.',
-    'update_success' => 'Cập nhật thành công.'
+    'update_success' => 'Cập nhật thành công.',
 
+    // Course
+    'course_not_exists' => 'Khóa học không tồn tại.',
+    'course_exists' => 'Khóa học đã tồn tại trong giỏ hàng.',
+    'add_to_cart_successfully' => 'Khóa học thêm vào giỏ hàng thành công!',
 ];
