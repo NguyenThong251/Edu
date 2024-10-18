@@ -11,6 +11,7 @@ import VideoPlayer from 'vue-video-player'
 import 'video.js/dist/video-js.css'
 import VuePlyr from 'vue-plyr'
 import 'vue-plyr/dist/vue-plyr.css'
+import 'vue-loading-overlay/dist/css/index.css'
 // language
 import enHome from './locales/en/home.json'
 import viHome from './locales/vi/home.json'

@@ -42,6 +42,12 @@ const user = [
         name: 'register',
         component: () => import('@/views/user/Register.vue')
       },
+
+      {
+        path: '/verify-email/:token',
+        name: '/verify-email',
+        component: () => import('@/views/user/Verify.vue')
+      },
       {
         path: '',
         component: UserDashboard,

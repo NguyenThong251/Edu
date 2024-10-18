@@ -32,6 +32,9 @@ importers:
       vue-i18n:
         specifier: '10'
         version: 10.0.1(vue@3.5.3(typescript@5.4.5))
+      vue-loading-overlay:
+        specifier: ^6.0.6
+        version: 6.0.6(vue@3.5.3(typescript@5.4.5))
       vue-plyr:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2414,6 +2417,12 @@ packages:
     engines: {node: '>= 16'}
     peerDependencies:
       vue: ^3.0.0
+
+  vue-loading-overlay@6.0.6:
+    resolution: {integrity: sha512-ZPrWawjCoNKGbCG9z4nePgbs/K9KXPa1j1oAJXP6T8FQho3NO+/chhjx4MLYFzfpwr+xkiQ8SNrV1kUG1bZPAw==}
+    engines: {node: '>=12.13.0'}
+    peerDependencies:
+      vue: ^3.2.0
 
   vue-plyr@7.0.0:
     resolution: {integrity: sha512-NvbO/ZzV1IxlBQQbQlon5Sk8hKuGAj3k4k0XVdi7gM4oSqu8mZMhJ3WM3FfAtNfV790jbLnb8P3dHYqaBqIv6g==}
@@ -4931,6 +4940,10 @@ snapshots:
       '@intlify/core-base': 10.0.1
       '@intlify/shared': 10.0.1
       '@vue/devtools-api': 6.6.4
+      vue: 3.5.3(typescript@5.4.5)
+
+  vue-loading-overlay@6.0.6(vue@3.5.3(typescript@5.4.5)):
+    dependencies:
       vue: 3.5.3(typescript@5.4.5)
 
   vue-plyr@7.0.0:

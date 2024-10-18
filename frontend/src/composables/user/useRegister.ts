@@ -5,6 +5,7 @@ import type { TUserAuth } from '@/interfaces'
 import { useRouter } from 'vue-router'
 import api from '@/services/axiosConfig'
 export function useRegister() {
+  const loading = ref(false)
   const lname = ref<string>('')
   const fname = ref<string>('')
   const email = ref<string>('')
@@ -70,6 +71,7 @@ export function useRegister() {
   })
 
   const handleSubmit = async () => {
+    loading.value = true
     if (!validateForm()) return
 
     const userData: TUserAuth = {
@@ -96,43 +98,14 @@ export function useRegister() {
           type: 'success'
         })
         router.push('/login')
-        await api.post(`/auth/verify-email/${res.access_token}`)
-        // await verifyEmail(res.data.verificationToken)
       }
     } catch (error) {
       console.error(error)
+    } finally {
+      loading.value = false
     }
   }
-  // Hàm xác thực email
-  // const verifyEmail = async (verificationToken: string) => {
-  //   try {
-  //     const response = await api.post(`/api/auth/verify-email/${verificationToken}`)
-  //     console.log(response)
-  //     if (response.data.status === 'OK') {
-  //       ElNotification({
-  //         title: 'Thành công',
-  //         message: 'Email đã được xác thực thành công, hãy đăng nhập.',
-  //         type: 'success'
-  //       })
 
-  //       // Redirect to login page
-  //       router.push('/login')
-  //     } else {
-  //       ElNotification({
-  //         title: 'Xác thực thất bại',
-  //         message: response.data.message || 'Có lỗi xảy ra trong quá trình xác thực email.',
-  //         type: 'error'
-  //       })
-  //     }
-  //   } catch (error) {
-  //     ElNotification({
-  //       title: 'Lỗi kết nối',
-  //       message: 'Không thể kết nối đến máy chủ.',
-  //       type: 'error'
-  //     })
-  //     console.error('Email verification error:', error)
-  //   }
-  // }
   return {
     fname,
     lname,
@@ -143,6 +116,7 @@ export function useRegister() {
     emailError,
     passwordError,
     handleSubmit,
-    authStore
+    authStore,
+    loading
   }
 }
