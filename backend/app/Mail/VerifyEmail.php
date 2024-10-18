@@ -27,7 +27,7 @@ class VerifyEmail extends Mailable
     public function build()
     {
 //        $verificationUrl = route('verify.email', ['token' => $this->user->verification_token]);
-        $verificationUrl = config('app.url') . '/api/auth/verify-email/' . $this->user->verification_token;
+        $verificationUrl = env('URL_DOMAIN') . '/api/auth/verify-email/' . $this->user->verification_token;
 
         return $this->subject('Xác thực tài khoản')
             ->view('emails.verify')
