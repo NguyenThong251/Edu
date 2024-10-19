@@ -15,7 +15,8 @@
 import { useLogin } from '@/composables/user/useLogin';
 import Button from '../ui/button/Button.vue';
 import Input from '../ui/input/Input.vue';
-
+import Loading from 'vue-loading-overlay'
+import 'vue-loading-overlay/dist/css/index.css'
 const { email, emailError,
     passwordError, password, handleSubmit, authStore, loading } = useLogin();
 </script>

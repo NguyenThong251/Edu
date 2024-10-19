@@ -1,5 +1,5 @@
 <template>
-    <div class="">
+    <!-- <div class="">
         <h1>{{ $t('home.title') }}</h1>
         <p>{{ $t('home.welcomeMessage') }}</p>
         <button>{{ $t('home.buttonText') }}</button>
@@ -7,9 +7,9 @@
     <select @change="changeLanguage($event)">
         <option value="vi">Tiếng Việt</option>
         <option value="en">English</option>
-    </select>
+    </select> -->
 
-    <main class="py-16">
+    <main class="pb-16">
         <UserHero />
         <UserCompany />
         <!-- CATEGORY -->
@@ -126,7 +126,6 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
 import { FunnelIcon } from '@heroicons/vue/24/outline'
 import UserHero from '@/components/user/UserHero.vue';
 import UserCompany from '@/components/user/UserCompany.vue';
@@ -137,9 +136,9 @@ import UserHero2 from '@/components/user/UserHero2.vue';
 import UserNewsLetter from '@/components/user/UserNewsLetter.vue';
 import { useI18n } from 'vue-i18n';
 const { locale } = useI18n();
-const changeLanguage = (event: Event) => {
-    const selectedLanguage = (event.target as HTMLSelectElement).value;
-    locale.value = selectedLanguage;
-};
+// const changeLanguage = (event: Event) => {
+//     const selectedLanguage = (event.target as HTMLSelectElement).value;
+//     locale.value = selectedLanguage;
+// };
 
 </script>

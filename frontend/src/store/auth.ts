@@ -1,58 +1,71 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/services/axiosConfig'
-import type { AuthState } from '@/interfaces'
-
+import type { AuthState, TUserAuth } from '@/interfaces'
+import Cookies from 'js-cookie'
 export const useAuthStore = defineStore('auth', () => {
   // khai báo trạng thái
-  const state = ref<AuthState>({
-    user: null,
-    token: localStorage.getItem('token') || null,
-    loading: false,
-    error: null
-  })
+  const user = ref<TUserAuth | null>(null)
+  const token = ref<string | null>(Cookies.get('token_user_edu') || null)
+  const loading = ref(false)
+  const error = ref<string | null>(null)
 
+  // fetch data user
+  // const fetchUserData = async () => {
+  //   if (token.value) {
+  //     try {
+  //       const res = await api.get('/auth/profile')
+  //       user.value = res.data.data
+  //     } catch (err) {
+  //       console.error('Lỗi khi lấy dữ liệu người dùng:', err)
+  //     }
+  //   }
+  // }
+  // fetchUserData()
   // hàm đăng nhập
 
   const login = async (email: string, password: string) => {
-    state.value.loading = true
-    state.value.error = null
+    loading.value = true
+    error.value = null
     try {
       const response = await api.post('/auth/login', { email, password })
-      state.value.user = response.data.user
-      state.value.token = response.data.access_token
-      localStorage.setItem('token', response.data.access_token) // Lưu token vào localStorage
+      token.value = response.data.access_token
+      Cookies.set('token_user_edu', response.data.access_token, { expires: 7 }) // Lưu token vào localStorage
       return response.data
     } catch (err: any) {
-      state.value.error = err.response?.data?.message || 'Đăng nhập thật bại'
+      error.value = err.response?.data?.message || 'Đăng nhập thật bại'
     } finally {
-      state.value.loading = false
+      loading.value = false
     }
   }
   // hàm đăng xuất
   const logout = () => {
-    state.value.user = null
-    state.value.token = null
-    localStorage.removeItem('token') // Xóa token khỏi localStorage
+    user.value = null
+    token.value = null
+    Cookies.remove('token_user_edu')
   }
   // hàm đăng ký
   const register = async (userData: any) => {
-    state.value.loading = true
-    state.value.error = null
+    loading.value = true
+    error.value = null
     try {
       const response = await api.post('/auth/register', userData)
       return response.data
     } catch (err: any) {
-      state.value.error = err.response?.data?.message || 'Registration failed'
+      error.value = err.response?.data?.message || 'Registration failed'
     } finally {
-      state.value.loading = false
+      loading.value = false
     }
   }
 
   return {
-    ...state.value,
+    user,
+    token,
+    loading,
+    error,
     login,
     logout,
     register
+    // fetchUserData
   }
 })

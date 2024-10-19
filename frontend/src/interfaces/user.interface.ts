@@ -3,6 +3,7 @@ export interface TUserAuth {
   last_name: string
   email: string
   password: string
+  avatar?: string
   role: 'student' | 'admin' | 'teacher'
 }
 export interface AuthState {
