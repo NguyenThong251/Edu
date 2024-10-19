@@ -19,4 +19,13 @@ return [
     'status_required' => 'Trạng thái không được để trống.',
     'status_invalid' => 'Trạng thái không hợp lệ.',
     'parent_id_invalid' => 'ID cha không hợp lệ.',
+    'category_fetch_success' => 'Lấy danh mục thành công.',
+    'category_not_found' => 'Không tìm thấy danh mục',
+    'category_detail_success' => 'Lấy thông tin danh mục thành công.',
+    'category_create_success' => 'Danh mục đã được tạo thành công.',
+    'category_update_success' => 'Danh mục đã được cập nhật thành công.',
+    'category_soft_delete_success' => 'Danh mục đã được xóa thành công.',
+    'category_restore_success' => 'Danh mục đã được khôi phục thành công.',
+    'category_force_delete_success' => 'Danh mục đã được xóa vĩnh viễn thành công.',
+    'category_not_deleted' => 'Danh mục chưa bị xóa.',
 ];

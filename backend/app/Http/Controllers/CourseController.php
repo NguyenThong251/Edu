@@ -16,7 +16,7 @@ class CourseController extends Controller
                 ]
             ]);
     }
-
+    
     public function filterCourses(Request $request)
     {
         $category_id = $request->input('category_id');

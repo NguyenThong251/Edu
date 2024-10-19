@@ -54,12 +54,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::middleware(['role:admin'])->group(function () {
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+            Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
             Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         });
     
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
-            Route::get('profile', [AuthController::class, 'profile']);
+
         });
     
         // Routes cho student

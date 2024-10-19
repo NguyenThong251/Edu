@@ -19,4 +19,13 @@ return [
     'status_required' => 'Status is required.',
     'status_invalid' => 'Status is invalid.',
     'parent_id_invalid' => 'Parent ID is invalid.',
+    'category_fetch_success' => 'Categories retrieved successfully.',
+    'category_not_found' => 'Category not found',
+    'category_detail_success' => 'Category details retrieved successfully.',
+    'category_create_success' => 'Category created successfully.',
+    'category_update_success' => 'Category updated successfully.',
+    'category_soft_delete_success' => 'Category deleted successfully.',
+    'category_restore_success' => 'Category restored successfully.',
+    'category_force_delete_success' => 'Category permanently deleted successfully.',
+    'category_not_deleted' => 'Category has not been deleted yet.',
 ];

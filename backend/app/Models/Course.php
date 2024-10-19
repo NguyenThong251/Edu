@@ -12,13 +12,15 @@ class Course extends Model
 
     protected $fillable = [
         'category_id',
+        'user_id',
+        'level_id',
         'title',
+        'short_description',
         'description',
         'thumbnail',
         'price',
         'type_sale',
         'sale_value',
-        'is_deleted',
         'status',
     ];
 
