@@ -66,8 +66,12 @@ return [
     'update_fail' => 'Update failed.',
     'update_success' => 'Update successfully.',
 
-    // CART: add course to cart
-    'course_not_exists' => 'Course not found.',
-    'course_exists' => 'Course is already in the cart.',
-    'add_to_cart_successfully' => 'Course added to cart successfully.',
+    // CART: handle courses in cart
+    'cart_cleared' => 'All courses have been removed from the cart.',
+    'cart_empty' => 'Your cart is empty.',
+    'cart_item_not_found' => 'Cart item not found.',
+    'course_already_in_cart' => 'Course already in cart.',
+    'course_added_success' => 'Course added successfully.',
+    'course_removed_success' => 'Course removed successfully.',
+    'course_not_found_in_cart' => 'Course not in cart.',
 ];

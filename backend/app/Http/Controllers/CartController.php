@@ -5,82 +5,208 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Course;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
+// TEST: Import thêm class User
 
 class CartController extends Controller
 {
-    public function addToCart(Request $request)
+    public function getCoursesFromCart()
     {
-        // Xác thực dữ liệu đầu vào
-        $validator = Validator::make($request->all(), [
-            'course_id' => 'required|exists:courses,id',
-        ], [
-            'course_id.required' => 'Required',
-            'course_id.exists' => __('messages.course_not_exists'),
-        ]);
+        try {
+            // TEST: Lấy người dùng đã đăng nhập (hoặc mặc định là User 1 cho test)
+            $user = Auth::user() ?? User::find(1);
 
-        // Nếu xác thực thất bại
-        if ($validator->fails()) {
+            // Lấy giỏ hàng của người dùng hoặc tạo mới nếu chưa có
+            $cart = $this->getOrCreateUserCart($user);
+
+            // Lấy danh sách các cart items và khóa học
+            $courses = $cart->cartItems()->with('course:id,title')->get()->map(function ($item) {
+                return [
+                    'course_id' => $item->course->id,
+                    'course_name' => $item->course->title,
+                    'price' => $item->price
+                ];
+            });
+
+            if ($courses->isEmpty()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('messages.cart_empty')
+                ], 404);
+            }
+
             return response()->json([
-                'status' => 'fail',
-                'message' => __('messages.validation_error'),
-                'errors' => $validator->errors(),
-            ], CODE_FAIL);  // 400 Bad Request
-        }
+                'status' => 'success',
+                'courses' => $courses
+            ], 200);
+        } catch (\Exception $e) {
+            // Kiểm tra mã lỗi và trả về mã phù hợp
+            $statusCode = (is_int($e->getCode()) && $e->getCode() >= 100 && $e->getCode() < 600)
+                ? $e->getCode()
+                : 500;
 
-        // TEST
-        // Lấy người dùng hiện tại, nếu không có, dùng người dùng mặc định với id = 1
-        //$user = Auth::user() ?? User::find(1);
-
-        // Lấy người dùng hiện tại
-        $user = Auth::user();
-
-        if (!$user) {
             return response()->json([
-                'status' => 'fail',
-                'message' => __('messages.user_not_found'),
-            ], CODE_NOT_FOUND);  // 404 Not Found
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], $statusCode);
         }
+    }
 
-        // Lấy thông tin khóa học
-        $course = Course::findOrFail($request->course_id);
+    public function addCourseToCart(Request $request)
+    {
+        try {
+            // Xác thực dữ liệu đầu vào
+            $validatedData = $request->validate([
+                'course_id' => 'required|exists:courses,id',
+            ], [
+                'course_id.required' => 'DEV: The course_id is required and cannot be empty.',
+                'course_id.exists' => 'DEV: The specified course does not exist.',
+            ]);
 
-        // Tìm hoặc tạo giỏ hàng cho người dùng
-        $cart = Cart::firstOrCreate(['user_id' => $user->id]);
+            // TEST: Lấy người dùng đã đăng nhập
+            $user = Auth::user() ?? User::find(1);
 
-        // Kiểm tra lại xem giỏ hàng đã được tạo thành công chưa
-        if (!$cart || !$cart->id) {
+            // Lấy giỏ hàng của người dùng hoặc tạo mới nếu chưa có
+            $cart = $this->getOrCreateUserCart($user);
+
+            // Sử dụng transaction
+            DB::beginTransaction();
+
+            // Kiểm tra xem khóa học đã có trong giỏ hàng chưa
+            $existingCartItem = $cart->cartItems()->where('course_id', $validatedData['course_id'])->first();
+            if ($existingCartItem) {
+                throw new \Exception(__('messages.course_already_in_cart'), 400);
+            }
+
+            // Thêm khóa học vào giỏ hàng
+            $course = Course::find($validatedData['course_id']);
+            $cart->cartItems()->create([
+                'course_id' => $course->id,
+                'price' => $course->price,
+            ]);
+
+            DB::commit();
+
+            // Lấy danh sách khóa học
+            $courses = $cart->cartItems()->with('course:id,title')->get()->map(function ($item) {
+                return [
+                    'course_id' => $item->course->id,
+                    'course_name' => $item->course->title,
+                    'price' => $item->price
+                ];
+            });
+
             return response()->json([
-                'status' => 'fail',
-                'message' => 'Failed to create or retrieve cart',
-            ], CODE_BAD);  // 500 Internal Server Error
-        }
-
-        // Kiểm tra xem khóa học đã có trong giỏ hàng chưa
-        $cartItem = CartItem::where('cart_id', $cart->id)
-            ->where('course_id', $course->id)
-            ->first();
-
-        if ($cartItem) {
+                'status' => 'success',
+                'message' => __('messages.course_added_success'),
+                'courses' => $courses
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Trả về lỗi validate chi tiết cho developer
             return response()->json([
-                'status' => 'fail',
-                'message' => __('messages.course_exists'),
-            ], 409);  // 409 Conflict
+                'status' => 'error',
+                'message' => 'Validation Error',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Kiểm tra mã lỗi và trả về mã phù hợp
+            $statusCode = (is_int($e->getCode()) && $e->getCode() >= 100 && $e->getCode() < 600)
+                ? $e->getCode()
+                : 500;
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], $statusCode);
         }
+    }
 
-        // Thêm khóa học vào giỏ hàng với giá
-        CartItem::create([
-            'cart_id' => $cart->id,
-            'course_id' => $course->id,
-            'price' => $course->price,  // Thêm giá của khóa học
-        ]);
+    public function removeCourseFromCart($course_id)
+    {
+        try {
+            // TEST: Lấy người dùng đã đăng nhập
+            $user = Auth::user() ?? User::find(1);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => __('messages.add_to_cart_successfully'),
-        ], CODE_OK);
+            // Lấy giỏ hàng của người dùng hoặc tạo mới nếu chưa có
+            $cart = $this->getOrCreateUserCart($user);
+
+            // Kiểm tra xem khóa học có trong giỏ hàng không
+            $cartItem = $cart->cartItems()->where('course_id', $course_id)->first();
+
+            if (!$cartItem) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('messages.course_not_found_in_cart'),
+                ], 404);
+            }
+
+            // Xóa khóa học khỏi giỏ hàng
+            $cartItem->delete();
+
+            // Lấy danh sách các khóa học còn lại trong giỏ hàng
+            $courses = $cart->cartItems()->with('course:id,title')->get()->map(function ($item) {
+                return [
+                    'course_id' => $item->course->id,
+                    'course_name' => $item->course->title,
+                    'price' => $item->price
+                ];
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => __('messages.course_removed_success'),
+                'courses' => $courses
+            ], 200);
+        } catch (\Exception $e) {
+            // Kiểm tra mã lỗi và trả về mã phù hợp
+            $statusCode = (is_int($e->getCode()) && $e->getCode() >= 100 && $e->getCode() < 600)
+                ? $e->getCode()
+                : 500;
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], $statusCode);
+        }
+    }
+
+    public function clearCart()
+    {
+        try {
+            // TEST: Lấy người dùng đã đăng nhập
+            $user = Auth::user() ?? User::find(1);
+
+            // Lấy giỏ hàng của người dùng hoặc tạo mới nếu chưa có
+            $cart = $this->getOrCreateUserCart($user);
+
+            // Xóa tất cả các cart items trong giỏ hàng
+            $cart->cartItems()->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => __('messages.cart_cleared')
+            ], 200);
+        } catch (\Exception $e) {
+            // Kiểm tra mã lỗi và trả về mã phù hợp
+            $statusCode = (is_int($e->getCode()) && $e->getCode() >= 100 && $e->getCode() < 600)
+                ? $e->getCode()
+                : 500;
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], $statusCode);
+        }
+    }
+
+    private function getOrCreateUserCart($user)
+    {
+        // Tạo giỏ hàng nếu chưa tồn tại
+        return Cart::firstOrCreate(['user_id' => $user->id]);
     }
 }

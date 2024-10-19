@@ -69,8 +69,12 @@ return [
     'update_fail' => 'Cập nhật thành công.',
     'update_success' => 'Cập nhật thành công.',
 
-    // Course
-    'course_not_exists' => 'Khóa học không tồn tại.',
-    'course_exists' => 'Khóa học đã tồn tại trong giỏ hàng.',
-    'add_to_cart_successfully' => 'Khóa học thêm vào giỏ hàng thành công!',
+    // Cart: handle courses in cart
+    'cart_cleared' => 'Tất cả các khóa học đã được xóa khỏi giỏ hàng.',
+    'cart_empty' => 'Giỏ hàng của bạn đang trống.',
+    'cart_item_not_found' => 'Không tìm thấy mặt hàng trong giỏ hàng.',
+    'course_already_in_cart' => 'Khóa học đã có trong giỏ hàng.',
+    'course_added_success' => 'Khóa học đã được thêm thành công.',
+    'course_removed_success' => 'Khóa học đã được xóa thành công.',
+    'course_not_found_in_cart' => 'Khóa học không có trong giỏ hàng.',
 ];
