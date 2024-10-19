@@ -67,13 +67,12 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::middleware(['role:student'])->group(function () {
             // Các route dành cho student có thể thêm tại đây
             // Cart
+            Route::get('/cart/courses', [CartController::class, 'getCoursesFromCart']);
+            Route::post('/cart/courses', [CartController::class, 'addCourseToCart']);
+            Route::delete('/cart/courses/{course_id}', [CartController::class, 'removeCourseFromCart']);
+            Route::delete('/cart/courses', [CartController::class, 'clearCart']);
         });
     });
 });
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
-
-Route::get('/cart/courses', [CartController::class, 'getCoursesFromCart']);
-Route::post('/cart/courses', [CartController::class, 'addCourseToCart']);
-Route::delete('/cart/courses/{course_id}', [CartController::class, 'removeCourseFromCart']);
-Route::delete('/cart/courses', [CartController::class, 'clearCart']);
