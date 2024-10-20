@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 
 class CategoryController extends Controller
@@ -55,6 +56,7 @@ class CategoryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:100|unique:categories',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive',
             'parent_id' => 'nullable|exists:categories,id',
@@ -63,6 +65,9 @@ class CategoryController extends Controller
             'name.string' => __('messages.name_string'),
             'name.max' => __('messages.name_max'),
             'name.unique' => __('messages.name_unique'),
+            'image.image' => __('messages.thumbnail_image'), 
+            'image.mimes' => __('messages.thumbnail_mimes'),
+            'image.max' => __('messages.thumbnail_max'), 
             'description.string' => __('messages.description_string'),
             'status.required' => __('messages.status_required'),
             'status.in' => __('messages.status_invalid'),
@@ -78,10 +83,35 @@ class CategoryController extends Controller
         $category->description = $request->description;
         $category->status = $request->status;
         $category->parent_id = $request->parent_id;
+        if($request->image){
+            $category->image=$this->uploadImage($request);
+        }
         $category->created_by = auth()->id();
         $category->save();
 
         return formatResponse(STATUS_OK, $category, '', __('messages.category_create_success'));
+    }
+    public function uploadImage(Request $request)
+    {
+        // Tải lên tệp hình ảnh
+        $path = $request->file('image')->storePublicly('category-image');
+        if (!$path) {
+            return '';
+        }
+
+        // Trả về đường dẫn hình ảnh
+        $imageUrl = env('URL_IMAGE_S3') . $path;
+        return $imageUrl;
+    }
+    public function deleteImage($image)
+    {
+        $currentFilePath = str_replace(env('URL_IMAGE_S3'), '', $image);
+
+        // Kiểm tra xem tệp có tồn tại trên S3 không
+        if (Storage::disk('s3')->exists($currentFilePath)) {
+            // Xóa tệp
+            Storage::disk('s3')->delete($currentFilePath);
+        }
     }
 
     // Hiển thị một category cụ thể
@@ -112,6 +142,7 @@ class CategoryController extends Controller
                 'max:100',
                 Rule::unique('categories')->ignore($category->id) // Bỏ qua unique cho chính category hiện tại
             ],
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive',
             'parent_id' => 'nullable|exists:categories,id',
@@ -120,6 +151,9 @@ class CategoryController extends Controller
             'name.string' => __('messages.name_string'),
             'name.max' => __('messages.name_max'),
             'name.unique' => __('messages.name_unique'),
+            'image.image' => __('messages.thumbnail_image'), 
+            'image.mimes' => __('messages.thumbnail_mimes'),
+            'image.max' => __('messages.thumbnail_max'), 
             'description.string' => __('messages.description_string'),
             'status.required' => __('messages.status_required'),
             'status.in' => __('messages.status_invalid'),
@@ -135,6 +169,13 @@ class CategoryController extends Controller
         $category->name = $request->name;
         $category->description = $request->description;
         $category->status = $request->status;
+        if($request->image){
+            if($category->image){
+                $this->deleteImage($category->image);
+            }
+            $imagePath = $this->uploadImage($request);
+            $category->image=$imagePath;
+        }
         $category->parent_id = $request->parent_id;
         $category->updated_by = auth()->id(); // Thêm thông tin người cập nhật
         $category->save();

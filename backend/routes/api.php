@@ -60,7 +60,10 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
-
+            Route::post('courses', [CourseController::class, 'store'])->name('courses.store');
+            Route::post('courses/{id}', [CourseController::class, 'update'])->name('courses.update');
+            Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
+            Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
         });
     
         // Routes cho student
@@ -71,3 +74,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 });
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
+Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
+Route::get('courses/{id}', [CourseController::class, 'show'])->name('courses.show');
+Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses'])->name('courses.getPopularCourses');
+Route::get('get-new-courses', [CourseController::class, 'getNewCourses'])->name('courses.getNewCourses');
+Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourses'])->name('courses.getTopRatedCourses');
+

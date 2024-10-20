@@ -14,20 +14,22 @@ return new class extends Migration
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('category_id');
+            $table->unsignedBigInteger('level_id');
             $table->string('title', 100);
-            $table->text('description');
+            $table->text('description')->nullable();
+            $table->text('short_description')->nullable();
             $table->string('thumbnail');
             $table->double('price');
             $table->enum('type_sale', ['percent', 'price'])->default('price');
-            $table->double('sale_value');
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
+            $table->double('sale_value')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->softDeletes();
             $table->bigInteger('deleted_by')->nullable();
-            $table->boolean('is_deleted')->default(0);
             $table->timestamps();
             $table->bigInteger('created_by')->nullable();
             $table->bigInteger('updated_by')->nullable();
-            // Foreign key
+
+            $table->foreign('level_id')->references('id')->on('course_levels')->onDelete('cascade');
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
         });
     }

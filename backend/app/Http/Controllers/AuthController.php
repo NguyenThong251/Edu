@@ -21,22 +21,7 @@ use function Termwind\render;
 
 class AuthController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:api',
-            [
-                'except' => [
-                    'login',
-                    'register',
-                    'refresh',
-                    'verifyEmail',
-                    'forgotPassword',
-                    'resetPassword',
-                    'getGoogleSignInUrl',
-                    'loginGoogleCallback',
-                ]
-            ]);
-    }
+   
 
     public function register()
     {

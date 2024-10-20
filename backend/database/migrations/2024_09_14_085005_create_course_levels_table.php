@@ -13,11 +13,12 @@ return new class extends Migration {
         Schema::create('course_levels', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
-
+            $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
         });
     }
 

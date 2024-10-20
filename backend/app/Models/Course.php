@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Course extends Model
@@ -12,7 +13,6 @@ class Course extends Model
 
     protected $fillable = [
         'category_id',
-        'user_id',
         'level_id',
         'title',
         'short_description',
@@ -24,9 +24,15 @@ class Course extends Model
         'status',
     ];
 
+
     public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function level(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(CourseLevel::class);
     }
 
 
