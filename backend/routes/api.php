@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\Api\GoogleController;
 
 /*
@@ -35,6 +36,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     Route::post('verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('verify.email');
     Route::post('reset-password/{token}', [AuthController::class, 'resetPassword'])->name('reset.password');
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::get('check-token-reset-password/{token}', [AuthController::class, 'checkTokenResetPassword']);
+
     //google
     Route::post('/get-google-sign-in-url', [AuthController::class, 'getGoogleSignInUrl']);
     Route::get('/google/call-back', [AuthController::class, 'loginGoogleCallback']);
@@ -57,7 +60,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
             Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         });
-    
+
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
             Route::post('courses', [CourseController::class, 'store'])->name('courses.store');
@@ -65,10 +68,15 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
             Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
         });
-    
+
         // Routes cho student
         Route::middleware(['role:student'])->group(function () {
             // Các route dành cho student có thể thêm tại đây
+            // Cart
+            Route::get('/cart/courses', [CartController::class, 'getCoursesFromCart']);
+            Route::post('/cart/courses', [CartController::class, 'addCourseToCart']);
+            Route::delete('/cart/courses/{course_id}', [CartController::class, 'removeCourseFromCart']);
+            Route::delete('/cart/courses', [CartController::class, 'clearCart']);
         });
     });
 });

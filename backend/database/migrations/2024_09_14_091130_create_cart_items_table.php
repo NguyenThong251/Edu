@@ -11,18 +11,16 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('cart_items', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('cart_id');
             $table->unsignedBigInteger('course_id');
             $table->double('price');
-            $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
             $table->timestamps();
-
-            // Primary key
-            $table->primary(['cart_id', 'course_id']);
+            // $table->softDeletes();
+            // $table->boolean('is_deleted')->default(0);
 
             // Foreign keys
-            $table->foreign('cart_id')->references('user_id')->on('carts')->onDelete('cascade');
+            $table->foreign('cart_id')->references('id')->on('carts')->onDelete('cascade');
             $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
         });
     }
