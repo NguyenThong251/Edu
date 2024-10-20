@@ -19,7 +19,7 @@
                     </div>
                     <div class="flex  justify-center items-center gap-5">
                         <div class="border w-full flex justify-center rounded-md border-gray-900">
-                            <button class="p-2 flex items-center gap-3">
+                            <button @click="loginWithGoogle" class="px-2 py-1 flex items-center gap-3">
                                 <img class="w-8 h-1w-10" :src="Google" alt="">
                                 <span class="text-md font-medium">Đăng nhập bằng google</span>
                             </button>
@@ -46,4 +46,34 @@ import LoginForm from '@/components/auth/LoginForm.vue';
 const Banner = 'https://demo.creativeitem.com/academy-laravel/public/assets/frontend/default/image/login.gif'
 const Google = 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png'
 const Facebook = 'https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg'
+
+
+
+// GOOGLE 
+import { onMounted } from 'vue';
+import { useAuthStore } from '@/store/auth';
+import { useRoute, useRouter } from 'vue-router';
+const authStore = useAuthStore();
+const route = useRoute();
+const router = useRouter();
+// Redirect to Google sign-in URL
+const loginWithGoogle = async () => {
+    const googleUrl = await authStore.getGoogleSignInUrl('student');
+    console.log(googleUrl)
+    if (googleUrl) {
+        window.location.href = googleUrl; // Redirect to Google
+
+    }
+
+};
+
+// Handle Google callback when user is redirected back to your app
+onMounted(async () => {
+    const code = route.query.code;
+    if (code) {
+        // If there is a "code" in the query, this is the Google OAuth2 callback
+        await authStore.handleGoogleCallback(code as string);
+        router.push('/'); // Redirect to home after successful login
+    }
+});
 </script>

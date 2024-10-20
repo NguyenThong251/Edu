@@ -49,6 +49,16 @@ const user = [
         component: () => import('@/views/user/Verify.vue')
       },
       {
+        path: '/reset-pass/:token',
+        name: 'reset-pass',
+        component: () => import('@/views/user/ResetPass.vue')
+      },
+      {
+        path: '/forgot-pass',
+        name: 'forgot-pass',
+        component: () => import('@/views/user/ForgotPass.vue')
+      },
+      {
         path: '',
         component: UserDashboard,
         children: [

@@ -96,7 +96,7 @@
                 <!-- RIGHT MOBILE -->
                 <div class="xl:hidden block">
                     <div class="" v-if="state.token">
-                        <UserProfile :dataUser="state.user" />
+                        <UserProfile :dataUser="profileData" />
                     </div>
                     <div v-else class="flex items-center gap-3">
 
@@ -140,30 +140,39 @@ import logo from '../../assets/images/logo1.svg'
 import { MagnifyingGlassIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
 import Button from '@/components/ui/button/Button.vue';
 import { onMounted, ref } from 'vue'
-import type { DrawerProps } from 'element-plus';
+import { ElNotification, type DrawerProps } from 'element-plus';
 import { Bars3Icon } from "@heroicons/vue/24/outline";
 import UserProfile from './UserProfile.vue';
-// import { useAuthStore } from '@/store/auth'
-import { useUserStore } from '@/store/user'
-import { RouterLink } from 'vue-router';
+
+import { RouterLink, useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/auth';
 const direction = ref<DrawerProps['direction']>('ltr')
 const isOpenNav = ref(false)
 const toggleMenu = () => {
     isOpenNav.value = !isOpenNav.value
 }
-// const authStore = useAuthStore()
-const authStore = useUserStore()
-const { state, fetchUserData } = authStore
-
-// console.log(user)
+const router = useRouter()
+const authStore = useAuthStore()
+const { state, userData } = authStore
+const profileData = ref(null)
+const currentPath = router.currentRoute.value.fullPath
+localStorage.setItem('redirectAfterLogin', currentPath);
 onMounted(async () => {
     if (!state.user && state.token) {
-        await fetchUserData()
-        console.log(state.user)
-        // console.log(user)
+        const res = await userData()
+        if (res?.status === 'FAIL') {
+            authStore.logout()
+            router.push('/')
+            ElNotification({
+                title: 'Thất bại',
+                message: res.message || 'Bạn không có quyền truy cập',
+                type: 'error'
+            })
+        } else {
+            profileData.value = res
+        }
     }
 })
-
 
 
 </script>

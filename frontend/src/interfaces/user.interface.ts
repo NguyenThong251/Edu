@@ -9,7 +9,7 @@ export interface TUserAuth {
 export interface AuthState {
   user: TUserAuth | null
   token: string | null
-  loading: boolean
+  loading: boolean | null
   error: string | null
 }
 

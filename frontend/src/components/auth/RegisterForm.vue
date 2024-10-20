@@ -11,7 +11,7 @@
             <Input v-model="email" label="Email" type="email" placeholder="Nhập email" :errorMessages="emailError" />
             <Input v-model="password" label="Mật khẩu" type="password" placeholder="Nhập mật khẩu"
                 :errorMessages="passwordError" />
-            <Button class="w-full" variant="primary" :disabled="authStore.loading">Đăng ký</Button>
+            <Button class="w-full" variant="primary">Đăng ký</Button>
         </form>
     </div>
 </template>

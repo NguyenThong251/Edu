@@ -83,7 +83,6 @@ export function useRegister() {
     }
     try {
       const res = await authStore.register(userData)
-      console.log(res)
       if (res.status === 'FAIL') {
         if (res.error.email) {
           emailError.value = res.error.email[0]

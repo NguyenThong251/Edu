@@ -33,6 +33,7 @@ export function useLogin() {
 
     return isValid
   }
+
   watch(email, (newVal) => {
     if (newVal) emailError.value = ''
   })
@@ -40,12 +41,13 @@ export function useLogin() {
   watch(password, (newVal) => {
     if (newVal && newVal.length >= 8) passwordError.value = ''
   })
-
   const handleSubmit = async () => {
     if (!validateForm()) return
     loading.value = true
     try {
       const res = await authStore.login(email.value, password.value)
+      // console.log(res)
+      // Nếu có lỗi từ authStore thì không hiển thị thông báo thành công
       if (res.status === 'FAIL') {
         ElNotification({
           title: 'Thất bại',
@@ -59,8 +61,12 @@ export function useLogin() {
           message: res.message || 'Đăng nhập thành công',
           type: 'success'
         })
-        router.push('/')
+
+        const redirectUrl = localStorage.getItem('redirectAfterLogin') || '/'
+        localStorage.removeItem('redirectAfterLogin')
+        router.push(redirectUrl)
       }
+      // Chuyển hướng đến trang khác (ví dụ: dashboard)
     } catch (error) {
       console.error(error)
       ElNotification({
