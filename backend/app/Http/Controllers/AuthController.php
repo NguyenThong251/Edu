@@ -135,8 +135,10 @@ class AuthController extends Controller
                 if (!$token = auth('api')->login($user)) {
                     return formatResponse(STATUS_FAIL, '', '', __('messages.create_token_failed'), CODE_FAIL);
                 }
-                $refreshToken = $this->createRefreshToken();
-                return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
+                $redirectUrl = env('URL_DOMAIN') . "/google/call-back/{$token}";
+                return $redirectUrl($redirectUrl);
+//                $refreshToken = $this->createRefreshToken();
+//                return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
             }
 
             $user = User::create(
@@ -156,9 +158,11 @@ class AuthController extends Controller
             if (!$token = auth('api')->login($user)) {
                 return formatResponse(STATUS_FAIL, '', '', __('messages.create_token_failed'), CODE_FAIL);
             }
-            $refreshToken = $this->createRefreshToken();
+//            $refreshToken = $this->createRefreshToken();
             SendEmailWelcome::dispatch($user);
-            return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
+            $redirectUrl = env('URL_DOMAIN') . "/google/call-back/{$token}";
+            return $redirectUrl($redirectUrl);
+//            return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
         } catch (\Exception $exception) {
             return formatResponse(STATUS_FAIL, '', $exception, __('messages.login_google_success'), CODE_BAD);
         }
@@ -211,9 +215,9 @@ class AuthController extends Controller
     {
         $user = User::where('reset_token', $token)->first();
         if (!$user) {
-            return formatResponse(STATUS_FAIL, '', '', 'Đường dẫn đổi mật khẩu sai.',CODE_NOT_FOUND);
+            return formatResponse(STATUS_FAIL, '', '', 'Đường dẫn đổi mật khẩu sai.', CODE_NOT_FOUND);
         }
-        return formatResponse(STATUS_OK,'', '', 'Đường dẫn đổi mật khẩu đúng.');
+        return formatResponse(STATUS_OK, '', '', 'Đường dẫn đổi mật khẩu đúng.');
     }
 
     public function resetPassword($token)
