@@ -8,27 +8,21 @@ use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
-// TEST: Import thêm class User
 
 class CartController extends Controller
 {
     public function getCoursesFromCart()
     {
         try {
-            // TEST: Lấy người dùng đã đăng nhập (hoặc mặc định là User 1 cho test)
-            $user = Auth::user() ?? User::find(1);
+            // Lấy người dùng đã đăng nhập (hoặc mặc định là User 1 cho test)
+            $user = Auth::user();
 
             // Lấy giỏ hàng của người dùng hoặc tạo mới nếu chưa có
             $cart = $this->getOrCreateUserCart($user);
 
-            // Lấy danh sách các cart items và khóa học
-            $courses = $cart->cartItems()->with('course:id,title')->get()->map(function ($item) {
-                return [
-                    'course_id' => $item->course->id,
-                    'course_name' => $item->course->title,
-                    'price' => $item->price
-                ];
+            // Lấy danh sách các cart items
+            $courses = $cart->cartItems()->with('course')->get()->map(function ($item) {
+                return $item->course;
             });
 
             if ($courses->isEmpty()) {
@@ -66,8 +60,8 @@ class CartController extends Controller
                 'course_id.exists' => 'DEV: The specified course does not exist.',
             ]);
 
-            // TEST: Lấy người dùng đã đăng nhập
-            $user = Auth::user() ?? User::find(1);
+            // Lấy người dùng đã đăng nhập
+            $user = Auth::user();
 
             // Lấy giỏ hàng của người dùng hoặc tạo mới nếu chưa có
             $cart = $this->getOrCreateUserCart($user);
@@ -91,12 +85,8 @@ class CartController extends Controller
             DB::commit();
 
             // Lấy danh sách khóa học
-            $courses = $cart->cartItems()->with('course:id,title')->get()->map(function ($item) {
-                return [
-                    'course_id' => $item->course->id,
-                    'course_name' => $item->course->title,
-                    'price' => $item->price
-                ];
+            $courses = $cart->cartItems()->with('course')->get()->map(function ($item) {
+                return $item->course;
             });
 
             return response()->json([
@@ -129,8 +119,8 @@ class CartController extends Controller
     public function removeCourseFromCart($course_id)
     {
         try {
-            // TEST: Lấy người dùng đã đăng nhập
-            $user = Auth::user() ?? User::find(1);
+            // Lấy người dùng đã đăng nhập
+            $user = Auth::user();
 
             // Lấy giỏ hàng của người dùng hoặc tạo mới nếu chưa có
             $cart = $this->getOrCreateUserCart($user);
@@ -149,12 +139,8 @@ class CartController extends Controller
             $cartItem->delete();
 
             // Lấy danh sách các khóa học còn lại trong giỏ hàng
-            $courses = $cart->cartItems()->with('course:id,title')->get()->map(function ($item) {
-                return [
-                    'course_id' => $item->course->id,
-                    'course_name' => $item->course->title,
-                    'price' => $item->price
-                ];
+            $courses = $cart->cartItems()->with('course')->get()->map(function ($item) {
+                return $item->course;
             });
 
             return response()->json([
@@ -178,8 +164,8 @@ class CartController extends Controller
     public function clearCart()
     {
         try {
-            // TEST: Lấy người dùng đã đăng nhập
-            $user = Auth::user() ?? User::find(1);
+            // Lấy người dùng đã đăng nhập
+            $user = Auth::user();
 
             // Lấy giỏ hàng của người dùng hoặc tạo mới nếu chưa có
             $cart = $this->getOrCreateUserCart($user);
