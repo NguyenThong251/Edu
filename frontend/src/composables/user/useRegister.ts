@@ -71,8 +71,8 @@ export function useRegister() {
   })
 
   const handleSubmit = async () => {
-    loading.value = true
     if (!validateForm()) return
+    loading.value = true
 
     const userData: TUserAuth = {
       first_name: fname.value,

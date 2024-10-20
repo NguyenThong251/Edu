@@ -1,5 +1,5 @@
 // src/composables/useLogin.ts
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import { ElNotification } from 'element-plus'
 import { useRouter } from 'vue-router'
@@ -33,13 +33,19 @@ export function useLogin() {
 
     return isValid
   }
+  watch(email, (newVal) => {
+    if (newVal) emailError.value = ''
+  })
+
+  watch(password, (newVal) => {
+    if (newVal && newVal.length >= 8) passwordError.value = ''
+  })
+
   const handleSubmit = async () => {
     if (!validateForm()) return
     loading.value = true
     try {
       const res = await authStore.login(email.value, password.value)
-      console.log(res)
-      // Nếu có lỗi từ authStore thì không hiển thị thông báo thành công
       if (res.status === 'FAIL') {
         ElNotification({
           title: 'Thất bại',
@@ -55,7 +61,6 @@ export function useLogin() {
         })
         router.push('/')
       }
-      // Chuyển hướng đến trang khác (ví dụ: dashboard)
     } catch (error) {
       console.error(error)
       ElNotification({

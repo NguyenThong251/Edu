@@ -78,8 +78,8 @@
 
                         <!-- NO USER -->
                         <div class="">
-                            <div class="" v-if="token">
-                                <UserProfile :dataUser="user" />
+                            <div class="" v-if="state.token">
+                                <UserProfile :dataUser="state.user" />
                             </div>
                             <div v-else class="flex gap-5">
                                 <Button variant="default">
@@ -95,8 +95,8 @@
                 </div>
                 <!-- RIGHT MOBILE -->
                 <div class="xl:hidden block">
-                    <div class="" v-if="token">
-                        <UserProfile :dataUser="user" />
+                    <div class="" v-if="state.token">
+                        <UserProfile :dataUser="state.user" />
                     </div>
                     <div v-else class="flex items-center gap-3">
 
