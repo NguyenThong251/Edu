@@ -17,7 +17,7 @@ class CategoryController extends Controller
         $perPage = $request->get('per_page', 10); 
 
         // Lấy tất cả các danh mục cùng với danh mục con
-        $categories = Category::with('children')->get();
+        $categories = Category::with('children')->withCount('courses')->get();
         $childCategoryIds = collect();
 
         // Thu thập các id của các danh mục con
@@ -117,7 +117,7 @@ class CategoryController extends Controller
     // Hiển thị một category cụ thể
     public function show($id)
     {
-        $category = Category::with('children')->find($id);
+        $category = Category::with('children')->withCount('courses')->find($id);
         if (!$category) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.category_not_found'));
         }
@@ -237,7 +237,9 @@ class CategoryController extends Controller
         if (!$category) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.category_not_found'));
         }
-
+        if($category->image){
+            $this->deleteImage($category->image);
+        }
         // Xóa vĩnh viễn
         $category->forceDelete();
 
