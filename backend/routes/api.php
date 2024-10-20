@@ -36,6 +36,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     Route::post('verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('verify.email');
     Route::post('reset-password/{token}', [AuthController::class, 'resetPassword'])->name('reset.password');
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::get('check-token-reset-password/{token}', [AuthController::class, 'checkTokenResetPassword']);
+
     //google
     Route::post('/get-google-sign-in-url', [AuthController::class, 'getGoogleSignInUrl']);
     Route::get('/google/call-back', [AuthController::class, 'loginGoogleCallback']);

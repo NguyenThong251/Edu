@@ -23,11 +23,11 @@ class ChangePassword extends Mailable
 
     public function build()
     {
-        $verificationUrl = config('app.url') . '/api/auth/reset-password/' . $this->user->reset_token;
+        $verificationUrl = env('URL_DOMAIN') . '/user/reset-password/' . $this->user->reset_token;
         return $this->subject('Thay đổi mật khẩu mới')
             ->view('emails.reset_password')
             ->with([
-                'username' => $this->user->username,
+                'username' => $this->user->first_name . ' ' . $this->user->last_name,
                 'verificationUrl' => $verificationUrl,
             ]);
     }

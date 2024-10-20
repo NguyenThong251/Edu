@@ -35,6 +35,7 @@ class AuthController extends Controller
                     'getGoogleSignInUrl',
                     'loginGoogleCallback',
                     'updateProfile',
+                    'checkTokenResetPassword'
                 ]
             ]);
     }
@@ -204,6 +205,15 @@ class AuthController extends Controller
         }
         SendEmailForgotPassword::dispatch($user);
         return formatResponse(STATUS_OK, '', '', __('messages.email_send_ok'), CODE_OK);
+    }
+
+    public function checkTokenResetPassword($token)
+    {
+        $user = User::where('reset_token', $token)->first();
+        if (!$user) {
+            return formatResponse(STATUS_FAIL, '', '', 'Đường dẫn đổi mật khẩu sai.',CODE_NOT_FOUND);
+        }
+        return formatResponse(STATUS_OK,'', '', 'Đường dẫn đổi mật khẩu đúng.');
     }
 
     public function resetPassword($token)
