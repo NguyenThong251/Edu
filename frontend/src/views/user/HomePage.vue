@@ -136,10 +136,16 @@ import UserHero2 from '@/components/user/UserHero2.vue';
 import UserNewsLetter from '@/components/user/UserNewsLetter.vue';
 import { useI18n } from 'vue-i18n';
 import api from '@/services/axiosConfig';
+import { useHome } from '@/composables/user/useHome';
+import { onMounted } from 'vue';
 const { locale } = useI18n();
 // const changeLanguage = (event: Event) => {
 //     const selectedLanguage = (event.target as HTMLSelectElement).value;
 //     locale.value = selectedLanguage;
 // };
+const { categories, fetchCate } = useHome()
+onMounted(() => {
+    fetchCate();
+});
 
 </script>

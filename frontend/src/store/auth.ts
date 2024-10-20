@@ -87,17 +87,30 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const handleGoogleCallback = async (code: string) => {
+  // const handleGoogleCallback = async (code: string) => {
+  //   state.value.loading = true
+  //   state.value.error = null
+  //   try {
+  //     const response = await api.get(`/auth/google/call-back?code=${code}`)
+  //     state.value.token = response.data.access_token
+  //     state.value.user = response.data.user
+  //     Cookies.set('token_user_edu', response.data.access_token, { expires: 7 }) // Save token
+  //     return response.data
+  //   } catch (err: any) {
+  //     state.value.error = err.response?.data?.message || 'Google login failed'
+  //   } finally {
+  //     state.value.loading = false
+  //   }
+  // }
+  const handleGoogleCallback = async (jwtToken: string) => {
     state.value.loading = true
-    state.value.error = null
     try {
-      const response = await api.get(`/auth/google/call-back?code=${code}`)
-      state.value.token = response.data.access_token
-      state.value.user = response.data.user
-      Cookies.set('token_user_edu', response.data.access_token, { expires: 7 }) // Save token
-      return response.data
-    } catch (err: any) {
-      state.value.error = err.response?.data?.message || 'Google login failed'
+      Cookies.set('token_user_edu', jwtToken, { expires: 7 })
+      state.value.token = jwtToken
+      return true
+    } catch (error) {
+      console.error('Error handling Google callback:', error)
+      return false
     } finally {
       state.value.loading = false
     }

@@ -54,6 +54,11 @@ const user = [
         component: () => import('@/views/user/ResetPass.vue')
       },
       {
+        path: '/google/call-back/:jwtToken',
+        name: 'google-call-back',
+        component: () => import('@/views/GoogleCallback.vue')
+      },
+      {
         path: '/forgot-pass',
         name: 'forgot-pass',
         component: () => import('@/views/user/ForgotPass.vue')
