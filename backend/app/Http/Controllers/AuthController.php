@@ -136,7 +136,7 @@ class AuthController extends Controller
                     return formatResponse(STATUS_FAIL, '', '', __('messages.create_token_failed'), CODE_FAIL);
                 }
                 $redirectUrl = env('URL_DOMAIN') . "/google/call-back/{$token}";
-                return $redirectUrl($redirectUrl);
+                return redirect($redirectUrl);
 //                $refreshToken = $this->createRefreshToken();
 //                return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
             }
@@ -161,7 +161,7 @@ class AuthController extends Controller
 //            $refreshToken = $this->createRefreshToken();
             SendEmailWelcome::dispatch($user);
             $redirectUrl = env('URL_DOMAIN') . "/google/call-back/{$token}";
-            return $redirectUrl($redirectUrl);
+            return redirect($redirectUrl);
 //            return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
         } catch (\Exception $exception) {
             return formatResponse(STATUS_FAIL, '', $exception, __('messages.login_google_success'), CODE_BAD);
