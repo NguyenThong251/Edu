@@ -7,6 +7,7 @@ export interface User {
   role: 'user' | 'admin' | 'teacher'
   createdAt: Date
 }
+
 export interface AuthState {
   user: User | null
   token: string | null

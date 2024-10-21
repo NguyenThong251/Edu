@@ -10,4 +10,10 @@
     .animation{
         @apply hover:transition-all transition-all hover:duration-300 duration-300
     }
+    .container-admin{
+        @apply relative flex dark:bg-dark-bg-primary overflow-hidden bg-bg-primary before:absolute before:w-[155px] before:h-screen before:bg-gradient-to-l before:from-bg-primary before:to-bg-linear  dark:before:from-dark-bg-primary dark:before:to-dark-bg-linear before:p-3
+    }
+    .main-admin{
+        @apply rounded-l-[16px]  bg-bg-primary dark:bg-primary-sidebar w-full shadow-main-content z-10
+    }
 }
