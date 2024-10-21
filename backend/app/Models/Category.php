@@ -13,10 +13,16 @@ class Category extends Model
 
     protected $fillable = [
         'name',
+        'image',
         'description',
         'status',
         'parent_id',
-        'is_deleted',
+        'created_by',
+        'updated_by',
+        'deleted_by',
+        'created_at',
+        'updated_at',
+        'deleted_at',
     ];
 
     // Định nghĩa mối quan hệ đệ quy

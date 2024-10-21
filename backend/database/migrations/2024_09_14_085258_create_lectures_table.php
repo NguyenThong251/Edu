@@ -13,15 +13,17 @@ return new class extends Migration {
         Schema::create('lectures', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('section_id');
+            $table->enum('type', ['video', 'file'])->default('video');
             $table->string('title', 255);
-            $table->text('content');
-            $table->string('link_url')->nullable();
+            $table->string('content_link');
+            $table->integer('duration');
+            $table->enum('preview', ['can', 'cant'])->default('cant');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
-
+            $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
-
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
             // Foreign key
             $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
         });

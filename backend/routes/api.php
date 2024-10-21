@@ -57,12 +57,20 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::middleware(['role:admin'])->group(function () {
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+            Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
             Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         });
 
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
+<<<<<<< HEAD
             // Route::get('profile', [AuthController::class, 'profile']);
+=======
+            Route::post('courses', [CourseController::class, 'store'])->name('courses.store');
+            Route::post('courses/{id}', [CourseController::class, 'update'])->name('courses.update');
+            Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
+            Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
+>>>>>>> d3add63f92dee764a4593a0e8ddcaf33ff43f4bb
         });
 
         // Routes cho student
@@ -78,3 +86,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 });
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
+Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
+Route::get('courses/{id}', [CourseController::class, 'show'])->name('courses.show');
+Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses'])->name('courses.getPopularCourses');
+Route::get('get-new-courses', [CourseController::class, 'getNewCourses'])->name('courses.getNewCourses');
+Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourses'])->name('courses.getTopRatedCourses');
+
