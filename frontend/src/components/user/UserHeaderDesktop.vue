@@ -12,40 +12,17 @@
                 <div class="flex items-center gap-5">
 
                     <!-- LOGO -->
-                    <img class="w-32" :src="logo" alt="">
+                    <RouterLink to="/">
+
+                        <img class="w-32" :src="logo" alt="">
+                    </RouterLink>
                     <!-- NAVBAR -->
                     <nav class="hidden lg:block">
                         <!-- <el-text text @click="drawer = true" class="cursor-pointer animation hover:text-indigo-600">Thể
                             loại</el-text> -->
                         <!-- <div class="cursor-pointer animation hover:text-indigo-600">Thể
                             loại</div> -->
-                        <el-menu class="text" mode="horizontal" :ellipsis="false">
-                            <!-- Workspace Menu -->
-                            <el-sub-menu class="" index="2">
-                                <!-- Just display the text 'Workspace' -->
-                                <template #title>
-                                    <p class="">Thể loại</p>
-                                    <!-- <span
-                                        class="hover:text-indigo-600 text-gray-700">Workspace</span> -->
-                                </template>
-
-                                <el-menu-item index="2-1">item
-                                    one</el-menu-item>
-                                <el-menu-item index="2-2">item two</el-menu-item>
-                                <el-menu-item index="2-3">item three</el-menu-item>
-                                <el-sub-menu index="2-4">
-                                    <template #title>item four</template>
-                                    <el-menu-item index="2-4-1">item one</el-menu-item>
-                                    <el-menu-item index="2-4-2">item two</el-menu-item>
-                                    <el-sub-menu index="2-4-4">
-                                        <template #title>item four</template>
-                                        <el-menu-item index="2-4-4-1">item one</el-menu-item>
-                                        <el-menu-item index="2-4-4-2">item two</el-menu-item>
-                                        <el-menu-item index="2-4-4-3">item three</el-menu-item>
-                                    </el-sub-menu>
-                                </el-sub-menu>
-                            </el-sub-menu>
-                        </el-menu>
+                        <MenuDesktop />
 
                     </nav>
                     <!-- SEARCH -->
@@ -96,7 +73,7 @@
                 <!-- RIGHT MOBILE -->
                 <div class="xl:hidden block">
                     <div class="" v-if="state.token">
-                        <UserProfile :dataUser="profileData" />
+                        <UserProfile :dataUser="state.user" />
                     </div>
                     <div v-else class="flex items-center gap-3">
 
@@ -146,6 +123,7 @@ import UserProfile from './UserProfile.vue';
 
 import { RouterLink, useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
+import MenuDesktop from '../ui/menu/MenuDesktop.vue';
 const direction = ref<DrawerProps['direction']>('ltr')
 const isOpenNav = ref(false)
 const toggleMenu = () => {
@@ -176,8 +154,3 @@ onMounted(async () => {
 
 
 </script>
-<style scoped>
-.el-menu--horizontal.el-menu {
-    border: none;
-}
-</style>

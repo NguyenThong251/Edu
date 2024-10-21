@@ -19,10 +19,10 @@
                 <h3 class="text-3xl font-medium">Khám phá các khóa học hàng đầu</h3>
             </div>
             <div class="grid  md:grid-cols-2 lg:grid-cols-3 gap-5 mt-10">
-                <CardCategory
-                    image="https://demo.creativeitem.com/academy-laravel/public/uploads/category-logo/web-development-logo-1718273508.png"
-                    name="Phát triển Web" :countCourse="10" />
-                <CardCategory
+                <CardCategory v-for="category in categories" :key="category.id" :name="category.name"
+                    :image="category.image || 'https://demo.creativeitem.com/academy-laravel/public/uploads/category-logo/web-development-logo-1718273508.png'"
+                    :countCourse="10" />
+                <!-- <CardCategory
                     image="https://demo.creativeitem.com/academy-laravel/public/uploads/category-logo/graphic-design-logo-1718524053.png"
                     name="Thiết kế đồ họa" :countCourse="10" />
                 <CardCategory
@@ -36,7 +36,7 @@
                     name="Âm nhạc" :countCourse="10" />
                 <CardCategory
                     image="https://demo.creativeitem.com/academy-laravel/public/uploads/category-logo/web-development-logo-1718273508.png"
-                    name="Phát triển Web" :countCourse="10" />
+                    name="Phát triển Web" :countCourse="10" /> -->
 
             </div>
         </section>
@@ -88,12 +88,17 @@
                 </div>
 
                 <div class="mt-5 gap-5 grid xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2">
-                    <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
+                    <!-- <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
                         lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training" lessons="12"
                         level="Mới bắt đầu" price="999.000" oldPrice="299.000" status="Bán chạy" />
                     <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
                         lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training" lessons="12"
-                        level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
+                        level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" /> -->
+                    <CardCourse v-for="course in activeCourses" :key="course.id" :id="course.id" :title="course.title"
+                        :thumbnail="course.thumbnail" lecture="Nguyễn Hoàng Thông" tag="Bán chạy" :lessons="12"
+                        level="Mới bắt đầu" :price="course.price" :sale_value="course.sale_value"
+                        :type_sale="course.type_sale"
+                        :oldPrice="course.sale_value ? course.price - course.sale_value : null" />
                 </div>
             </div>
 
@@ -104,12 +109,12 @@
                     Khóa học hàng đầu
                 </h3>
                 <div class="mt-5 gap-5 grid xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2">
-                    <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
+                    <!-- <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
                         lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training" lessons="12"
                         level="Mới bắt đầu" price="999.000" oldPrice="299.000" status="Bán chạy" />
                     <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
                         lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training" lessons="12"
-                        level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
+                        level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" /> -->
                 </div>
             </div>
         </section>
@@ -118,9 +123,10 @@
     <div class="mt-16">
         <UserHero2 />
     </div>
-    <div class="mt-16">
+    <div class="my-16">
         <UserNewsLetter />
     </div>
+
 
 
 </template>
@@ -143,9 +149,9 @@ const { locale } = useI18n();
 //     const selectedLanguage = (event.target as HTMLSelectElement).value;
 //     locale.value = selectedLanguage;
 // };
-const { categories, fetchCate } = useHome()
+const { categories, activeCourses, fetchCate, fetchCourse } = useHome()
 onMounted(() => {
     fetchCate();
+    fetchCourse()
 });
-
 </script>

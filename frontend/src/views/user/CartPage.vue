@@ -6,11 +6,16 @@
             <div class="flex md:flex-row flex-col gap-5">
                 <!-- COURSE ITEM -->
                 <div class="flex flex-col md:w-4/6 w-full gap-5">
-                    <CardCourseCart image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
+                    <!-- <CardCourseCart image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
                         lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training" lessons="12"
                         level="Mới bắt đầu" price="999.000" oldPrice="1.000.000" status="Mới" :review=12.1123
-                        :rate=4.8 />
+                        :rate=4.8 /> -->
+                    <div v-for="course in dataCart" :key="course.id">
+                        <div>{{ course.title }} - {{ course.price }} VNĐ</div>
+                        <button @click="removeCourseFromCart(course.id)">Xóa khóa học</button>
+                    </div>
 
+                    <button @click="clearCart">xoóa item</button>
                 </div>
                 <!-- TOTAL -->
                 <div class="md:w-2/6 w-full">
@@ -41,6 +46,19 @@
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
 import CardCourseCart from '@/components/ui/card/CardCourseCart.vue';
-
-
+import { useCartStore } from '@/store/cart';
+import { computed, onMounted, ref } from 'vue';
+const cartStore = useCartStore()
+const { cart, fetchCartCourses, removeCourseFromCart, clearCart } = cartStore
+const dataCart = ref([])
+onMounted(async () => {
+    const courses = await fetchCartCourses()
+    if (courses) {
+        dataCart.value = courses
+    }
+    console.log(dataCart)
+})
+const formattedTotalPrice = computed(() => {
+    return dataCart.value.reduce((total, course) => total + course.price, 0).toLocaleString()
+})
 </script>

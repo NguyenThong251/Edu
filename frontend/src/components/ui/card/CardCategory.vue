@@ -10,11 +10,11 @@
 
 <script lang="ts" setup>
 
-import type { Category } from '@/interfaces';
+import type { TCategory } from '@/interfaces/category.interface';
 import { defineProps } from 'vue';
 
 
-defineProps<Category>()
+defineProps<TCategory>()
 
 
 </script>

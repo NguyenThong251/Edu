@@ -1,15 +1,18 @@
-export interface CardCourse {
-  // id: string
-  image: string
+export interface TCardCourse {
+  id: number
+  thumbnail: string
   lecture: string
-  name: string
-  lessons: number | string
+  title: string
+  lessons: number
   level: 'Mới bắt đầu' | 'Nâng cao' | 'Đánh giá cao nhất'
-  price: string
-  oldPrice: string
-  review?: string | number
-  rate?: number
-  status: 'Bán chạy' | 'Mới'
+  price: number
+  oldPrice: number | null
+  // review?: string | number
+  // rate?: number
+  sale_value?: number
+  tag: 'Bán chạy' | 'Mới'
+  type_sale?: 'percent' | 'price'
+  status?: 'active' | 'inactive'
 }
 
 export interface CardMyCourse {
