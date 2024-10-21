@@ -100,6 +100,10 @@ return [
     'no_new_courses' => 'There are no new courses.',
     'top_rated_courses_found' => 'Top-rated courses retrieved successfully.',
     'no_top_rated_courses' => 'There are no top-rated courses.',
+    'tag_new' => 'New',
+    'tag_top_rated' => 'Top Rated',
+    'tag_popular' => 'Popular',
+    'tag_favorite' => 'Favorite',
 
     'error_save' => 'Save failed.',
     'successful_save' => 'Save successfully.',

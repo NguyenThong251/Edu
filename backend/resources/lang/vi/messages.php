@@ -101,6 +101,10 @@ return [
     'new_courses_found' => 'Đã lấy thành công các khóa học mới.',
     'top_rated_courses_found' => 'Đã lấy thành công các khóa học hàng đầu.',
     'no_top_rated_courses' => 'Không có khóa học nào được đánh giá cao.',
+    'tag_new' => 'Mới nhất',
+    'tag_top_rated' => 'Đánh giá cao',
+    'tag_popular' => 'Phổ biến nhất',
+    'tag_favorite' => 'Yêu thích nhất',
 
     'error_save' => 'Lưu không thành công.',
     'successful_save' => 'Lưu thành công.',

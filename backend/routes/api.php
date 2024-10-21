@@ -82,9 +82,11 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 });
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
-Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
-Route::get('courses/{id}', [CourseController::class, 'show'])->name('courses.show');
+Route::get('courses', [CourseController::class, 'search'])->name('courses.search');
+Route::get('courses/{id}', [CourseController::class, 'detail'])->name('courses.detail');
 Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses'])->name('courses.getPopularCourses');
 Route::get('get-new-courses', [CourseController::class, 'getNewCourses'])->name('courses.getNewCourses');
 Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourses'])->name('courses.getTopRatedCourses');
+Route::get('get-favorite-courses', [CourseController::class, 'getFavoriteCourses'])->name('courses.getFavoriteCourses');
+
 

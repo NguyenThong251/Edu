@@ -22,7 +22,7 @@ class Section extends Model
 
     public function lectures()
     {
-        return $this->hasMany(Lecture::class);
+        return $this->hasMany(Lecture::class, 'section_id');
     }
 
 
