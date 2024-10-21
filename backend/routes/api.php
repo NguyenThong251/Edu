@@ -62,7 +62,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
-            Route::get('profile', [AuthController::class, 'profile']);
+            // Route::get('profile', [AuthController::class, 'profile']);
         });
 
         // Routes cho student
