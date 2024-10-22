@@ -4,7 +4,9 @@ import api from '@/services/axiosConfig'
 import Cookies from 'js-cookie'
 
 export const useCartStore = defineStore('cart', () => {
-  const cart = ref<number[]>([])
+  // const cart = ref<number[]>([])
+  const cart = ref<any[]>([])
+  const loading = ref(false)
   const token = Cookies.get('token_user_edu')
 
   const isAuthenticated = computed(() => !!token)
@@ -21,68 +23,85 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   const addCourseToCart = async (courseId: number) => {
-    if (isAuthenticated.value) {
-      try {
+    loading.value = true
+    try {
+      if (isAuthenticated.value) {
         // Add course to user’s cart via API
-        const response = await api.post('/auth/cart/courses', { course_id: courseId })
+        await api.post('/auth/cart/courses', { course_id: courseId })
+        await fetchCartCourses()
+      } else {
+        // If user is not authenticated, store in localStorage
         cart.value.push(courseId)
-      } catch (error) {
-        console.error('Error adding course to cart:', error)
+        saveCartToLocalStorage()
+        loading.value = false
       }
-    } else {
-      // If user is not authenticated, store in localStorage
-      cart.value.push(courseId)
-      saveCartToLocalStorage()
+    } catch (error) {
+      console.error('Error adding course to cart:', error)
+    } finally {
+      loading.value = false
     }
   }
 
   const fetchCartCourses = async () => {
-    if (isAuthenticated.value) {
-      try {
+    loading.value = true
+    try {
+      if (isAuthenticated.value) {
         const response = await api.get('/auth/cart/courses')
-        // cart.value = response.data.courses
-        return response.data.courses
-      } catch (error) {
-        console.error('Error fetching cart courses:', error)
+        cart.value = await response.data.courses
+      } else {
+        // Load from localStorage if not authenticated
+        loadCartFromLocalStorage()
+        return cart.value // Return the loaded cart data
       }
-    } else {
-      // Load from localStorage if not authenticated
-      loadCartFromLocalStorage()
+    } catch (error) {
+      console.error('Error fetching cart courses:', error)
+    } finally {
+      loading.value = false
     }
   }
 
   const removeCourseFromCart = async (courseId: number) => {
-    if (isAuthenticated.value) {
-      try {
+    loading.value = true
+    try {
+      if (isAuthenticated.value) {
         // Remove course from user's cart via API
         await api.delete(`/auth/cart/courses/${courseId}`)
+        await fetchCartCourses()
+      } else {
+        // If user is not authenticated, remove from localStorage
         cart.value = cart.value.filter((id) => id !== courseId)
-      } catch (error) {
-        console.error('Error removing course from cart:', error)
+        saveCartToLocalStorage()
+        loading.value = false
       }
-    } else {
-      // If user is not authenticated, remove from localStorage
-      cart.value = cart.value.filter((id) => id !== courseId)
-      saveCartToLocalStorage()
+    } catch (error) {
+      console.error('Error removing course from cart:', error)
+    } finally {
+      loading.value = false
     }
   }
   const clearCart = async () => {
-    if (isAuthenticated.value) {
-      try {
+    loading.value = true
+    try {
+      if (isAuthenticated.value) {
         // Clear the cart for the authenticated user via API
         await api.delete('/auth/cart/courses')
+        await fetchCartCourses()
         cart.value = []
-      } catch (error) {
-        console.error('Error clearing cart:', error)
+      } else {
+        // Clear the cart in localStorage if not authenticated
+        cart.value = []
+        saveCartToLocalStorage()
+        loading.value = false
       }
-    } else {
-      // Clear the cart in localStorage if not authenticated
-      cart.value = []
-      saveCartToLocalStorage()
+    } catch (error) {
+      console.error('Error clearing cart:', error)
+    } finally {
+      loading.value = false
     }
   }
   return {
     cart,
+    loading,
     addCourseToCart,
     fetchCartCourses,
     removeCourseFromCart,
