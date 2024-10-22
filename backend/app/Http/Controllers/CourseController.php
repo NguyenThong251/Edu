@@ -29,9 +29,9 @@ class CourseController extends Controller
     {
         // Lấy các tham số lọc từ request
 
-        $category_id = $request->input('category_id');
+        $category_ids = $request->input('category_ids');
         $level_id = $request->input('level_id');
-        $title = $request->input('title');
+        $keyword = $request->input('keyword');
         // $min_price = $request->input('min_price');
         // $max_price = $request->input('max_price');
         $status = $request->input('status');
@@ -65,10 +65,9 @@ class CourseController extends Controller
             ->withCount('reviews')
             ->withAvg('reviews', 'rating');
         // // Áp dụng các bộ lọc
-        if ($category_id) {
+        if ($category_ids) {
             // Chia nhỏ danh sách category_id thành mảng
-            $categoryIds = array_map('intval', explode(',', $category_id));
-            
+            $categoryIds = array_map('intval', explode(',', $category_ids));
             // Mảng để lưu tất cả category ID bao gồm cả ID con
             $allCategoryIds = [];
         
@@ -97,9 +96,16 @@ class CourseController extends Controller
             $query->where('level_id', $level_id); // Thêm điều kiện lọc theo level_id
         }
         // Áp dụng các bộ lọc khác
-        if ($title) {
-            $query->where('title', 'like', '%' . $title . '%');
+        if ($keyword) {
+            $query->where(function($q) use ($keyword) {
+                $q->where('title', 'like', '%' . $keyword . '%')
+                  ->orWhere(function($subQuery) use ($keyword) {
+                      $subQuery->whereRaw("CONCAT(users.last_name, ' ', users.first_name) LIKE ?", ['%' . $keyword . '%']);
+                  });
+            })
+            ->join('users', 'users.id', '=', 'created_by'); // Join with users table
         }
+        
         // if ($min_price) {
         //     $query->where('price', '>=', $min_price);
         // }
@@ -495,6 +501,33 @@ class CourseController extends Controller
     {
         // Kiểm tra xem có giới hạn không, nếu không, mặc định là 10
         $limit = $request->limit ?? 10;
+        $category_ids = $request->input('category_ids');
+        $allCategoryIds = [];
+        if ($category_ids) {
+            // Chia nhỏ danh sách category_id thành mảng
+            $categoryIds = array_map('intval', explode(',', $category_ids));
+            // Mảng để lưu tất cả category ID bao gồm cả ID con
+            
+
+            // Hàm đệ quy để lấy tất cả ID của các danh mục con
+            function getAllChildCategoryIds($categoryId, &$allIds) {
+                $category = Category::find($categoryId);
+                if ($category) {
+                    $allIds[] = $categoryId; // Thêm ID của danh mục hiện tại vào mảng
+                    $childrenIds = $category->children()->pluck('id')->toArray(); // Lấy ID của các danh mục con
+                    
+                    foreach ($childrenIds as $childId) {
+                        getAllChildCategoryIds($childId, $allIds); // Gọi đệ quy cho các danh mục con
+                    }
+                }
+            }
+
+            // Lặp qua các category ID và thêm ID của các danh mục con
+            foreach ($categoryIds as $id) {
+                getAllChildCategoryIds($id, $allCategoryIds);
+            }
+            $allCategoryIds = array_unique($allCategoryIds); // Loại bỏ các ID trùng
+        }
 
         // Lấy các khóa học được mua nhiều nhất từ bảng order_items
         $popularCourses = OrderItem::select('course_id', DB::raw('COUNT(*) as purchase_count'))
@@ -511,10 +544,14 @@ class CourseController extends Controller
         // Lấy chi tiết các khóa học cùng với category và level dựa trên course_id đã gom nhóm
         $courses = Course::with('category', 'level')
             ->whereIn('id', $popularCourses->pluck('course_id'))
+            ->when($allCategoryIds, function($query) use ($allCategoryIds) {
+                return $query->whereIn('category_id', $allCategoryIds);
+            })
             ->get();
 
         return formatResponse(STATUS_OK, $this->transform($courses, __('messages.tag_popular')), '', __('messages.popular_courses_found'));
     }
+
     public function transform($courses, $tag)
     {
         return $courses->map(function ($course) use ($tag) {
@@ -558,10 +595,40 @@ class CourseController extends Controller
     public function getNewCourses(Request $request)
     {
         // Kiểm tra xem có giới hạn không, nếu không, mặc định là 10
+        $category_ids = $request->input('category_ids');
+        $allCategoryIds = [];
+        if ($category_ids) {
+            // Chia nhỏ danh sách category_id thành mảng
+            $categoryIds = array_map('intval', explode(',', $category_ids));
+            // Mảng để lưu tất cả category ID bao gồm cả ID con
+
+            // Hàm đệ quy để lấy tất cả ID của các danh mục con
+            function getAllChildCategoryIds($categoryId, &$allIds) {
+                $category = Category::find($categoryId);
+                if ($category) {
+                    $allIds[] = $categoryId; // Thêm ID của danh mục hiện tại vào mảng
+                    $childrenIds = $category->children()->pluck('id')->toArray(); // Lấy ID của các danh mục con
+                    
+                    foreach ($childrenIds as $childId) {
+                        getAllChildCategoryIds($childId, $allIds); // Gọi đệ quy cho các danh mục con
+                    }
+                }
+            }
+
+            // Lặp qua các category ID và thêm ID của các danh mục con
+            foreach ($categoryIds as $id) {
+                getAllChildCategoryIds($id, $allCategoryIds);
+            }
+            $allCategoryIds = array_unique($allCategoryIds); // Loại bỏ các ID trùng
+        }
+
         $limit = $request->limit ?? 10;
 
-        // Lấy các khóa học mới nhất theo ngày tạo
+        // Lấy các khóa học mới nhất theo ngày tạo và lọc theo category_ids
         $courses = Course::with('category', 'level')
+            ->when($allCategoryIds, function($query) use ($allCategoryIds) {
+                return $query->whereIn('category_id', $allCategoryIds);
+            })
             ->orderBy('created_at', 'desc') // Sắp xếp theo ngày tạo giảm dần
             ->limit($limit)
             ->get();
@@ -573,16 +640,46 @@ class CourseController extends Controller
 
         return formatResponse(STATUS_OK, $this->transform($courses, __('messages.tag_new')), '', __('messages.new_courses_found'));
     }
+
     public function getTopRatedCourses(Request $request)
     {
         // Kiểm tra xem có giới hạn không, nếu không, mặc định là 10
         $limit = $request->limit ?? 10;
+        $category_ids = $request->input('category_ids');
+        $allCategoryIds = [];
+        if ($category_ids) {
+            // Chia nhỏ danh sách category_id thành mảng
+            $categoryIds = array_map('intval', explode(',', $category_ids));
+            // Mảng để lưu tất cả category ID bao gồm cả ID con
+
+            // Hàm đệ quy để lấy tất cả ID của các danh mục con
+            function getAllChildCategoryIds($categoryId, &$allIds) {
+                $category = Category::find($categoryId);
+                if ($category) {
+                    $allIds[] = $categoryId; // Thêm ID của danh mục hiện tại vào mảng
+                    $childrenIds = $category->children()->pluck('id')->toArray(); // Lấy ID của các danh mục con
+                    
+                    foreach ($childrenIds as $childId) {
+                        getAllChildCategoryIds($childId, $allIds); // Gọi đệ quy cho các danh mục con
+                    }
+                }
+            }
+
+            // Lặp qua các category ID và thêm ID của các danh mục con
+            foreach ($categoryIds as $id) {
+                getAllChildCategoryIds($id, $allCategoryIds);
+            }
+            $allCategoryIds = array_unique($allCategoryIds); // Loại bỏ các ID trùng
+        }
 
         // Lấy các khóa học hàng đầu theo rating trung bình
         $courses = Course::select('courses.*', 
             DB::raw('AVG(reviews.rating) as average_rating'),
             DB::raw('COUNT(reviews.id) as review_count'))
         ->leftJoin('reviews', 'courses.id', '=', 'reviews.course_id')
+        ->when($allCategoryIds, function($query) use ($allCategoryIds) {
+            return $query->whereIn('courses.category_id', $allCategoryIds);
+        })
         ->groupBy('courses.id')
         ->orderByRaw('AVG(reviews.rating) DESC')
         ->limit($limit)
@@ -597,27 +694,58 @@ class CourseController extends Controller
         return formatResponse(STATUS_OK, $this->transform($courses, __('messages.tag_top_rated')), '', __('messages.top_rated_courses_found'));
     }
 
+
     public function getFavoriteCourses(Request $request)
     {
         // Kiểm tra xem có giới hạn không, nếu không, mặc định là 10
         $limit = $request->limit ?? 10;
-    
+        $category_ids = $request->input('category_ids');
+        $allCategoryIds = [];
+        if ($category_ids) {
+            // Chia nhỏ danh sách category_id thành mảng
+            $categoryIds = array_map('intval', explode(',', $category_ids));
+            // Mảng để lưu tất cả category ID bao gồm cả ID con
+
+            // Hàm đệ quy để lấy tất cả ID của các danh mục con
+            function getAllChildCategoryIds($categoryId, &$allIds) {
+                $category = Category::find($categoryId);
+                if ($category) {
+                    $allIds[] = $categoryId; // Thêm ID của danh mục hiện tại vào mảng
+                    $childrenIds = $category->children()->pluck('id')->toArray(); // Lấy ID của các danh mục con
+                    
+                    foreach ($childrenIds as $childId) {
+                        getAllChildCategoryIds($childId, $allIds); // Gọi đệ quy cho các danh mục con
+                    }
+                }
+            }
+
+            // Lặp qua các category ID và thêm ID của các danh mục con
+            foreach ($categoryIds as $id) {
+                getAllChildCategoryIds($id, $allCategoryIds);
+            }
+            $allCategoryIds = array_unique($allCategoryIds); // Loại bỏ các ID trùng
+        }
+
         // Lấy các khóa học được nhiều người thích nhất
         $courses = Course::select('courses.*', DB::raw('COUNT(wishlists.id) as favorites_count'))
             ->leftJoin('wishlists', 'courses.id', '=', 'wishlists.course_id')
+            ->when($allCategoryIds, function($query) use ($allCategoryIds) {
+                return $query->whereIn('courses.category_id', $allCategoryIds);
+            })
             ->groupBy('courses.id')
             ->orderBy('favorites_count', 'DESC')
             ->limit($limit)
             ->with('category', 'level')
             ->get();
-    
+
         if ($courses->isEmpty()) {
             // Nếu không có khóa học nào
             return formatResponse(STATUS_FAIL, '', '', __('messages.no_favorite_courses'));
         }
-    
+
         return formatResponse(STATUS_OK, $this->transform($courses, __('messages.tag_favorite')), '', __('messages.favorite_courses_found'));
     }
+
     
 
     // public function filterCourses(Request $request)
