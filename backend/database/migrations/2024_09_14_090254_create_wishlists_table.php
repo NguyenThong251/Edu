@@ -11,12 +11,12 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('wishlists', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('course_id');
             $table->timestamps();
 
-            // Primary key
-            $table->primary(['user_id', 'course_id']);
+            
 
             // Foreign keys
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

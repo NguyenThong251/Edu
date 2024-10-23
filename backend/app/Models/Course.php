@@ -34,19 +34,22 @@ class Course extends Model
     {
         return $this->belongsTo(CourseLevel::class);
     }
-
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by'); // Sử dụng created_by làm khóa ngoại
+    }
 
     public function averageRating()
     {
         return $this->reviews()->avg('rating');
     }
 
-    public function reviews(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function reviews()
     {
         return $this->hasMany(Review::class, 'course_id');
     }
 
-    public function sections(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function sections()
     {
         return $this->hasMany(Section::class, 'course_id');
     }
