@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ManageController;
 use App\Http\Controllers\Api\GoogleController;
 
 /*
@@ -55,6 +56,15 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
+            Route::get('getAdmin', [ManageController::class, 'getAdmins'])->name('users.admins');
+            Route::put('updateUser/{id}', [ManageController::class, 'updateUserAccount']);
+//            Route::post('/users', [ManageController::class, 'updateFoundationAccount']);
+            Route::put('updateFoundation/{id}', [ManageController::class, 'updateFoundationAccount']);
+            Route::put('contact-info/{id}', [ManageController::class, 'updateContactInfo']);
+            Route::delete('delUserAdmin/{id}', [ManageController::class, 'delUserAdmin']);
+            Route::get('getAdminRp', [ManageController::class, 'getAdminRpPayment']);
+            Route::get('getInstructorRp', [ManageController::class, 'getInstructorRp']);
+
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
             Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
