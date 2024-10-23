@@ -213,6 +213,7 @@ class CourseController extends Controller
                 'total_duration' => round($total_duration / 60 / 60, 1),
                 'rating_avg' => round($course->reviews_avg_rating, 2) ?? 0,
                 'reviews_count' => $course->reviews_count ?? 0,
+                'status' => $course->status,
                 'tag' => $tag,
             ];
         });
@@ -352,6 +353,7 @@ class CourseController extends Controller
             'creator' => $course->creator->last_name . ' ' . $course->creator->first_name ?? null, // Thêm thông tin người tạo
             'average_rating' => $average_rating, // Thêm trung bình rating
             'total_reviews' => $total_reviews, // Thêm tổng số reviews
+            'status' => $course->status,
         ];
 
         return formatResponse(STATUS_OK, $course_data, '', __('messages.course_detail_success'));
@@ -536,11 +538,6 @@ class CourseController extends Controller
             ->limit($limit)
             ->get();
 
-        if ($popularCourses->isEmpty()) {
-            // Nếu không có khóa học nào phổ biến
-            return formatResponse(STATUS_FAIL, '', '', __('messages.no_popular_courses'));
-        }
-
         // Lấy chi tiết các khóa học cùng với category và level dựa trên course_id đã gom nhóm
         $courses = Course::with('category', 'level')
             ->whereIn('id', $popularCourses->pluck('course_id'))
@@ -549,6 +546,10 @@ class CourseController extends Controller
             })
             ->get();
 
+        if ($courses->isEmpty()) {
+            // Nếu không có khóa học nào phổ biến
+            return formatResponse(STATUS_FAIL, '', '', __('messages.no_popular_courses'));
+        }
         return formatResponse(STATUS_OK, $this->transform($courses, __('messages.tag_popular')), '', __('messages.popular_courses_found'));
     }
 
@@ -586,6 +587,7 @@ class CourseController extends Controller
                 'total_duration' => round($total_duration, 1), // Tổng thời lượng (giờ)
                 'rating_avg' => $rating_avg, // Trung bình đánh giá
                 'reviews_count' => $reviews_count, // Tổng số reviews
+                'status' => $course->status,
                 'tag' => $tag, // Thẻ
             ];
         });
