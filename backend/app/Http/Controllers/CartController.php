@@ -27,7 +27,7 @@ class CartController extends Controller
 
             if ($courses->isEmpty()) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => 'success',
                     'message' => __('messages.cart_empty')
                 ], 200);
             }
