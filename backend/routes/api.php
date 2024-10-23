@@ -63,14 +63,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
-<<<<<<< HEAD
             // Route::get('profile', [AuthController::class, 'profile']);
-=======
-            Route::post('courses', [CourseController::class, 'store'])->name('courses.store');
-            Route::post('courses/{id}', [CourseController::class, 'update'])->name('courses.update');
-            Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
-            Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
->>>>>>> d3add63f92dee764a4593a0e8ddcaf33ff43f4bb
         });
 
         // Routes cho student
@@ -91,4 +84,3 @@ Route::get('courses/{id}', [CourseController::class, 'show'])->name('courses.sho
 Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses'])->name('courses.getPopularCourses');
 Route::get('get-new-courses', [CourseController::class, 'getNewCourses'])->name('courses.getNewCourses');
 Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourses'])->name('courses.getTopRatedCourses');
-
