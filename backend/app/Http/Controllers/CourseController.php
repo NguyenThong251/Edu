@@ -343,6 +343,7 @@ class CourseController extends Controller
             'id' => $course->id,
             'title' => $course->title,
             'category' => $course->category,
+            'thumbnail' => $course->thumbnail,
             // 'level' => $course->level,
             'old_price' => round($course->price, 0), // Đổi từ original_price sang old_price
             'current_price' => round($course->type_sale === 'price' ? $course->price - $course->sale_value : $course->price * (1 - $course->sale_value / 100), 0),

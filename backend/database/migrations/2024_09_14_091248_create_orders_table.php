@@ -13,14 +13,14 @@ return new class extends Migration {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->double('total_price');
+            $table->unsignedBigInteger('voucher_id');
             $table->string('order_code')->unique();
+            $table->double('total_price');
             $table->string('payment_method');
-            $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
+            $table->string('payment_status');
+            $table->string('payment_code');
+            $table->enum('status', ['active', 'inactive'])->default('active');
 
-            $table->timestamps();
 
             // Foreign key
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
