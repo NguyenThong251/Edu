@@ -16,12 +16,13 @@ return new class extends Migration {
             $table->unsignedBigInteger('course_id');
             $table->integer('rating');
             $table->string('comment', 255);
-            $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('inactive');
 
+            $table->softDeletes();
+            $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
-
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
             // Foreign keys
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');

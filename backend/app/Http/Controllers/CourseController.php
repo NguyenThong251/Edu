@@ -208,7 +208,9 @@ class CourseController extends Controller
                 'current_price' => round($course->type_sale === 'price' ? $course->price - $course->sale_value : $course->price * (1 - $course->sale_value / 100), 0),
                 'thumbnail' => $course->thumbnail,
                 'level' => $course->level->name,
-                'creator' => $course->creator->last_name . ' ' . $course->creator->first_name ?? null,
+                'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name) 
+                ? trim($course->creator->last_name . ' ' . $course->creator->first_name) 
+                : ''),
                 'lectures_count' => $lectures_count,
                 'total_duration' => round($total_duration / 60 / 60, 1),
                 'rating_avg' => round($course->reviews_avg_rating, 2) ?? 0,
@@ -350,7 +352,13 @@ class CourseController extends Controller
             'sections_count' => $sections_count,
             'lectures_count' => $lectures_count,
             'total_duration' => $total_duration,
+<<<<<<< HEAD
             'creator' => $course->creator->last_name . ' ' . $course->creator->first_name ?? null, // Thêm thông tin người tạo
+=======
+            'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name) 
+                ? trim($course->creator->last_name . ' ' . $course->creator->first_name) 
+                : ''),
+>>>>>>> 8265745905562f606793e7d7061d24f2717524eb
             'average_rating' => $average_rating, // Thêm trung bình rating
             'total_reviews' => $total_reviews, // Thêm tổng số reviews
             'status' => $course->status,
@@ -582,7 +590,9 @@ class CourseController extends Controller
                 'current_price' => $current_price, // Giá hiện tại
                 'thumbnail' => $course->thumbnail, // Ảnh thumbnail
                 'level' => $course->level->name ?? null, // Mức độ khóa học
-                'creator' => $course->creator->last_name . ' ' . $course->creator->first_name ?? null,
+                'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name) 
+                ? trim($course->creator->last_name . ' ' . $course->creator->first_name) 
+                : ''),
                 'lectures_count' => $lectures_count, // Số bài giảng
                 'total_duration' => round($total_duration, 1), // Tổng thời lượng (giờ)
                 'rating_avg' => $rating_avg, // Trung bình đánh giá
