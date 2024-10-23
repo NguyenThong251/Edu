@@ -29,7 +29,7 @@
                             </router-link>
                         </ul>
 
-                        <el-badge @click="toggleCart" :value="3" type="primary" badge-style="text-lg">
+                        <el-badge @click="toggleCart" :value="cart?.length || 0" type="primary" badge-style="text-lg">
                             <ShoppingCartIcon class="h-6 w-6 text-gray-900" />
                         </el-badge>
                         <!-- CART -->
@@ -73,30 +73,37 @@
 
     <!-- Cart view -->
     <el-drawer v-model="isOpenCart" @update:modelValue="isOpenCart = false" title="Giỏ hàng">
-        <ViewCart />
+        <div v-if="cart?.length > 0">
+
+            <ViewCart />
+        </div>
+        <div v-else class="flex items-center flex-col justify-center">
+            <img class="w-48" src="https://ovanlink.com/images/icon-empty-cart.png" alt="">
+            <h3 class="text-2xl font-bold mt-3 text-indigo-900 ">Giỏ hàng trống</h3>
+        </div>
     </el-drawer>
 </template>
 
 <script setup lang="ts">
-import logo from '../../assets/images/logo1.svg'
-import { XMarkIcon, MagnifyingGlassIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
 import Button from '@/components/ui/button/Button.vue';
-import { onMounted, ref } from 'vue'
+import { Bars3Icon, MagnifyingGlassIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
 import { ElNotification, type DrawerProps } from 'element-plus';
-import { Bars3Icon } from "@heroicons/vue/24/outline";
+import { onMounted, ref } from 'vue';
+import logo from '../../assets/images/logo1.svg';
 import UserProfile from './UserProfile.vue';
-
-import { RouterLink, useRouter } from 'vue-router';
+import { useCart } from '@/composables/user/useCart';
 import { useAuthStore } from '@/store/auth';
-import MenuDesktop from '../ui/menu/MenuDesktop.vue';
+import { useCartStore } from '@/store/cart';
+import { RouterLink, useRouter } from 'vue-router';
 import ViewCart from '../ui/dialog/ViewCart.vue';
+import MenuDesktop from '../ui/menu/MenuDesktop.vue';
 const direction = ref<DrawerProps['direction']>('ltr')
 const isOpenNav = ref(false)
 const isOpenCart = ref(false)
 const toggleMenu = () => {
     isOpenNav.value = !isOpenNav.value
 }
-// const toggleCart = ref(false)
+const { cart, loading } = useCart();
 const toggleCart = () => {
     isOpenCart.value = !isOpenCart.value
 }

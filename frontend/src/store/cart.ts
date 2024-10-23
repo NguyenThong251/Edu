@@ -1,39 +1,75 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '@/services/axiosConfig'
 import Cookies from 'js-cookie'
+import { ElNotification } from 'element-plus'
 
 export const useCartStore = defineStore('cart', () => {
-  // const cart = ref<number[]>([])
-  const cart = ref<any[]>([])
+  const cartDb = ref<any[]>([])
+  const cartLocal = ref<any[]>([])
   const loading = ref(false)
   const token = Cookies.get('token_user_edu')
-
   const isAuthenticated = computed(() => !!token)
   const loadCartFromLocalStorage = () => {
-    const storeCart: string | null = localStorage.getItem('cart_courses')
+    const storeCart = localStorage.getItem('cart_courses')
     if (storeCart) {
-      cart.value = JSON.parse(storeCart)
+      cartLocal.value = JSON.parse(storeCart)
     } else {
-      cart.value = []
+      cartLocal.value = []
     }
   }
   const saveCartToLocalStorage = () => {
-    localStorage.setItem('cart_courses', JSON.stringify(cart.value))
+    localStorage.setItem('cart_courses', JSON.stringify(cartLocal.value))
+  }
+  const removeCartFromLocalStorage = () => {
+    localStorage.removeItem('cart_courses')
+  }
+  const removeCourseFromLocalStorage = (courseId: number) => {
+    cartLocal.value = cartLocal.value.filter((course) => course.id !== courseId)
+    saveCartToLocalStorage()
   }
 
   const addCourseToCart = async (courseId: number) => {
     loading.value = true
     try {
       if (isAuthenticated.value) {
-        // Add course to user’s cart via API
-        await api.post('/auth/cart/courses', { course_id: courseId })
+        try {
+          await api.post('/auth/cart/courses', { course_id: courseId })
+
+          ElNotification({
+            title: 'Thành công',
+            message: 'Sản phẩm của bạn đã thêm vào giỏ hàng',
+            type: 'success'
+          })
+        } catch (error) {
+          ElNotification({
+            title: 'Thông báo',
+            message: 'Khóa học đã có trong giỏ hàng.',
+            type: 'warning'
+          })
+        }
+
         await fetchCartCourses()
       } else {
-        // If user is not authenticated, store in localStorage
-        cart.value.push(courseId)
-        saveCartToLocalStorage()
-        loading.value = false
+        const courseExists = cartLocal.value.some((course) => course.id === courseId)
+        if (courseExists) {
+          ElNotification({
+            title: 'Thông báo',
+            message: 'Khóa học đã có trong giỏ hàng.',
+            type: 'warning'
+          })
+        } else {
+          ElNotification({
+            title: 'Thành công',
+            message: 'Sản phẩm của bạn đã thêm vào giỏ hàng',
+            type: 'success'
+          })
+          const res = await api.get(`/courses/${courseId}`)
+
+          const dataCartItem = res.data.data
+          cartLocal.value.push(dataCartItem)
+          saveCartToLocalStorage()
+        }
       }
     } catch (error) {
       console.error('Error adding course to cart:', error)
@@ -41,17 +77,14 @@ export const useCartStore = defineStore('cart', () => {
       loading.value = false
     }
   }
-
   const fetchCartCourses = async () => {
     loading.value = true
     try {
       if (isAuthenticated.value) {
         const response = await api.get('/auth/cart/courses')
-        cart.value = await response.data.courses
+        cartDb.value = await response.data.courses
       } else {
-        // Load from localStorage if not authenticated
-        loadCartFromLocalStorage()
-        return cart.value // Return the loaded cart data
+        //
       }
     } catch (error) {
       console.error('Error fetching cart courses:', error)
@@ -62,16 +95,18 @@ export const useCartStore = defineStore('cart', () => {
 
   const removeCourseFromCart = async (courseId: number) => {
     loading.value = true
+    ElNotification({
+      title: 'Thành công',
+      message: 'Sản phẩm đã được xóa giỏ hàng',
+      type: 'success'
+    })
     try {
       if (isAuthenticated.value) {
-        // Remove course from user's cart via API
         await api.delete(`/auth/cart/courses/${courseId}`)
         await fetchCartCourses()
       } else {
-        // If user is not authenticated, remove from localStorage
-        cart.value = cart.value.filter((id) => id !== courseId)
-        saveCartToLocalStorage()
-        loading.value = false
+        removeCourseFromLocalStorage(courseId)
+        await fetchCartCourses()
       }
     } catch (error) {
       console.error('Error removing course from cart:', error)
@@ -81,17 +116,19 @@ export const useCartStore = defineStore('cart', () => {
   }
   const clearCart = async () => {
     loading.value = true
+    ElNotification({
+      title: 'Thành công',
+      message: 'Bạn đã xóa tất cả giỏ hàng',
+      type: 'success'
+    })
     try {
       if (isAuthenticated.value) {
-        // Clear the cart for the authenticated user via API
         await api.delete('/auth/cart/courses')
         await fetchCartCourses()
-        cart.value = []
+        cartDb.value = []
       } else {
-        // Clear the cart in localStorage if not authenticated
-        cart.value = []
-        saveCartToLocalStorage()
-        loading.value = false
+        cartLocal.value = []
+        removeCartFromLocalStorage()
       }
     } catch (error) {
       console.error('Error clearing cart:', error)
@@ -99,8 +136,12 @@ export const useCartStore = defineStore('cart', () => {
       loading.value = false
     }
   }
+
+  fetchCartCourses()
+  loadCartFromLocalStorage()
   return {
-    cart,
+    cartDb,
+    cartLocal,
     loading,
     addCourseToCart,
     fetchCartCourses,
