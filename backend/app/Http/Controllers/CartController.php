@@ -29,7 +29,7 @@ class CartController extends Controller
                 return response()->json([
                     'status' => 'error',
                     'message' => __('messages.cart_empty')
-                ], 404);
+                ], 200);
             }
 
             return response()->json([
