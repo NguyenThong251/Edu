@@ -119,7 +119,7 @@ class CourseController extends Controller
             $query->whereHas('reviews', function ($q) use ($min_rating) {
                 $q->select('course_id') // Chọn course_id để nhóm
                   ->groupBy('course_id') // Nhóm theo course_id
-                  ->havingRaw('ROUND(AVG(rating), 0) >= ?', [$min_rating]);
+                  ->havingRaw('AVG(rating) >= ?', [$min_rating]);
             });
         }
         
@@ -127,7 +127,7 @@ class CourseController extends Controller
             $query->whereHas('reviews', function ($q) use ($max_rating) {
                 $q->select('course_id') // Chọn course_id để nhóm
                   ->groupBy('course_id') // Nhóm theo course_id
-                  ->havingRaw('ROUND(AVG(rating), 0) <= ?', [$max_rating]);
+                  ->havingRaw('AVG(rating) <= ?', [$max_rating]);
             });
         }
         

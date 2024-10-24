@@ -14,14 +14,9 @@ return new class extends Migration {
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('course_id');
             $table->double('price');
-            $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('inactive');
 
-            $table->timestamps();
 
-            // Primary key
-            $table->primary(['order_id', 'course_id']);
 
             // Foreign keys
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
