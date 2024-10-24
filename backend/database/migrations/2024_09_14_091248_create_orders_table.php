@@ -20,6 +20,11 @@ return new class extends Migration {
             $table->string('payment_status');
             $table->string('payment_code');
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->softDeletes();
+            $table->bigInteger('deleted_by')->nullable();
+            $table->timestamps();
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
 
 
             // Foreign key
