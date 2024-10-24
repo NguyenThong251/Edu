@@ -63,7 +63,8 @@ class CourseController extends Controller
         $limit=$request->limit ?? 10;
         $query = Course::with(['category', 'level', 'creator:id,last_name,first_name', 'sections.lectures', 'reviews'])
             ->withCount('reviews')
-            ->withAvg('reviews', 'rating');
+            ->withAvg('reviews', 'rating')
+            ->where('status', 'active');
         // // Áp dụng các bộ lọc
         if ($category_ids) {
             // Chia nhỏ danh sách category_id thành mảng
@@ -146,28 +147,21 @@ class CourseController extends Controller
                       $duration_ranges = explode(',', $duration_ranges);
                       foreach ($duration_ranges as $duration_range) {
                             switch ($duration_range) {
-                                case '0-2':
+                                case '0-48':
                                     // So sánh với thời gian <= 2 giờ
-                                    $q->orHaving('total_duration', '<=', 2 * 60 * 60);
+                                    $q->orHaving('total_duration', '<=', 48 * 60 * 60);
                                     break;
-                                case '3-5':
+                                case '48-128':
                                     // So sánh trong khoảng từ 3 đến 5 giờ
                                     $q->orWhere(function ($query) {
-                                        $query->havingBetween('total_duration', [3 * 60 * 60, 5 * 60 * 60]);
+                                        $query->havingBetween('total_duration', [48 * 60 * 60, 128 * 60 * 60]);
                                     });
                                     break;
-                                case '6-12':
-                                    // So sánh trong khoảng từ 6 đến 12 giờ
-                                    $q->orWhere(function ($query) {
-                                        $query->havingBetween('total_duration', [6 * 60 * 60, 12 * 60 * 60]);
-                                    });
-                                    break;
-                                case '12+':
+                                case '128+':
                                     // So sánh với thời gian > 12 giờ
-                                    $q->orHaving('total_duration', '>', 12 * 60 * 60);
+                                    $q->orHaving('total_duration', '>', 128 * 60 * 60);
                                     break;
                             }
-                        
                       }
                   });
             });
@@ -277,6 +271,7 @@ class CourseController extends Controller
             'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'price' => 'required|numeric',
             'type_sale' => 'required|in:percent,price',
+            'language' => 'required|in:english,vietnamese',
             'sale_value' => 'nullable|numeric',
             'status' => 'required|in:active,inactive',
         ], [
@@ -292,6 +287,7 @@ class CourseController extends Controller
             'thumbnail.max' => __('messages.thumbnail_max'), 
             'price.required' => __('messages.price_required'),
             'type_sale.required' => __('messages.type_sale_required'),
+            'language.required' => __('messages.language_required'),
             'status.required' => __('messages.status_required'),
         ]);
 
@@ -311,8 +307,10 @@ class CourseController extends Controller
     // Hiển thị một khóa học cụ thể
     public function detail($id)
     {
-        $course = Course::with(['category', 'level', 'creator', 'sections.lectures', 'reviews']) // Thêm 'reviews' để lấy thông tin đánh giá
-                        ->find($id);
+        $course = Course::with(['category', 'level', 'creator', 'sections.lectures', 'reviews'])
+                        ->where('status', 'active')
+                        ->where('id', $id)
+                        ->first();
 
         if (!$course) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.course_not_found'));
@@ -345,7 +343,7 @@ class CourseController extends Controller
             'title' => $course->title,
             'category' => $course->category,
             'thumbnail' => $course->thumbnail,
-            // 'level' => $course->level,
+            'language' => $course->language === 'vietnamese' ? 'Tiếng Việt' : 'Tiếng Anh',
             'old_price' => round($course->price, 0), // Đổi từ original_price sang old_price
             'current_price' => round($course->type_sale === 'price' ? $course->price - $course->sale_value : $course->price * (1 - $course->sale_value / 100), 0),
             'type_sale' => $type_sale,
@@ -397,6 +395,7 @@ class CourseController extends Controller
             'short_description' => 'nullable|string',
             'price' => 'required|numeric',
             'type_sale' => 'required|in:percent,price',
+            'language' => 'required|in:english,vietnamese',
             'sale_value' => 'nullable|numeric',
             'status' => 'required|in:active,inactive',
         ], [
@@ -411,6 +410,7 @@ class CourseController extends Controller
             'level_id.exists' => __('messages.level_id_invalid'),
             'price.required' => __('messages.price_required'),
             'type_sale.required' => __('messages.type_sale_required'),
+            'language.required' => __('messages.language_required'),
             'status.required' => __('messages.status_required'),
         ]);
 
@@ -545,6 +545,7 @@ class CourseController extends Controller
 
         // Lấy chi tiết các khóa học cùng với category và level dựa trên course_id đã gom nhóm
         $courses = Course::with('category', 'level')
+            ->where('status', 'active')
             ->whereIn('id', $popularCourses->pluck('course_id'))
             ->when($allCategoryIds, function($query) use ($allCategoryIds) {
                 return $query->whereIn('category_id', $allCategoryIds);
@@ -638,6 +639,7 @@ class CourseController extends Controller
             ->when($allCategoryIds, function($query) use ($allCategoryIds) {
                 return $query->whereIn('category_id', $allCategoryIds);
             })
+            ->where('status', 'active')
             ->orderBy('created_at', 'desc') // Sắp xếp theo ngày tạo giảm dần
             ->limit($limit)
             ->get();
@@ -689,6 +691,7 @@ class CourseController extends Controller
         ->when($allCategoryIds, function($query) use ($allCategoryIds) {
             return $query->whereIn('courses.category_id', $allCategoryIds);
         })
+        ->where('courses.status', 'active')
         ->groupBy('courses.id')
         ->orderByRaw('AVG(reviews.rating) DESC')
         ->limit($limit)
@@ -741,6 +744,7 @@ class CourseController extends Controller
             ->when($allCategoryIds, function($query) use ($allCategoryIds) {
                 return $query->whereIn('courses.category_id', $allCategoryIds);
             })
+            ->where('courses.status', 'active')
             ->groupBy('courses.id')
             ->orderBy('favorites_count', 'DESC')
             ->limit($limit)
@@ -757,78 +761,5 @@ class CourseController extends Controller
 
     
 
-    // public function filterCourses(Request $request)
-    // {
-    //     $category_id = $request->input('category_id');
-    //     $title = $request->input('title');
-    //     $min_price = $request->input('min_price');
-    //     $max_price = $request->input('max_price');
-    //     $status = $request->input('status');
-    //     $type_sale = $request->input('type_sale');
-    //     $rating = $request->input('rating');
-    //     $duration_range = $request->input('duration_range');
-
-
-    //     $page = $request->input('page', 1);
-    //     $perPage = $request->input('per_page', 10);
-
-    //     $sort_by = $request->input('sort_by', 'created_at');
-    //     $sort_order = $request->input('sort_order', 'desc');
-
-    //     $query = Course::with('reviews');
-    //     if ($category_id) {
-    //         $categoryIds = explode(',', $category_id);
-    //         $query->whereIn('category_id', $categoryIds);
-    //     }
-    //     if ($title) {
-    //         $query->where('title', 'like', '%' . $title . '%');
-    //     }
-    //     if ($min_price) {
-    //         $query->where('price', '>=', $min_price);
-    //     }
-    //     if ($max_price) {
-    //         $query->where('price', '<=', $max_price);
-    //     }
-    //     if ($status) {
-    //         $query->where('status', $status);
-    //     }
-
-    //     if ($rating) {
-    //         $query->whereHas('reviews', function ($q) use ($rating) {
-    //             $q->havingRaw('ROUND(AVG(rating),0) = ?', [$rating]);
-    //         });
-    //     }
-
-    //     if ($duration_range) {
-    //         $query->whereHas('sections.lectures', function ($q) use ($duration_range) {
-    //             switch ($duration_range) {
-    //                 case '0-2':
-    //                     $q->havingRaw('SUM(duration) <= 120');
-    //                     break;
-    //                 case '3-5':
-    //                     $q->havingRaw('SUM(duration) BETWEEN 180 AND 300');
-    //                     break;
-    //                 case '6-12':
-    //                     $q->havingRaw('SUM(duration) BETWEEN 360 AND 720');
-    //                     break;
-    //                 case '12+':
-    //                     $q->havingRaw('SUM(duration) > 720');
-    //                     break;
-    //             }
-    //         });
-    //     }
-
-    //     $query->orderBy($sort_by, $sort_order);
-    //     $courses = $query->paginate($perPage, ['*'], 'page', $page);
-    //     return response()->json([
-    //         'status' => 'success',
-    //         'data' => $courses->items(),
-    //         'pagination' => [
-    //             'total' => $courses->total(),
-    //             'current_page' => $courses->currentPage(),
-    //             'last_page' => $courses->lastPage(),
-    //             'per_page' => $courses->perPage(),
-    //         ],
-    //     ]);
-    // }
+    
 }

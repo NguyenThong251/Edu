@@ -91,6 +91,7 @@ return [
     'thumbnail_max' => 'Image size must not exceed 2MB.',
     'price_required' => 'Price is required.',
     'type_sale_required' => 'Sale type is required.',
+    'language_required' => 'Language is required.',
     'status_required' => 'Status is required.',
     'validation_error' => 'There were validation errors.',
     'not_your_course' => 'This is not your course.',

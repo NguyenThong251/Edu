@@ -94,6 +94,7 @@ return [
     'thumbnail.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
     'price_required' => 'Giá là bắt buộc.',
     'type_sale_required' => 'Loại hình bán hàng là bắt buộc.',
+    'language_required' => 'Ngôn ngữ là bắt buộc.',
     'not_your_course' => 'Đây không phải là khóa học của bạn.',
     'no_popular_courses' => 'Hiện không có khóa học phổ biến nào.',
     'popular_courses_found' => 'Đã lấy thành công các khóa học phổ biến.',

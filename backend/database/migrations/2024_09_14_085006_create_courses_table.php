@@ -22,6 +22,7 @@ return new class extends Migration
             $table->double('price');
             $table->enum('type_sale', ['percent', 'price'])->default('price');
             $table->double('sale_value')->nullable();
+            $table->enum('language', ['english', 'vietnamese'])->default('vietnamese');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->softDeletes();
             $table->bigInteger('deleted_by')->nullable();

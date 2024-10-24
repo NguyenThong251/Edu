@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Lecture;
 use App\Models\Section;
+use App\Models\User;
 use Faker\Factory as Faker;
 
 class LectureSeeder extends Seeder
@@ -27,13 +28,13 @@ class LectureSeeder extends Seeder
         }
 
         // Tạo 200 lectures
-        for ($i = 0; $i < 200; $i++) {
+        for ($i = 0; $i < 500; $i++) {
             // Xác định loại nội dung và tạo đường dẫn tương ứng
             $type = $faker->randomElement(['video', 'file']);
             $contentLink = $type === 'video' 
                         ? 'https://www.w3schools.com/html/mov_bbb.mp4'   // URL video mẫu
                         : 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';   // URL file tài liệu giả
-
+            $userIds = User::pluck('id')->toArray();
             Lecture::create([
                 'section_id' => $faker->randomElement($sectionIds),        // Chọn ngẫu nhiên section_id từ mảng sectionIds
                 'type' => $type,                                           // Loại bài giảng ngẫu nhiên (video hoặc file)
@@ -43,8 +44,8 @@ class LectureSeeder extends Seeder
                 'preview' => $faker->randomElement(['can', 'cant']),      // Trạng thái preview
                 'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái bài giảng (active hoặc inactive)
                 'deleted_by' => null,                                      // Giá trị mặc định là null
-                'created_by' => $faker->numberBetween(1, 2),  // Người tạo ngẫu nhiên hoặc null
-                'updated_by' => $faker->numberBetween(1, 2),  // Người cập nhật ngẫu nhiên hoặc null
+                'created_by' => $faker->optional()->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
+                'updated_by' => $faker->optional()->randomElement($userIds),// Người cập nhật ngẫu nhiên hoặc null
             ]);
         }
     }

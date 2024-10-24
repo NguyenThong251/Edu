@@ -11,11 +11,16 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('order_items', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('course_id');
             $table->double('price');
             $table->enum('status', ['active', 'inactive'])->default('inactive');
-
+            $table->softDeletes();
+            $table->bigInteger('deleted_by')->nullable();
+            $table->timestamps();
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
 
 
             // Foreign keys

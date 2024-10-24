@@ -21,6 +21,7 @@ class Course extends Model
         'price',
         'type_sale',
         'sale_value',
+        'language',
         'status',
     ];
 

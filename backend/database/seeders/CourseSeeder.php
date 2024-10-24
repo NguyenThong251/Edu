@@ -8,6 +8,8 @@ use Faker\Factory as Faker;
 use App\Models\Course;
 use App\Models\Category;
 use App\Models\CourseLevel;
+use App\Models\User;
+
 
 class CourseSeeder extends Seeder
 {
@@ -91,7 +93,7 @@ class CourseSeeder extends Seeder
             $this->command->info('Không có dữ liệu trong bảng categories hoặc course_levels.');
             return;
         }
-
+        $userIds = User::pluck('id')->toArray();
         // Tạo 50 khóa học
         for ($i = 0; $i < 50; $i++) {
             Course::create([
@@ -106,8 +108,8 @@ class CourseSeeder extends Seeder
                 'sale_value' => $faker->randomFloat(2, 0, 100),      // Giá trị giảm giá ngẫu nhiên
                 'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
                 'deleted_by' => null,                                // Giá trị mặc định là null
-                'created_by' => $faker->numberBetween(1, 2), // Người tạo ngẫu nhiên hoặc null
-                'updated_by' => $faker->numberBetween(1, 2), // Người cập nhật ngẫu nhiên hoặc null
+                'created_by' => $faker->optional()->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
+                'updated_by' => $faker->optional()->randomElement($userIds), // Người cập nhật ngẫu nhiên hoặc null
             ]);
         }
     }
