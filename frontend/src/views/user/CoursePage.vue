@@ -1,13 +1,3 @@
-<script setup lang="ts">
-import CardCourse from '@/components/ui/card/CardCourse.vue';
-import UserCourseFilter from '@/components/user/UserCourseFilter.vue';
-import UserHero2 from '@/components/user/UserHero2.vue';
-import UserNewsLetter from '@/components/user/UserNewsLetter.vue';
-import { UsersIcon, FunnelIcon } from "@heroicons/vue/24/outline";
-import { ref } from 'vue';
-const fillter = ref(false)
-</script>
-
 <template>
     <main class="py-16">
         <!-- PRODUCT FILTER-->
@@ -27,19 +17,26 @@ const fillter = ref(false)
                 <div class="mt-5">
 
                     <ul class="sm:flex gap-3 hidden ">
-                        <li class="text-lg font-medium p-2  border-indigo-600 border-b-4 text-indigo-600">Phổ biến
+                        <li @click="changeFilter('new')"
+                            :class="{ 'text-indigo-600 border-indigo-600 border-b-4': activeFilter === 'new' }"
+                            class="text-md font-medium p-2 hover:border-indigo-600 animation hover:text-indigo-600  cursor-pointer text-gray-500 hover:border-b-4">
+                            Mới
                         </li>
-                        <li
-                            class="text-md font-medium p-2 hover:text-indigo-600 hover:border-b-4 hover:border-indigo-600 cursor-pointer animation text-gray-500">
-                            Mới</li>
-                        <li
-                            class="text-md font-medium p-2 hover:text-indigo-600 hover:border-b-4 hover:border-indigo-600 cursor-pointer animation text-gray-500">
-                            Hàng đầu</li>
-                        <li
-                            class="text-md font-medium p-2 hover:text-indigo-600 hover:border-b-4 hover:border-indigo-600 cursor-pointer animation text-gray-500">
-                            Yêu thích nhất</li>
-
-
+                        <li @click="changeFilter('popular')"
+                            :class="{ 'text-indigo-600 border-indigo-600 border-b-4': activeFilter === 'popular' }"
+                            class="text-md font-medium p-2 hover:border-indigo-600 animation hover:text-indigo-600  cursor-pointer text-gray-500 hover:border-b-4">
+                            Phổ biến
+                        </li>
+                        <li @click="changeFilter('top-rated')"
+                            :class="{ 'text-indigo-600 border-indigo-600 border-b-4': activeFilter === 'top-rated' }"
+                            class="text-md font-medium p-2 hover:text-indigo-600 hover:border-indigo-600 animation hover:border-b-4 cursor-pointer text-gray-500">
+                            Hàng đầu
+                        </li>
+                        <li @click="changeFilter('favourite')"
+                            :class="{ 'text-indigo-600 border-indigo-600 border-b-4': activeFilter === 'favourite' }"
+                            class="text-md font-medium p-2 animation hover:text-indigo-600 hover:border-b-4 hover:border-indigo-600 animation cursor-pointer text-gray-500">
+                            Yêu thích nhất
+                        </li>
                     </ul>
                     <div class="flex">
                         <RouterLink to="/course" class="sm:hidden block ">
@@ -53,12 +50,12 @@ const fillter = ref(false)
                     </h3>
                 </div>
                 <div class="mt-5 gap-5 grid xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2">
-                    <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                        lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training" lessons="12"
-                        level="Mới bắt đầu" price="999.000" oldPrice="299.000" status="Bán chạy" />
-                    <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                        lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training" lessons="12"
-                        level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
+                    <CardCourse v-for="course in coursesFilterSection" :key="course.id" :id="course.id"
+                        :title="course.title"
+                        :thumbnail="course.thumbnail || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'"
+                        :creator="course.creator" :tag="course.tag" :lectures_count="course.lectures_count"
+                        :level="course.level" :current_price="course.current_price" :old_price="course.old_price" />
+
                 </div>
             </div>
         </section>
@@ -86,7 +83,7 @@ const fillter = ref(false)
 
                         <div class="hidden md:block">
 
-                            <UserCourseFilter />
+                            <UserCourseFilter @updateFilters="handleUpdateFilters" />
                         </div>
 
                     </div>
@@ -101,36 +98,12 @@ const fillter = ref(false)
                             class="font-medium">Khoa học máy tính</span>
                     </h3>
                     <div class="grid w-full xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2  sm:grid-cols-2  gap-5 mt-5">
-                        <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                            lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training"
-                            lessons="12" level="Mới bắt đầu" price="999.000" oldPrice="299.000" status="Bán chạy" />
-                        <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                            lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training"
-                            lessons="12" level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
-                        <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                            lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training"
-                            lessons="12" level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
-                        <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                            lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training"
-                            lessons="12" level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
-                        <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                            lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training"
-                            lessons="12" level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
-                        <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                            lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training"
-                            lessons="12" level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
-                        <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                            lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training"
-                            lessons="12" level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
-                        <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                            lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training"
-                            lessons="12" level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
-                        <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                            lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training"
-                            lessons="12" level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
-                        <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                            lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training"
-                            lessons="12" level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" />
+                        <CardCourse v-for="course in coursesFilter" :key="course.id" :id="course.id"
+                            :title="course.title"
+                            :thumbnail="course.thumbnail || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'"
+                            :creator="course.creator" :tag="course.tag" :lectures_count="course.lectures_count"
+                            :level="course.level" :current_price="course.current_price" :old_price="course.old_price" />
+
                     </div>
                     <div class=" mt-10  flex justify-center">
 
@@ -142,5 +115,25 @@ const fillter = ref(false)
         <UserNewsLetter />
     </main>
 </template>
-
-<style scoped></style>
+<script setup lang="ts">
+import CardCourse from '@/components/ui/card/CardCourse.vue';
+import UserCourseFilter from '@/components/user/UserCourseFilter.vue';
+import UserHero2 from '@/components/user/UserHero2.vue';
+import UserNewsLetter from '@/components/user/UserNewsLetter.vue';
+import { UsersIcon, FunnelIcon } from "@heroicons/vue/24/outline";
+import { onMounted, ref } from 'vue';
+const fillter = ref(false)
+import { useFilter } from '@/composables/user/useFilter';
+import { useShop } from '@/composables/user/useShop';
+// const { fetchCate } = useHome()
+const { coursesFilterSection, activeFilter, fetchCoursesSection, changeFilter } = useShop()
+const { fetchCourseFilter, coursesFilter, noProduct, totalCourses } = useFilter();
+onMounted(() => {
+    // fetchCate();
+    fetchCourseFilter()
+    fetchCoursesSection(activeFilter.value)
+});
+const handleUpdateFilters = (filters: any) => {
+    fetchCourseFilter(1, 12, 12, filters)
+};
+</script>

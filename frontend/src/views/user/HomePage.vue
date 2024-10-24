@@ -94,11 +94,10 @@
                     <CardCourse image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
                         lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training" lessons="12"
                         level="Mới bắt đầu" price="999.000" oldPrice="" status="Mới" /> -->
-                    <CardCourse v-for="course in activeCourses" :key="course.id" :id="course.id" :title="course.title"
-                        :thumbnail="course.thumbnail" lecture="Nguyễn Hoàng Thông" tag="Bán chạy" :lessons="12"
-                        level="Mới bắt đầu" :price="course.price" :sale_value="course.sale_value"
-                        :type_sale="course.type_sale"
-                        :oldPrice="course.sale_value ? course.price - course.sale_value : null" />
+                    <CardCourse v-for="course in getCourses" :key="course.id" :id="course.id" :title="course.title"
+                        :thumbnail="course.thumbnail || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'"
+                        :creator="course.creator" :tag="course.tag" :lectures_count="course.lectures_count"
+                        :level="course.level" :current_price="course.current_price" :old_price="course.old_price" />
                 </div>
             </div>
 
@@ -149,7 +148,7 @@ const { locale } = useI18n();
 //     const selectedLanguage = (event.target as HTMLSelectElement).value;
 //     locale.value = selectedLanguage;
 // };
-const { categories, activeCourses, fetchCate, fetchCourse } = useHome()
+const { categories, getCourses, fetchCate, fetchCourse } = useHome()
 onMounted(() => {
     fetchCate();
     fetchCourse()

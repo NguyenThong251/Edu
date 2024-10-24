@@ -11,9 +11,9 @@
             <!-- BODY  -->
             <div class="mt-2 flex flex-col gap-2">
                 <div class="flex justify-between items-center">
-                    <span class="text-sm">{{ lecture }}</span>
-                    <button :class="tag === 'Mới' ? 'bg-green-400' : 'bg-pink-400'"
-                        class="text-sm  border rounded-md px-2 py-0.5 text-white">{{ tag }}</button>
+                    <span class="text-sm w-32">{{ creator }}</span>
+                    <button v-if="tag !== 'none'" :class="tag === 'Mới' ? 'bg-green-400' : 'bg-pink-400'"
+                        class="text-sm border rounded-md px-2 py-0.5 text-white">{{ tag }}</button>
                 </div>
                 <h3 class="text-[16px] font-medium leading-6">{{ title }}</h3>
                 <ul class="flex  gap-3">
@@ -23,7 +23,7 @@
                     </li> -->
                     <li class="flex items-center gap-1">
                         <BookOpenIcon class="h-4 w-4 text-gray-500" />
-                        <span class="text-[12px]">{{ lessons }} Chương học</span>
+                        <span class="text-[12px]">{{ lectures_count }} Chương học</span>
                     </li>
                     <li class="flex items-center gap-1">
                         <RocketLaunchIcon class="h-4 w-4 text-gray-500" />
@@ -32,8 +32,8 @@
                 </ul>
 
                 <div class="flex items-end gap-3">
-                    <span class="text-lg text-gray-800 font-bold">{{ formattedPrice }}đ</span>
-                    <del v-if="oldPrice" class="text-gray-500">{{ formattedOldPrice }}đ</del>
+                    <span class="text-lg text-gray-800 font-bold">{{ formatPrice(current_price) }}</span>
+                    <del v-if="old_price" class="text-gray-500">{{ formatPrice(old_price) }}</del>
                 </div>
             </div>
             <div
@@ -56,24 +56,12 @@
 
 <script setup lang="ts">
 import { computed, defineProps } from 'vue';
+import { formatPrice } from '@/utils/formatPrice';
 import { ClockIcon, BookOpenIcon, RocketLaunchIcon, HeartIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
 import type { TCardCourse } from '@/interfaces/course.interface';
 import { useCart } from '@/composables/user/useCart';
 
-const props = defineProps<TCardCourse>();
+defineProps<TCardCourse>();
 const { handleAddToCart } = useCart();
-const formattedPrice = computed(() => {
-    if (props.type_sale === 'percent' && props.sale_value !== undefined) {
-        return (props.price - (props.price * (props.sale_value / 100))).toLocaleString();
-    } else if (props.type_sale === 'price' && props.sale_value !== undefined) {
-        return (props.price - props.sale_value).toLocaleString();
-    }
-    return props.price.toLocaleString();
-});
-const formattedOldPrice = computed(() => {
-    if (props.sale_value) {
-        return props.price.toLocaleString();
-    }
-    return null;
-});
+
 </script>

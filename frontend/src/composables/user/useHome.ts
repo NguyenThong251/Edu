@@ -16,19 +16,19 @@ export function useHome() {
 
   const fetchCourse = async () => {
     try {
-      const res = await api.get('/course/index')
-      courses.value = res.data.data
+      const res = await api.get('/courses')
+      courses.value = res.data.data.data
     } catch (error) {
       console.error('Error fetching categories:', error)
     }
   }
 
-  const activeCourses = computed(() => {
+  const getCourses = computed(() => {
     return courses.value.filter((course) => course.status === 'active')
   })
   return {
     courses,
-    activeCourses,
+    getCourses,
     categories,
     fetchCate,
     fetchCourse
