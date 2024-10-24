@@ -111,6 +111,23 @@ return [
     'update_fail' => 'Update failed.',
     'update_success' => 'Update successfully.',
 
+    //Message for Course Level
+    'course_level_fetch_success' => 'Course levels fetched successfully',
+    'course_level_not_found' => 'Course level not found',
+    'course_level_detail_success' => 'Course level details fetched successfully',
+    'course_level_create_success' => 'Course level created successfully',
+    'course_level_update_success' => 'Course level updated successfully',
+    'course_level_soft_delete_success' => 'Course level soft-deleted successfully',
+    'course_level_restore_success' => 'Course level restored successfully',
+    'course_level_force_delete_success' => 'Course level permanently deleted successfully',
+    'validation_error' => 'Validation error',
+    'name_course_level_required' => 'The name is required',
+    'name_course_level_string' => 'The name must be a string',
+    'name_course_level_max' => 'The name may not be greater than 100 characters',
+    'name_course_level_unique' => 'The name has already been taken',
+    'status_required' => 'The status is required',
+    'status_invalid' => 'The status is invalid',
+
     // CART: handle courses in cart
     'cart_cleared' => 'All courses have been removed from the cart.',
     'cart_empty' => 'Your cart is empty.',
@@ -119,4 +136,6 @@ return [
     'course_added_success' => 'Course added successfully.',
     'course_removed_success' => 'Course removed successfully.',
     'course_not_found_in_cart' => 'Course not in cart.',
+
+
 ];

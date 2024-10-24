@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CourseLevelController;
 use App\Http\Controllers\Api\GoogleController;
 
 /*
@@ -59,6 +60,11 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
             Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
             Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+            Route::post('course-levels', [CourseLevelController::class, 'store'])->name('courselevels.store');
+            Route::put('course-levels/{id}', [CourseLevelController::class, 'update'])->name('courselevels.update');
+            Route::get('course-levels/restore/{id}', [CourseLevelController::class, 'restore'])->name('courselevels.restore');
+            Route::delete('course-levels/{id}', [CourseLevelController::class, 'destroy'])->name('courselevels.destroy');
         });
 
         // Routes cho instructor
@@ -82,6 +88,10 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 });
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
+
+Route::get('course-levels', [CourseLevelController::class, 'index'])->name('courselevels.index');
+Route::get('course-levels/{id}', [CourseLevelController::class, 'show'])->name('courselevels.show');
+
 Route::get('courses', [CourseController::class, 'search'])->name('courses.search');
 Route::get('courses/{id}', [CourseController::class, 'detail'])->name('courses.detail');
 Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses'])->name('courses.getPopularCourses');
