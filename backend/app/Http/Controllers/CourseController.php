@@ -686,7 +686,14 @@ class CourseController extends Controller
 
         // Lấy các khóa học hàng đầu theo rating trung bình
         $courses = Course::select(
-            'courses.*',
+            // 'courses.*',
+            // DB::raw('AVG(reviews.rating) as average_rating'),
+            // DB::raw('COUNT(reviews.id) as review_count')
+            'courses.id',
+            'courses.title',
+            'courses.category_id',
+            'courses.level_id',
+            'courses.created_at',
             DB::raw('AVG(reviews.rating) as average_rating'),
             DB::raw('COUNT(reviews.id) as review_count')
         )
@@ -694,7 +701,8 @@ class CourseController extends Controller
             ->when($allCategoryIds, function ($query) use ($allCategoryIds) {
                 return $query->whereIn('courses.category_id', $allCategoryIds);
             })
-            ->groupBy('courses.id')
+            // ->groupBy('courses.id')
+            ->groupBy('courses.id', 'courses.title', 'courses.category_id', 'courses.level_id', 'courses.created_at')
             ->orderByRaw('AVG(reviews.rating) DESC')
             ->limit($limit)
             ->with('category', 'level')
@@ -709,7 +717,7 @@ class CourseController extends Controller
     }
 
 
-    public function getFavoriteCourses(Request $request)
+    public function getFavouriteCourses(Request $request)
     {
         // Kiểm tra xem có giới hạn không, nếu không, mặc định là 10
         $limit = $request->limit ?? 10;
@@ -742,13 +750,24 @@ class CourseController extends Controller
         }
 
         // Lấy các khóa học được nhiều người thích nhất
-        $courses = Course::select('courses.*', DB::raw('COUNT(wishlists.id) as favorites_count'))
+        $courses = Course::select(
+
+            // 'courses.*', 
+            'courses.id',
+            'courses.title',
+            'courses.category_id',
+            'courses.level_id',
+            'courses.created_at',
+            DB::raw('COUNT(wishlists.id) as favorites_count')
+        )
             ->leftJoin('wishlists', 'courses.id', '=', 'wishlists.course_id')
             ->when($allCategoryIds, function ($query) use ($allCategoryIds) {
                 return $query->whereIn('courses.category_id', $allCategoryIds);
             })
             ->where('courses.status', 'active')
-            ->groupBy('courses.id')
+            // ->groupBy('courses.id')
+            ->groupBy('courses.id', 'courses.title', 'courses.category_id', 'courses.level_id', 'courses.created_at')
+
             ->orderBy('favorites_count', 'DESC')
             ->limit($limit)
             ->with('category', 'level')
