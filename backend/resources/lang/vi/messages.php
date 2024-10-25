@@ -94,6 +94,7 @@ return [
     'thumbnail.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
     'price_required' => 'Giá là bắt buộc.',
     'type_sale_required' => 'Loại hình bán hàng là bắt buộc.',
+    'language_required' => 'Ngôn ngữ là bắt buộc.',
     'not_your_course' => 'Đây không phải là khóa học của bạn.',
     'no_popular_courses' => 'Hiện không có khóa học phổ biến nào.',
     'popular_courses_found' => 'Đã lấy thành công các khóa học phổ biến.',
@@ -110,6 +111,20 @@ return [
     'successful_save' => 'Lưu thành công.',
     'update_fail' => 'Cập nhật thành công.',
     'update_success' => 'Cập nhật thành công.',
+    
+    //Message for Course Level
+    'course_level_fetch_success' => 'Lấy danh sách cấp độ khóa học thành công',
+    'course_level_not_found' => 'Cấp độ khóa học không được tìm thấy',
+    'course_level_detail_success' => 'Lấy chi tiết cấp độ khóa học thành công',
+    'course_level_create_success' => 'Tạo cấp độ khóa học thành công',
+    'course_level_update_success' => 'Cập nhật cấp độ khóa học thành công',
+    'course_level_soft_delete_success' => 'Xóa mềm cấp độ khóa học thành công',
+    'course_level_restore_success' => 'Khôi phục cấp độ khóa học thành công',
+    'course_level_force_delete_success' => 'Xóa vĩnh viễn cấp độ khóa học thành công',
+    'name_course_level_required' => 'Tên là bắt buộc',
+    'name_course_level_string' => 'Tên phải là chuỗi',
+    'name_course_level_max' => 'Tên không được vượt quá 100 ký tự',
+    'name_course_level_unique' => 'Tên đã tồn tại',
 
     // Cart: handle courses in cart
     'cart_cleared' => 'Tất cả các khóa học đã được xóa khỏi giỏ hàng.',

@@ -14,7 +14,11 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('course_id');
+            $table->softDeletes();
+            $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
 
             
 

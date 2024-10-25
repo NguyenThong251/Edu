@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CourseLevel extends Model
+class Voucher extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -16,8 +16,15 @@ class CourseLevel extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'status',
+        'code',
+        'description',
+        'discount_type',
+        'discount_value',
+        'max_discount',
+        'min_order_value',
+        'start_date',
+        'end_date',
+        'usage_remain',
         'deleted_by',
         'created_by',
         'updated_by',
@@ -28,7 +35,7 @@ class CourseLevel extends Model
      *
      * @var array<string, string>
      */
-    protected $dates = ['deleted_at'];
+    protected $dates = ['start_date', 'end_date', 'deleted_at'];
 
     /**
      * Định nghĩa mối quan hệ với người dùng (User) đã tạo.

@@ -24,7 +24,7 @@ return new class extends Migration
             $table->timestamps();
             $table->bigInteger('created_by')->nullable();
             $table->bigInteger('updated_by')->nullable();
-            $table->foreign('parent_id')->references('id')->on('categories')->onDelete('set null'); // Thêm khóa ngoại
+            // $table->foreign('parent_id')->references('id')->on('categories')->onDelete('set null'); // Thêm khóa ngoại
         });
     }
 

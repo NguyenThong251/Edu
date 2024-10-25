@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CourseLevel extends Model
+class Order extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -16,7 +16,13 @@ class CourseLevel extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'user_id',
+        'voucher_id',
+        'order_code',
+        'total_price',
+        'payment_method',
+        'payment_status',
+        'payment_code',
         'status',
         'deleted_by',
         'created_by',
@@ -31,7 +37,23 @@ class CourseLevel extends Model
     protected $dates = ['deleted_at'];
 
     /**
-     * Định nghĩa mối quan hệ với người dùng (User) đã tạo.
+     * Định nghĩa quan hệ với người dùng (User).
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Định nghĩa quan hệ với mã giảm giá (Voucher).
+     */
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class);
+    }
+
+    /**
+     * Định nghĩa quan hệ với người dùng đã tạo (User) thông qua created_by.
      */
     public function creator()
     {
@@ -39,7 +61,7 @@ class CourseLevel extends Model
     }
 
     /**
-     * Định nghĩa mối quan hệ với người dùng (User) đã cập nhật.
+     * Định nghĩa quan hệ với người dùng đã cập nhật (User) thông qua updated_by.
      */
     public function updater()
     {
@@ -47,7 +69,7 @@ class CourseLevel extends Model
     }
 
     /**
-     * Định nghĩa mối quan hệ với người dùng (User) đã xóa.
+     * Định nghĩa quan hệ với người dùng đã xóa (User) thông qua deleted_by.
      */
     public function deleter()
     {
