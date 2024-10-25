@@ -86,6 +86,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::delete('/cart/courses', [CartController::class, 'clearCart']);
             // Order
             Route::post('/orders', [OrderController::class, 'createOrder']);
+            Route::get('/orders', [OrderController::class, 'listOrders']);
         });
     });
 });

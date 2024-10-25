@@ -16,53 +16,62 @@ class OrderController extends Controller
     {
         $user = auth()->user();
 
-        // Lấy giỏ hàng của người dùng
-        $cart = Cart::where('user_id', $user->id)->first();
-        if (!$cart) {
-            return response()->json(['message' => 'Giỏ hàng trống'], 400);
-        }
-
-        // Tính tổng giá của giỏ hàng
-        $cartItems = CartItem::where('cart_id', $cart->id)->get();
-        $totalPrice = $cartItems->sum(function ($item) {
-            return $item->price;
-        });
-
-        // Tạo mã đơn hàng
-        $orderCode = Str::uuid()->toString();
-
-        // Bắt đầu transaction
         DB::beginTransaction();
 
         try {
-            // Tạo đơn hàng mới
+            // Lấy giỏ hàng của người dùng
+            $cart = Cart::where('user_id', $user->id)->first();
+            if (!$cart) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('messages.cart_empty')
+                ], 404);
+            }
+
+            // Tính tổng giá từ giỏ hàng
+            $cartItems = CartItem::where('cart_id', $cart->id)->get();
+            $totalPrice = $cartItems->sum('price');
+
+            // Khởi tạo đơn hàng mới
             $order = Order::create([
                 'user_id' => $user->id,
-                'order_code' => $orderCode,
+                'voucher_id' => $request->voucher_id, // Nếu có voucher
+                'order_code' => Str::random(10),
                 'total_price' => $totalPrice,
-                'payment_method' => 'unpaid', // hoặc 'stripe', 'paypal', tùy theo thiết lập cổng thanh toán
-                'payment_status' => 'pending',
+                'payment_method' => $request->payment_method,
+                'payment_status' => 'pending', // Trạng thái ban đầu
+                'payment_code' => Str::uuid(),
+                'status' => 'active',
             ]);
 
-            // Tạo các mục trong đơn hàng từ giỏ hàng
-            foreach ($cartItems as $item) {
+            // Tạo từng OrderItem từ CartItem
+            foreach ($cartItems as $cartItem) {
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'course_id' => $item->course_id,
-                    'price' => $item->price,
+                    'course_id' => $cartItem->course_id,
+                    'price' => $cartItem->price,
+                    'status' => 'active',
                 ]);
             }
 
-            // Xóa các mục trong giỏ hàng sau khi tạo đơn hàng
-            CartItem::where('cart_id', $cart->id)->delete();
+            // Xóa các CartItem sau khi đã tạo đơn hàng
+            $cartItems->each->delete();
 
-            // Hoàn tất transaction
+            // Hoàn tất giao dịch
             DB::commit();
 
-            return response()->json(['order' => $order, 'message' => 'Đơn hàng đã được tạo thành công'], 201);
+            return response()->json([
+                'status' => 'success',
+                'message' => __('messages.order_created_success'),
+                'order' => $order
+            ], 201);
         } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json(['message' => 'Lỗi khi tạo đơn hàng: ' . $e->getMessage()], 500);
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'error' => '',
+                'details' => $e->getMessage()
+            ], 500);
         }
     }
 }

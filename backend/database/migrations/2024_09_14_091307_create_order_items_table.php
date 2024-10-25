@@ -22,7 +22,6 @@ return new class extends Migration {
             $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
 
-
             // Foreign keys
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');

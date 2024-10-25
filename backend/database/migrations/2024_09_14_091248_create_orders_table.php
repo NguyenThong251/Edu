@@ -26,7 +26,6 @@ return new class extends Migration {
             $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
 
-
             // Foreign key
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('voucher_id')->references('id')->on('vouchers')->onDelete('cascade');
