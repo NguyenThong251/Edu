@@ -105,6 +105,6 @@ Route::get('courses/{id}', [CourseController::class, 'detail'])->name('courses.d
 Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses'])->name('courses.getPopularCourses');
 Route::get('get-new-courses', [CourseController::class, 'getNewCourses'])->name('courses.getNewCourses');
 Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourses'])->name('courses.getTopRatedCourses');
-Route::get('get-favorite-courses', [CourseController::class, 'getFavoriteCourses'])->name('courses.getFavoriteCourses');
+Route::get('get-favourite-courses', [CourseController::class, 'getFavouriteCourses'])->name('courses.getFavouriteCourses');
 
 Route::post('/webhooks/payment', [WebhookController::class, 'handlePaymentWebhook']);
