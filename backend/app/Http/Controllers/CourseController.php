@@ -689,11 +689,7 @@ class CourseController extends Controller
 
         // Lấy các khóa học hàng đầu theo rating trung bình
         $courses = Course::select(
-            'courses.id',
-            'courses.title',
-            'courses.category_id',
-            'courses.level_id',
-            'courses.created_at',
+            'courses.*',
             DB::raw('AVG(reviews.rating) as average_rating'),
             DB::raw('COUNT(reviews.id) as review_count')
         )
@@ -751,11 +747,7 @@ class CourseController extends Controller
 
         // Lấy các khóa học được nhiều người thích nhất
         $courses = Course::select(
-            'courses.id',
-            'courses.title',
-            'courses.category_id',
-            'courses.level_id',
-            'courses.created_at',
+            'courses.*',
             DB::raw('COUNT(wishlists.id) as favorites_count')
         )
             ->leftJoin('wishlists', 'courses.id', '=', 'wishlists.course_id')
