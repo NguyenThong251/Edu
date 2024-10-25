@@ -148,7 +148,7 @@ class CartController extends Controller
             $courses = $cart->cartItems()->with('course')->get()->map(function ($item) {
                 // Gắn thêm thuộc tính category_name vào khóa học
                 $item->course->category_name = $item->course->category->name;
-                unset($item->course->category_name); // Xóa category để tránh lặp lại thông tin
+                unset($item->course->category); // Xóa category để tránh lặp lại thông tin
                 return $item->course; // Trả về toàn bộ thông tin của course cùng với category_name
             });
 
