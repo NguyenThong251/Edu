@@ -22,7 +22,10 @@ class CartController extends Controller
 
             // Lấy danh sách các cart items
             $courses = $cart->cartItems()->with('course')->get()->map(function ($item) {
-                return $item->course;
+                // Gắn thêm thuộc tính category_name vào khóa học
+                $item->course->category_name = $item->course->category->name;
+                unset($item->course->category); // Xóa category để tránh lặp lại thông tin
+                return $item->course; // Trả về toàn bộ thông tin của course cùng với category_name
             });
 
             if ($courses->isEmpty()) {
@@ -86,7 +89,10 @@ class CartController extends Controller
 
             // Lấy danh sách khóa học
             $courses = $cart->cartItems()->with('course')->get()->map(function ($item) {
-                return $item->course;
+                // Gắn thêm thuộc tính category_name vào khóa học
+                $item->course->category_name = $item->course->category->name;
+                unset($item->course->category); // Xóa category để tránh lặp lại thông tin
+                return $item->course; // Trả về toàn bộ thông tin của course cùng với category_name
             });
 
             return response()->json([
@@ -140,7 +146,10 @@ class CartController extends Controller
 
             // Lấy danh sách các khóa học còn lại trong giỏ hàng
             $courses = $cart->cartItems()->with('course')->get()->map(function ($item) {
-                return $item->course;
+                // Gắn thêm thuộc tính category_name vào khóa học
+                $item->course->category_name = $item->course->category->name;
+                unset($item->course->category_name); // Xóa category để tránh lặp lại thông tin
+                return $item->course; // Trả về toàn bộ thông tin của course cùng với category_name
             });
 
             return response()->json([
