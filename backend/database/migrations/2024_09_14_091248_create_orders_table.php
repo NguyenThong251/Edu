@@ -19,17 +19,17 @@ return new class extends Migration {
             $table->string('payment_method');
             $table->string('payment_status');
             $table->string('payment_code');
-            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->softDeletes();
-            $table->bigInteger('deleted_by')->nullable();
-            $table->timestamps();
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->bigInteger('created_by')->nullable();
             $table->bigInteger('updated_by')->nullable();
+            $table->bigInteger('deleted_by')->nullable();
+            $table->timestamps();
 
 
             // Foreign key
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('voucher_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('voucher_id')->references('id')->on('vouchers')->onDelete('cascade');
         });
     }
 
