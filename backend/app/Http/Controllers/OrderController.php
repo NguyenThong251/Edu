@@ -101,8 +101,8 @@ class OrderController extends Controller
         // Tạo `PaymentIntent` với `Customer` và `PaymentMethod` đã gắn
         $paymentIntent = PaymentIntent::create([
             'amount' => $order->total_price * 100,
-            // 'currency' => $order->currency ?? 'usd',
-            'currency' => 'vnd',
+            'currency' => $order->currency ?? 'usd',
+            // 'currency' => 'vnd',
             'customer' => $customer->id,
             'payment_method' => $paymentMethod,
             'description' => 'Thanh toán đơn hàng #' . $order->order_code,
