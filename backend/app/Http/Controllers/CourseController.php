@@ -118,26 +118,16 @@ class CourseController extends Controller
         if ($min_rating) {
             $query->whereHas('reviews', function ($q) use ($min_rating) {
                 $q->select('course_id') // Chọn course_id để nhóm
-<<<<<<< HEAD
                     ->groupBy('course_id') // Nhóm theo course_id
-                    ->havingRaw('ROUND(AVG(rating), 0) >= ?', [$min_rating]);
-=======
-                  ->groupBy('course_id') // Nhóm theo course_id
-                  ->havingRaw('AVG(rating) >= ?', [$min_rating]);
->>>>>>> 40986631cf18fd77854dbe89d2ddaaa906554f92
+                    ->havingRaw('AVG(rating) >= ?', [$min_rating]);
             });
         }
 
         if ($max_rating) {
             $query->whereHas('reviews', function ($q) use ($max_rating) {
                 $q->select('course_id') // Chọn course_id để nhóm
-<<<<<<< HEAD
                     ->groupBy('course_id') // Nhóm theo course_id
-                    ->havingRaw('ROUND(AVG(rating), 0) <= ?', [$max_rating]);
-=======
-                  ->groupBy('course_id') // Nhóm theo course_id
-                  ->havingRaw('AVG(rating) <= ?', [$max_rating]);
->>>>>>> 40986631cf18fd77854dbe89d2ddaaa906554f92
+                    ->havingRaw('AVG(rating) <= ?', [$max_rating]);
             });
         }
 
