@@ -62,18 +62,6 @@
         },
         {
             "name": "aws/aws-sdk-php",
-<<<<<<< HEAD
-            "version": "3.324.8",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "22ac6655d95ac9e068f39364c7756fbc1460ffbb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/22ac6655d95ac9e068f39364c7756fbc1460ffbb",
-                "reference": "22ac6655d95ac9e068f39364c7756fbc1460ffbb",
-=======
             "version": "3.324.10",
             "source": {
                 "type": "git",
@@ -84,7 +72,6 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/702da8ee8a9dbae919c3559b8f4dba61cd8355b0",
                 "reference": "702da8ee8a9dbae919c3559b8f4dba61cd8355b0",
->>>>>>> 3ca539f772412d9ee78ed9203e74429f88a921a5
                 "shasum": ""
             },
             "require": {
@@ -167,15 +154,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-<<<<<<< HEAD
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.324.8"
-            },
-            "time": "2024-10-22T18:32:28+00:00"
-=======
                 "source": "https://github.com/aws/aws-sdk-php/tree/3.324.10"
             },
             "time": "2024-10-24T18:08:37+00:00"
->>>>>>> 3ca539f772412d9ee78ed9203e74429f88a921a5
         },
         {
             "name": "brick/math",
@@ -1820,8 +1801,6 @@
         },
         {
             "name": "lcobucci/clock",
-<<<<<<< HEAD
-<<<<<<< HEAD
             "version": "2.3.0",
             "source": {
                 "type": "git",
@@ -1832,52 +1811,24 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/lcobucci/clock/zipball/c7aadcd6fd97ed9e199114269c0be3f335e38876",
                 "reference": "c7aadcd6fd97ed9e199114269c0be3f335e38876",
-=======
-            "version": "3.0.0",
-=======
-            "version": "3.3.1",
->>>>>>> 3ca539f772412d9ee78ed9203e74429f88a921a5
-            "source": {
-                "type": "git",
-                "url": "https://github.com/lcobucci/clock.git",
-                "reference": "db3713a61addfffd615b79bf0bc22f0ccc61b86b"
-            },
-            "dist": {
-                "type": "zip",
-<<<<<<< HEAD
-                "url": "https://api.github.com/repos/lcobucci/clock/zipball/039ef98c6b57b101d10bd11d8fdfda12cbd996dc",
-                "reference": "039ef98c6b57b101d10bd11d8fdfda12cbd996dc",
->>>>>>> 40986631cf18fd77854dbe89d2ddaaa906554f92
                 "shasum": ""
             },
             "require": {
                 "php": "~8.1.0 || ~8.2.0",
-<<<<<<< HEAD
                 "stella-maris/clock": "^0.1.7"
-=======
-=======
-                "url": "https://api.github.com/repos/lcobucci/clock/zipball/db3713a61addfffd615b79bf0bc22f0ccc61b86b",
-                "reference": "db3713a61addfffd615b79bf0bc22f0ccc61b86b",
-                "shasum": ""
-            },
-            "require": {
-                "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
->>>>>>> 3ca539f772412d9ee78ed9203e74429f88a921a5
-                "psr/clock": "^1.0"
->>>>>>> 40986631cf18fd77854dbe89d2ddaaa906554f92
             },
             "provide": {
                 "psr/clock-implementation": "1.0"
             },
             "require-dev": {
-                "infection/infection": "^0.29",
-                "lcobucci/coding-standard": "^11.1.0",
-                "phpstan/extension-installer": "^1.3.1",
-                "phpstan/phpstan": "^1.10.25",
-                "phpstan/phpstan-deprecation-rules": "^1.1.3",
-                "phpstan/phpstan-phpunit": "^1.3.13",
-                "phpstan/phpstan-strict-rules": "^1.5.1",
-                "phpunit/phpunit": "^11.3.6"
+                "infection/infection": "^0.26",
+                "lcobucci/coding-standard": "^9.0",
+                "phpstan/extension-installer": "^1.2",
+                "phpstan/phpstan": "^1.9.4",
+                "phpstan/phpstan-deprecation-rules": "^1.1.1",
+                "phpstan/phpstan-phpunit": "^1.3.2",
+                "phpstan/phpstan-strict-rules": "^1.4.4",
+                "phpunit/phpunit": "^9.5.27"
             },
             "type": "library",
             "autoload": {
@@ -1898,15 +1849,7 @@
             "description": "Yet another clock abstraction",
             "support": {
                 "issues": "https://github.com/lcobucci/clock/issues",
-<<<<<<< HEAD
-<<<<<<< HEAD
                 "source": "https://github.com/lcobucci/clock/tree/2.3.0"
-=======
-                "source": "https://github.com/lcobucci/clock/tree/3.0.0"
->>>>>>> 40986631cf18fd77854dbe89d2ddaaa906554f92
-=======
-                "source": "https://github.com/lcobucci/clock/tree/3.3.1"
->>>>>>> 3ca539f772412d9ee78ed9203e74429f88a921a5
             },
             "funding": [
                 {
@@ -1918,15 +1861,7 @@
                     "type": "patreon"
                 }
             ],
-<<<<<<< HEAD
-<<<<<<< HEAD
             "time": "2022-12-19T14:38:11+00:00"
-=======
-            "time": "2022-12-19T15:00:24+00:00"
->>>>>>> 40986631cf18fd77854dbe89d2ddaaa906554f92
-=======
-            "time": "2024-09-24T20:45:14+00:00"
->>>>>>> 3ca539f772412d9ee78ed9203e74429f88a921a5
         },
         {
             "name": "lcobucci/jwt",
@@ -4096,7 +4031,6 @@
             "time": "2024-04-27T21:32:50+00:00"
         },
         {
-<<<<<<< HEAD
             "name": "stella-maris/clock",
             "version": "0.1.7",
             "source": {
@@ -4118,7 +4052,32 @@
             "autoload": {
                 "psr-4": {
                     "StellaMaris\\Clock\\": "src"
-=======
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Andreas Heigl",
+                    "role": "Maintainer"
+                }
+            ],
+            "description": "A pre-release of the proposed PSR-20 Clock-Interface",
+            "homepage": "https://gitlab.com/stella-maris/clock",
+            "keywords": [
+                "clock",
+                "datetime",
+                "point in time",
+                "psr20"
+            ],
+            "support": {
+                "source": "https://github.com/stella-maris-solutions/clock/tree/0.1.7"
+            },
+            "time": "2022-11-25T16:15:06+00:00"
+        },
+        {
             "name": "stripe/stripe-php",
             "version": "v16.1.1",
             "source": {
@@ -4152,7 +4111,6 @@
             "autoload": {
                 "psr-4": {
                     "Stripe\\": "lib/"
->>>>>>> 3ca539f772412d9ee78ed9203e74429f88a921a5
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -4161,24 +4119,6 @@
             ],
             "authors": [
                 {
-<<<<<<< HEAD
-                    "name": "Andreas Heigl",
-                    "role": "Maintainer"
-                }
-            ],
-            "description": "A pre-release of the proposed PSR-20 Clock-Interface",
-            "homepage": "https://gitlab.com/stella-maris/clock",
-            "keywords": [
-                "clock",
-                "datetime",
-                "point in time",
-                "psr20"
-            ],
-            "support": {
-                "source": "https://github.com/stella-maris-solutions/clock/tree/0.1.7"
-            },
-            "time": "2022-11-25T16:15:06+00:00"
-=======
                     "name": "Stripe and contributors",
                     "homepage": "https://github.com/stripe/stripe-php/contributors"
                 }
@@ -4195,7 +4135,6 @@
                 "source": "https://github.com/stripe/stripe-php/tree/v16.1.1"
             },
             "time": "2024-10-18T18:42:52+00:00"
->>>>>>> 3ca539f772412d9ee78ed9203e74429f88a921a5
         },
         {
             "name": "symfony/console",
