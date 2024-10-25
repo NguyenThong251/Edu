@@ -2,54 +2,46 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
-use App\Models\CartItem;
-use App\Models\Order;
-use App\Models\OrderItem;
+use App\Models\{Cart, CartItem, Order, OrderItem};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{Auth, DB, Log};
 use Illuminate\Support\Str;
-use Stripe\PaymentIntent;
-use Stripe\Stripe;
+use Stripe\{PaymentIntent, PaymentMethod, Stripe, Customer};
 
 class OrderController extends Controller
 {
     public function createOrder(Request $request)
     {
-        $user = auth()->user();
+        // Lấy thông tin người dùng hiện tại
+        $user = Auth::user();
 
+        // Bắt đầu giao dịch
         DB::beginTransaction();
 
         try {
             // Lấy giỏ hàng của người dùng
-            $cart = Cart::where('user_id', $user->id)->first();
-            if (!$cart) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => __('messages.cart_empty')
-                ], 404);
+            $cart = Cart::with('cartItems')->where('user_id', $user->id)->first();
+            if (!$cart || $cart->cartItems->isEmpty()) {
+                return response()->json(['status' => 'error', 'message' => 'Giỏ hàng trống'], 404);
             }
 
-            // Tính tổng giá từ giỏ hàng
-            $cartItems = CartItem::where('cart_id', $cart->id)->get();
-            $totalPrice = $cartItems->sum('price');
+            // Tính tổng giá trị từ giỏ hàng
+            $totalPrice = $cart->cartItems->sum('price');
 
-            // Khởi tạo đơn hàng mới
+            // Tạo đơn hàng mới
             $order = Order::create([
                 'user_id' => $user->id,
-                'voucher_id' => $request->voucher_id, // Nếu có voucher
+                'voucher_id' => $request->voucher_id,
                 'order_code' => Str::random(10),
                 'total_price' => $totalPrice,
                 'payment_method' => $request->payment_method,
-                'payment_status' => 'pending', // Trạng thái ban đầu
+                'payment_status' => 'pending',
                 'payment_code' => Str::uuid(),
                 'status' => 'active',
             ]);
 
-            // Tạo từng OrderItem từ CartItem
-            foreach ($cartItems as $cartItem) {
+            // Tạo các OrderItems từ CartItems
+            foreach ($cart->cartItems as $cartItem) {
                 OrderItem::create([
                     'order_id' => $order->id,
                     'course_id' => $cartItem->course_id,
@@ -58,87 +50,117 @@ class OrderController extends Controller
                 ]);
             }
 
-            // Xóa các CartItem sau khi đã tạo đơn hàng
-            $cartItems->each->delete();
+            // Xóa các mục trong giỏ hàng sau khi đã tạo đơn hàng
+            $cart->cartItems()->delete();
 
-            // Hoàn tất giao dịch
+            // Tạo PaymentIntent và lưu vào Order
+            $paymentIntent = $this->createPaymentIntentForOrder($order);
             DB::commit();
 
             return response()->json([
                 'status' => 'success',
-                'message' => __('messages.order_created_success'),
-                'order' => $order
+                'message' => 'Đơn hàng được tạo thành công',
+                'order' => $order,
+                'client_secret' => $paymentIntent['client_secret']
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'error' => '',
+                'message' => 'Có lỗi xảy ra trong quá trình tạo đơn hàng',
                 'details' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function createPaymentIntent(Request $request)
+    private function createPaymentIntentForOrder($order)
     {
         Stripe::setApiKey(config('services.stripe.secret'));
 
-        $order = Order::where('id', $request->order_id)->first();
-        if (!$order) {
-            return response()->json(['error' => 'Order not found'], 404);
+        // Lấy thông tin người dùng hiện tại
+        $user = Auth::user();
+
+        // Tạo `Customer` nếu chưa tồn tại và lưu vào hồ sơ người dùng
+        if (!$user->stripe_customer_id) {
+            $customer = Customer::create([
+                'email' => $user->email,
+                'name' => $user->name,
+            ]);
+            $user->update(['stripe_customer_id' => $customer->id]);
+        } else {
+            $customer = Customer::retrieve($user->stripe_customer_id);
         }
 
+        // Gắn `PaymentMethod` vào `Customer` nếu cần
+        $paymentMethod = 'pm_card_visa'; // Đây là ID mẫu của `PaymentMethod`, bạn có thể thay bằng ID từ request
+        $retrievedPaymentMethod = PaymentMethod::retrieve($paymentMethod);
+        if ($retrievedPaymentMethod->customer !== $customer->id) {
+            $retrievedPaymentMethod->attach(['customer' => $customer->id]);
+        }
+
+        // Tạo `PaymentIntent` với `Customer` và `PaymentMethod` đã gắn
         $paymentIntent = PaymentIntent::create([
-            'amount' => $order->total_price * 100, // Stripe yêu cầu số tiền tính bằng cent
-            'currency' => 'usd',
-            'metadata' => ['order_id' => $order->id],
+            'amount' => $order->total_price * 100,
+            // 'currency' => $order->currency ?? 'usd',
+            'currency' => 'vnd',
+            'customer' => $customer->id,
+            'payment_method' => $paymentMethod,
+            'description' => 'Thanh toán đơn hàng #' . $order->order_code,
+            'setup_future_usage' => 'off_session', // Để lưu lại PaymentMethod cho các giao dịch trong tương lai
+            'automatic_payment_methods' => [
+                'enabled' => true,
+                'allow_redirects' => 'never'
+            ]
         ]);
 
-        // Cập nhật mã payment_code để sử dụng trong webhook
+        // Cập nhật `payment_code` với `PaymentIntent ID` từ Stripe
         $order->update(['payment_code' => $paymentIntent->id]);
 
-        return response()->json([
-            'client_secret' => $paymentIntent->client_secret,
-        ]);
+        return ['client_secret' => $paymentIntent->client_secret];
     }
 
     public function listOrders(Request $request)
     {
-        $user = auth()->user();
+        // Lấy user hiện tại
+        $userId = Auth::id();
 
-        // Lấy danh sách đơn hàng của người dùng hiện tại
-        $orders = Order::where('user_id', $user->id)
+        // Lấy danh sách đơn hàng của người dùng, kèm thông tin OrderItems và khóa học
+        $orders = Order::where('user_id', $userId)
             ->with(['orderItems.course'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10); // Mỗi trang có 10 đơn hàng
+            ->orderByDesc('created_at')
+            ->paginate(10); // Phân trang, mỗi trang 10 đơn hàng
 
-
+        // Trả về danh sách đơn hàng
         return response()->json([
             'status' => 'success',
-            'message' => 'Orders retrieved successfully',
+            'message' => 'Danh sách đơn hàng được lấy thành công',
             'orders' => $orders
         ], 200);
     }
 
     public function getOrderDetails($id)
     {
-        // Xác thực người dùng hiện tại
-        $user = Auth::user();
+        // Xác định người dùng hiện tại
+        $userId = Auth::id();
 
-        // Tìm đơn hàng dựa trên ID và người dùng hiện tại
+        // Tìm đơn hàng dựa trên ID và user_id để đảm bảo quyền truy cập
         $order = Order::where('id', $id)
-            ->where('user_id', $user->id)
-            ->with(['orderItems.course']) // Tải các mục đơn hàng và chi tiết khóa học nếu có
+            ->where('user_id', $userId)
+            ->with(['orderItems.course']) // Tải các mục trong đơn hàng và thông tin khóa học nếu có
             ->first();
 
-        // Kiểm tra xem đơn hàng có tồn tại không
+        // Kiểm tra nếu đơn hàng không tồn tại hoặc không thuộc về người dùng hiện tại
         if (!$order) {
-            return response()->json(['message' => 'Order not found or access denied'], 404);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Đơn hàng không tồn tại hoặc bạn không có quyền truy cập'
+            ], 404);
         }
 
-        // Trả về dữ liệu chi tiết đơn hàng
+        // Trả về dữ liệu chi tiết của đơn hàng
         return response()->json([
-            'message' => 'Order details retrieved successfully',
+            'status' => 'success',
+            'message' => 'Chi tiết đơn hàng được lấy thành công',
             'order' => $order
         ], 200);
     }
@@ -147,31 +169,43 @@ class OrderController extends Controller
     {
         Stripe::setApiKey(config('services.stripe.secret'));
 
-        // Tìm đơn hàng của người dùng hiện tại
+        // Lấy thông tin người dùng hiện tại
+        $user = Auth::user();
+
+        // Kiểm tra nếu người dùng đã có `Customer` trên Stripe
+        if (!$user->stripe_customer_id) {
+            $customer = Customer::create([
+                'email' => $user->email,
+                'name' => $user->name,
+            ]);
+            $user->update(['stripe_customer_id' => $customer->id]);
+        } else {
+            $customer = Customer::retrieve($user->stripe_customer_id);
+        }
+
+        // Lấy đơn hàng của người dùng hiện tại và kiểm tra trạng thái
         $order = Order::where('id', $id)
-            ->where('user_id', auth()->id())
+            ->where('user_id', $user->id)
             ->where('payment_status', 'pending')
             ->first();
 
         if (!$order) {
-            return response()->json(['message' => 'Order not found or already confirmed'], 404);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Đơn hàng không tồn tại hoặc đã được thanh toán'
+            ], 404);
         }
 
         try {
-            // Xác định đơn vị tiền tệ và số tiền
-            $currency = $order->currency; // USD hoặc VND
-            $amount = $currency === 'usd' ? $order->total_price * 100 : $order->total_price;
+            // Lấy PaymentIntent từ payment_code của đơn hàng
+            $paymentIntent = PaymentIntent::retrieve($order->payment_code);
 
-            // Tạo PaymentIntent từ Stripe
-            $paymentIntent = PaymentIntent::create([
-                'amount' => $amount,
-                'currency' => $currency,
-                'payment_method' => $request->payment_method_id,
-                'confirmation_method' => 'manual',
-                'confirm' => true,
+            // Xác nhận PaymentIntent với `allow_redirects: 'never'` để tắt các phương thức yêu cầu chuyển hướng
+            $paymentIntent->confirm([
+                'payment_method' => $request->payment_method_id
             ]);
 
-            // Xác nhận nếu PaymentIntent thành công
+            // Cập nhật trạng thái đơn hàng nếu thanh toán thành công
             if ($paymentIntent->status == 'succeeded') {
                 $order->update([
                     'payment_status' => 'paid',
@@ -179,24 +213,25 @@ class OrderController extends Controller
                 ]);
 
                 return response()->json([
-                    'message' => 'Payment confirmed successfully',
+                    'status' => 'success',
+                    'message' => 'Thanh toán thành công',
                     'order' => $order
                 ], 200);
-            } else {
-                return response()->json([
-                    'message' => 'Payment failed or not confirmed',
-                    'payment_intent_status' => $paymentIntent->status
-                ], 400);
             }
 
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Thanh toán thất bại hoặc chưa được xác nhận',
+                'payment_intent_status' => $paymentIntent->status
+            ], 400);
         } catch (\Exception $e) {
-            Log::error("Payment confirmation failed: " . $e->getMessage());
+            Log::error("Lỗi xác thực thanh toán: " . $e->getMessage());
 
             return response()->json([
-                'message' => 'Payment confirmation failed',
+                'status' => 'error',
+                'message' => 'Lỗi xác thực thanh toán',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
-
 }

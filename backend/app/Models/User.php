@@ -43,6 +43,7 @@ class User extends Authenticatable implements JWTSubject
         'role',
         'status',
         'email_verified',
+        'stripe_customer_id',
         'reset_token',
         'provider',
         'provider_id'

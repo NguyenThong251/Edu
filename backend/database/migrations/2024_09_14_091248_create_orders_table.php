@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->string('currency')->default('usd'); // Mặc định là USD
             $table->string('payment_method');
             $table->string('payment_status');
-            $table->string('payment_code');
+            $table->string('payment_code')->nullable();
             $table->softDeletes();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->bigInteger('created_by')->nullable();

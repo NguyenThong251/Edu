@@ -73,4 +73,8 @@ Install Stripe & GET Webhook Key from CLI
 
 How get Payment Method from Stripe
 
-    stripe payment_methods create --type card --card "number=4242424242424242" "exp_month=12" "exp_year=2025" "cvc=123"
+    curl https://api.stripe.com/v1/payment_intents \
+    -u "sk_test_51QDhZhR2qIhdxX9o3xELtHCE5bFAVLiToUdesbej0RRLVb6vY5MZ03xD9ISG7SNeNO4a3YVRV2zJTVhm6FkA20ve008Fd7xeL8:" \
+    -d amount=500 \
+    -d currency=gbp \
+    -d payment_method=pm_card_visa
