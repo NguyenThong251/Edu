@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -80,6 +82,12 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/cart/courses', [CartController::class, 'addCourseToCart']);
             Route::delete('/cart/courses/{course_id}', [CartController::class, 'removeCourseFromCart']);
             Route::delete('/cart/courses', [CartController::class, 'clearCart']);
+            // Order
+            Route::post('/orders', [OrderController::class, 'createOrder']);
+            Route::post('/orders/create-payment-intent', [OrderController::class, 'createPaymentIntent']);
+            Route::get('/orders', [OrderController::class, 'listOrders']);
+            Route::get('/orders/{id}', [OrderController::class, 'getOrderDetails']);
+            Route::post('/orders/{id}/confirm-payment', [OrderController::class, 'confirmPayment']);
         });
     });
 });
@@ -95,3 +103,5 @@ Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses']
 Route::get('get-new-courses', [CourseController::class, 'getNewCourses'])->name('courses.getNewCourses');
 Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourses'])->name('courses.getTopRatedCourses');
 Route::get('get-favourite-courses', [CourseController::class, 'getFavouriteCourses'])->name('courses.getFavouriteCourses');
+
+Route::post('/webhooks/payment', [WebhookController::class, 'handlePaymentWebhook']);

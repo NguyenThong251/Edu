@@ -137,5 +137,7 @@ return [
     'course_removed_success' => 'Course removed successfully.',
     'course_not_found_in_cart' => 'Course not in cart.',
 
-
+    // ORDER: handle orders
+    'order_created_success' => 'Order created successfully.',
+    'order_create_failed' => 'Failed to create order',
 ];

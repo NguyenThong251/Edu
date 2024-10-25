@@ -64,3 +64,17 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+# Stripe
+
+Install Stripe & GET Webhook Key from CLI
+
+    stripe listen --forward-to http://localhost:8000/api/webhooks/payment
+
+How get Payment Method from Stripe
+
+    curl https://api.stripe.com/v1/payment_intents \
+    -u "sk_test_51QDhZhR2qIhdxX9o3xELtHCE5bFAVLiToUdesbej0RRLVb6vY5MZ03xD9ISG7SNeNO4a3YVRV2zJTVhm6FkA20ve008Fd7xeL8:" \
+    -d amount=500 \
+    -d currency=gbp \
+    -d payment_method=pm_card_visa

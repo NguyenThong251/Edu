@@ -15,13 +15,12 @@ return new class extends Migration {
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('course_id');
             $table->double('price');
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->softDeletes();
-            $table->bigInteger('deleted_by')->nullable();
-            $table->timestamps();
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->bigInteger('created_by')->nullable();
             $table->bigInteger('updated_by')->nullable();
-
+            $table->bigInteger('deleted_by')->nullable();
+            $table->timestamps();
 
             // Foreign keys
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');

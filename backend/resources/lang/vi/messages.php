@@ -111,7 +111,7 @@ return [
     'successful_save' => 'Lưu thành công.',
     'update_fail' => 'Cập nhật thành công.',
     'update_success' => 'Cập nhật thành công.',
-    
+
     //Message for Course Level
     'course_level_fetch_success' => 'Lấy danh sách cấp độ khóa học thành công',
     'course_level_not_found' => 'Cấp độ khóa học không được tìm thấy',
@@ -134,4 +134,8 @@ return [
     'course_added_success' => 'Khóa học đã được thêm thành công.',
     'course_removed_success' => 'Khóa học đã được xóa thành công.',
     'course_not_found_in_cart' => 'Khóa học không có trong giỏ hàng.',
+
+    // Order
+    'order_created_success' => 'Đơn hàng đã được tạo thành công.',
+    'order_create_failed' => 'Tạo đơn hàng thất bại.',
 ];

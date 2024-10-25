@@ -20,6 +20,7 @@ class Order extends Model
         'voucher_id',
         'order_code',
         'total_price',
+        'currency',
         'payment_method',
         'payment_status',
         'payment_code',
@@ -28,6 +29,11 @@ class Order extends Model
         'created_by',
         'updated_by',
     ];
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 
     /**
      * Các thuộc tính sẽ được coi là kiểu ngày tháng.
