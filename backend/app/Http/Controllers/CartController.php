@@ -14,7 +14,7 @@ class CartController extends Controller
     public function getCoursesFromCart()
     {
         try {
-            // Lấy người dùng đã đăng nhập (hoặc mặc định là User 1 cho test)
+            // Lấy người dùng đã đăng nhập
             $user = Auth::user();
 
             // Lấy giỏ hàng của người dùng hoặc tạo mới nếu chưa có
@@ -22,33 +22,16 @@ class CartController extends Controller
 
             // Lấy danh sách các cart items
             $courses = $cart->cartItems()->with('course')->get()->map(function ($item) {
-                // Gắn thêm thuộc tính category_name vào khóa học
-                $item->course->category_name = $item->course->category->name;
-                unset($item->course->category); // Xóa category để tránh lặp lại thông tin
-                return $item->course; // Trả về toàn bộ thông tin của course cùng với category_name
+                return $item->course;
             });
 
             if ($courses->isEmpty()) {
-                return response()->json([
-                    'status' => 'success',
-                    'message' => __('messages.cart_empty')
-                ], 200);
+                return $this->formatResponse('success', __('messages.cart_empty'), [], 200);
             }
 
-            return response()->json([
-                'status' => 'success',
-                'courses' => $courses
-            ], 200);
+            return $this->formatResponse('success', __('messages.cart_items_fetched'), $courses, 200);
         } catch (\Exception $e) {
-            // Kiểm tra mã lỗi và trả về mã phù hợp
-            $statusCode = (is_int($e->getCode()) && $e->getCode() >= 100 && $e->getCode() < 600)
-                ? $e->getCode()
-                : 500;
-
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], $statusCode);
+            return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
         }
     }
 
@@ -89,84 +72,40 @@ class CartController extends Controller
 
             // Lấy danh sách khóa học
             $courses = $cart->cartItems()->with('course')->get()->map(function ($item) {
-                // Gắn thêm thuộc tính category_name vào khóa học
-                $item->course->category_name = $item->course->category->name;
-                unset($item->course->category); // Xóa category để tránh lặp lại thông tin
-                return $item->course; // Trả về toàn bộ thông tin của course cùng với category_name
+                return $item->course;
             });
 
-            return response()->json([
-                'status' => 'success',
-                'message' => __('messages.course_added_success'),
-                'courses' => $courses
-            ], 201);
+            return $this->formatResponse('success', __('messages.course_added_success'), $courses, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Trả về lỗi validate chi tiết cho developer
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation Error',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->formatResponse('error', 'Validation Error', $e->errors(), 422);
         } catch (\Exception $e) {
             DB::rollBack();
-
-            // Kiểm tra mã lỗi và trả về mã phù hợp
-            $statusCode = (is_int($e->getCode()) && $e->getCode() >= 100 && $e->getCode() < 600)
-                ? $e->getCode()
-                : 500;
-
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], $statusCode);
+            return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
         }
     }
 
     public function removeCourseFromCart($course_id)
     {
         try {
-            // Lấy người dùng đã đăng nhập
             $user = Auth::user();
-
-            // Lấy giỏ hàng của người dùng hoặc tạo mới nếu chưa có
             $cart = $this->getOrCreateUserCart($user);
-
-            // Kiểm tra xem khóa học có trong giỏ hàng không
             $cartItem = $cart->cartItems()->where('course_id', $course_id)->first();
 
             if (!$cartItem) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => __('messages.course_not_found_in_cart'),
-                ], 404);
+                return $this->formatResponse('error', __('messages.course_not_found_in_cart'), null, 404);
             }
 
             // Xóa khóa học khỏi giỏ hàng
             $cartItem->delete();
 
-            // Lấy danh sách các khóa học còn lại trong giỏ hàng
+            // Lấy danh sách khóa học còn lại trong giỏ hàng
             $courses = $cart->cartItems()->with('course')->get()->map(function ($item) {
-                // Gắn thêm thuộc tính category_name vào khóa học
-                $item->course->category_name = $item->course->category->name;
-                unset($item->course->category); // Xóa category để tránh lặp lại thông tin
-                return $item->course; // Trả về toàn bộ thông tin của course cùng với category_name
+                return $item->course;
             });
 
-            return response()->json([
-                'status' => 'success',
-                'message' => __('messages.course_removed_success'),
-                'courses' => $courses
-            ], 200);
+            return $this->formatResponse('success', __('messages.course_removed_success'), $courses, 200);
         } catch (\Exception $e) {
-            // Kiểm tra mã lỗi và trả về mã phù hợp
-            $statusCode = (is_int($e->getCode()) && $e->getCode() >= 100 && $e->getCode() < 600)
-                ? $e->getCode()
-                : 500;
-
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], $statusCode);
+            return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
         }
     }
 
@@ -203,5 +142,44 @@ class CartController extends Controller
     {
         // Tạo giỏ hàng nếu chưa tồn tại
         return Cart::firstOrCreate(['user_id' => $user->id]);
+    }
+
+    private function formatResponse($status, $message, $data = null, $code = 200)
+    {
+        $response = [
+            'status' => $status,
+            'message' => $message,
+        ];
+
+        if ($data) {
+            // Tạo đối tượng mới chứa dữ liệu cần thiết
+            $formattedData = $data->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'thumbnail' => $item->thumbnail,
+                    'title' => $item->title,
+                    'category_name' => $item->category->name,
+                    'creator' => $item->creator ? trim($item->creator->last_name . ' ' . $item->creator->first_name) : null,
+                    'old_price' => round($item->price),
+                    'current_price' => $item->type_sale === 'percent'
+                        ? round($item->price - ($item->price * $item->sale_value / 100))
+                        : round($item->price - $item->sale_value),
+                    'average_rating' => round($item->reviews->avg('rating'), 1),
+                    'reviews_count' => $item->reviews->count(),
+                    'total_duration' => round($item->sections->reduce(function ($carry, $section) {
+                        return $carry + $section->lectures->sum('duration');
+                    }, 0) / 3600, 1),
+                    'lectures_count' => $item->sections->reduce(function ($carry, $section) {
+                        return $carry + $section->lectures->count();
+                    }, 0),
+                    'level' => $item->level->name,
+                ];
+            });
+
+            // Gán dữ liệu đã format vào response
+            $response['data'] = $formattedData;
+        }
+
+        return response()->json($response, $code);
     }
 }
