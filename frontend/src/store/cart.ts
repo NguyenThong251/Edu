@@ -82,7 +82,8 @@ export const useCartStore = defineStore('cart', () => {
     try {
       if (isAuthenticated.value) {
         const response = await api.get('/auth/cart/courses')
-        cartDb.value = await response.data.courses
+        console.log(response)
+        cartDb.value = await response.data.data
       } else {
         //
       }
@@ -138,38 +139,38 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   // DONG BO DU LIEU GIO HANG LOCAL LEN SERVER
-  const syncLocalCartWithServer = async () => {
-    // Kiểm tra xem giỏ hàng local có sản phẩm nào không
-    if (cartLocal.value.length > 0 && isAuthenticated.value) {
-      for (const item of cartLocal.value) {
-        try {
-          await api.post('/auth/cart/courses', { course_id: item.id })
-        } catch (error) {
-          console.error(`Failed to sync course ID ${item.id} with server:`, error)
-        }
-      }
-      // Xóa giỏ hàng local sau khi đã đồng bộ
-      cartLocal.value = []
-      saveCartToLocalStorage()
-      await fetchCartCourses()
-    }
-  }
+  // const syncLocalCartWithServer = async () => {
+  //   // Kiểm tra xem giỏ hàng local có sản phẩm nào không
+  //   if (cartLocal.value.length > 0 && isAuthenticated.value) {
+  //     for (const item of cartLocal.value) {
+  //       try {
+  //         await api.post('/auth/cart/courses', { course_id: item.id })
+  //       } catch (error) {
+  //         console.error(`Failed to sync course ID ${item.id} with server:`, error)
+  //       }
+  //     }
+  //     // Xóa giỏ hàng local sau khi đã đồng bộ
+  //     cartLocal.value = []
+  //     saveCartToLocalStorage()
+  //     await fetchCartCourses()
+  //   }
+  // }
 
-  const handleLogin = async () => {
-    if (isAuthenticated.value) {
-      // Nếu người dùng đăng nhập, đồng bộ giỏ hàng từ local lên server
-      await syncLocalCartWithServer()
-    }
-  }
+  // const handleLogin = async () => {
+  //   if (isAuthenticated.value) {
+  //     // Nếu người dùng đăng nhập, đồng bộ giỏ hàng từ local lên server
+  //     await syncLocalCartWithServer()
+  //   }
+  // }
 
-  const handleLogout = () => {
-    // Khi người dùng đăng xuất, lưu giỏ hàng từ server vào localStorage
-    if (cartDb.value.length > 0) {
-      cartLocal.value = cartDb.value
-      saveCartToLocalStorage()
-    }
-    cartDb.value = []
-  }
+  // const handleLogout = () => {
+  //   // Khi người dùng đăng xuất, lưu giỏ hàng từ server vào localStorage
+  //   if (cartDb.value.length > 0) {
+  //     cartLocal.value = cartDb.value
+  //     saveCartToLocalStorage()
+  //   }
+  //   cartDb.value = []
+  // }
   fetchCartCourses()
   loadCartFromLocalStorage()
   return {
@@ -179,9 +180,9 @@ export const useCartStore = defineStore('cart', () => {
     addCourseToCart,
     fetchCartCourses,
     removeCourseFromCart,
-    clearCart,
-    syncLocalCartWithServer,
-    handleLogin,
-    handleLogout
+    clearCart
+    // syncLocalCartWithServer,
+    // handleLogin,
+    // handleLogout
   }
 })

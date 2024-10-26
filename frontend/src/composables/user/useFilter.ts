@@ -9,7 +9,7 @@ export function useFilter() {
   const totalCourses = ref(0)
   const loading = ref(false)
   const noProduct = ref(false)
-
+  const currentPage = ref(1)
   // Fetch courses based on filters
   const fetchCourseFilter = async (
     page = 1,
@@ -35,7 +35,7 @@ export function useFilter() {
           per_page: perPage,
           page,
           category_ids: categoryIds,
-          duration_range: '0-2,12%2B',
+          duration_range,
           min_rating: 0,
           max_rating,
           level_id: level,
@@ -47,7 +47,7 @@ export function useFilter() {
 
       if (response.data.data.data.length > 0) {
         coursesFilter.value = response.data.data.data
-        totalCourses.value = response.data.total
+        totalCourses.value = response.data.data.data.length
       } else {
         noProduct.value = true
         coursesFilter.value = []
@@ -65,6 +65,7 @@ export function useFilter() {
     coursesFilter,
     totalCourses,
     loading,
-    noProduct
+    noProduct,
+    currentPage
   }
 }

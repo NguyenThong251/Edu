@@ -1,7 +1,7 @@
 export interface TCategory {
-  id?: string
+  id?: number
   children?: TCategory[]
-  image: string
+  image?: string
   name: string
   countCourse?: number
 }

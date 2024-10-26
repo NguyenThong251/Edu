@@ -10,11 +10,11 @@ export function useCart() {
   watchEffect(() => {
     isAuthenticated.value = !!Cookies.get('token_user_edu')
 
-    if (isAuthenticated.value) {
-      cartStore.handleLogin()
-    } else {
-      cartStore.handleLogout()
-    }
+    // if (isAuthenticated.value) {
+    //   cartStore.handleLogin()
+    // } else {
+    //   cartStore.handleLogout()
+    // }
   })
 
   const cart = computed(() => {

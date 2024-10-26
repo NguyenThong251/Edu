@@ -16,13 +16,13 @@
 
 
                 <!-- Lặp qua các danh mục từ dữ liệu -->
-                <el-menu-item v-for="(category, index) in categoriesWithoutChildren" :key="category.id"
+                <el-menu-item v-for="(category, index) in apiStore.categoriesWithoutChildren" :key="category.id"
                     :index="`2-${index}`">
                     {{ category.name }}
                 </el-menu-item>
 
                 <!-- Hiển thị các danh mục con bên trong nếu có -->
-                <el-sub-menu v-for="(category, index) in categoriesWithChildren" :key="`sub-${category.id}`"
+                <el-sub-menu v-for="(category, index) in apiStore.categoriesWithChildren" :key="`sub-${category.id}`"
                     :index="`2-${index}-sub`">
                     <template #title>{{ category.name }}</template>
                     <el-menu-item v-for="(child, childIndex) in category.children" :key="child.id"
@@ -52,21 +52,26 @@
 </template>
 
 <script setup lang="ts">
-import { useHome } from '@/composables/user/useHome';
-import { computed, onMounted } from 'vue';
+import { apisStore } from '@/store/apis';
+import { onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 
-const { categories, fetchCate } = useHome()
-
-const categoriesWithChildren = computed(() => {
-    return categories.value.filter((category) => category.children && category.children.length > 0);
-});
-const categoriesWithoutChildren = computed(() => {
-    return categories.value.filter((category) => !category.children || category.children.length === 0);
-});
+// const { categories, fetchCate } = useHome()
+const apiStore = apisStore()
 onMounted(() => {
-    fetchCate();
-});
+    apiStore.fetchCate()
+    apiStore.fetchCourse()
+})
+
+// const categoriesWithChildren = computed(() => {
+//     return categories.value.filter((category) => category.children && category.children.length > 0);
+// });
+// const categoriesWithoutChildren = computed(() => {
+//     return categories.value.filter((category) => !category.children || category.children.length === 0);
+// });
+// onMounted(() => {
+//     fetchCate();
+// });
 </script>
 
 <style scoped>

@@ -5,11 +5,11 @@ export interface TCardCourse {
   lectures_count?: number
   level: string
   old_price?: number
-  rating_avg?: number
+  average_rating?: number
   reviews_count?: number
   status?: 'active' | 'inactive'
-  tag: 'Bán chạy' | 'Mới' | 'none'
-  thumbnail: string
+  tag?: 'Bán chạy' | 'Mới' | 'none'
+  thumbnail?: string
   title: string
   total_duration?: number
 }
@@ -52,7 +52,7 @@ export interface TCartCourseViewItem {
 }
 export interface TCourseFilters {
   category_ids?: number[]
-  duration_range?: string
+  duration_range?: number
   min_rating?: number
   max_rating?: number
   level_id?: number[]

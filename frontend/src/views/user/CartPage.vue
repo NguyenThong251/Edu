@@ -6,16 +6,18 @@
             <div class="flex md:flex-row flex-col gap-5">
                 <!-- COURSE ITEM -->
                 <div class="flex flex-col md:w-4/6 w-full gap-5">
-                    <!-- <CardCourseCart image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg"
-                        lecture="Nguyễn Hoàng Thông" name="Learn Figma - UI/UX Design Essential Training" lessons="12"
-                        level="Mới bắt đầu" price="999.000" oldPrice="1.000.000" status="Mới" :review=12.1123
-                        :rate=4.8 /> -->
-                    <div v-for="course in dataCart" :key="course.id">
+                    <CardCourseCart v-for="course in cart" :key="course.id" :id="course.id" :title="course.title"
+                        :thumbnail="course.thumbnail || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'"
+                        :old_price="course.old_price" :current_price="course.current_price"
+                        :category="course.category_name || course.category.name" :level="course.level"
+                        :average_rating="course.average_rating" :reviews_count="course.reviews_count"
+                        :lectures_count="course.lectures_count" :creator="course?.creator" />
+                    <!-- <div v-for="course in dataCart" :key="course.id">
                         <div>{{ course.title }} - {{ course.price }} VNĐ</div>
                         <button @click="removeCourseFromCart(course.id)">Xóa khóa học</button>
-                    </div>
+                    </div> -->
 
-                    <button @click="clearCart">xoóa item</button>
+                    <!-- <button @click="clearCart">xoóa item</button> -->
                 </div>
                 <!-- TOTAL -->
                 <div class="md:w-2/6 w-full">
@@ -46,19 +48,13 @@
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
 import CardCourseCart from '@/components/ui/card/CardCourseCart.vue';
+import { useCart } from '@/composables/user/useCart';
 import { useCartStore } from '@/store/cart';
 import { computed, onMounted, ref } from 'vue';
 const cartStore = useCartStore()
-const { cart, fetchCartCourses, removeCourseFromCart, clearCart } = cartStore
-const dataCart = ref([])
+const { cart, loading, fetchCartCourses, clearCart, formattedTotalPrice } = useCart();
 onMounted(async () => {
-    const courses = await fetchCartCourses()
-    if (courses) {
-        dataCart.value = courses
-    }
-    console.log(dataCart)
-})
-const formattedTotalPrice = computed(() => {
-    return dataCart.value.reduce((total, course) => total + course.price, 0).toLocaleString()
-})
+    await fetchCartCourses();
+});
+
 </script>

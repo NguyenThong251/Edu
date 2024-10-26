@@ -62,8 +62,8 @@
         <!-- COURSE MAIN -->
         <section class="container-user my-16">
             <div class="flex flex-col gap-3">
-                <h1 class="text-4xl font-semibold">Tất cả khóa học về <span class="text-indigo-600">khoa học máy
-                        tính</span></h1>
+                <h1 class="text-4xl font-semibold">Tất cả khóa học trên <span class="text-indigo-600">
+                        Edunity</span></h1>
             </div>
 
             <!-- MAIN -->
@@ -72,17 +72,16 @@
                 <!-- FILTER  -->
                 <div class=" ">
                     <div class="md:w-72 w-full sticky top-0 shadow-md rounded-md p-3 flex flex-col gap-5">
-                        <div class="flex items-center justify-between">
-                            <div class="md:hidden block">
-                                <div @click="fillter = true" class="  cursor-pointer bg-indigo-600 rounded-md p-2">
-                                    <FunnelIcon class="h-6 w-6 text-white" />
+                        <div class="md:hidden block">
+                            <div class="flex items-center justify-between">
+                                <div class="">
+                                    <div @click="fillter = true" class="  cursor-pointer bg-indigo-600 rounded-md p-2">
+                                        <FunnelIcon class="h-6 w-6 text-white" />
+                                    </div>
                                 </div>
                             </div>
-                            <span class="text-indigo-600 font-medium">Clear filters</span>
                         </div>
-
                         <div class="hidden md:block">
-
                             <UserCourseFilter @updateFilters="handleUpdateFilters" />
                         </div>
 
@@ -94,8 +93,7 @@
 
                 <!-- RESUILT -->
                 <div class="">
-                    <h3 class="text-lg">Hiển thị <span class="font-medium">2.312</span> kết quả của <span
-                            class="font-medium">Khoa học máy tính</span>
+                    <h3 class="text-lg">Hiển thị <span class="font-medium">{{ totalCourses }} khóa học </span>
                     </h3>
                     <div class="grid w-full xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2  sm:grid-cols-2  gap-5 mt-5">
                         <CardCourse v-for="course in coursesFilter" :key="course.id" :id="course.id"
@@ -105,9 +103,13 @@
                             :level="course.level" :current_price="course.current_price" :old_price="course.old_price" />
 
                     </div>
-                    <div class=" mt-10  flex justify-center">
+                    <!-- <div class=" mt-10  flex justify-center">
 
                         <el-pagination size="medium" background layout="prev, pager, next" :total="1000" />
+                    </div> -->
+                    <div class="mt-10 flex justify-center">
+                        <el-pagination size="medium" background layout="prev, pager, next" :total="totalCourses"
+                            :current-page="currentPage" @current-change="handlePageChange" :page-size="12" />
                     </div>
                 </div>
             </div>
@@ -127,13 +129,20 @@ import { useFilter } from '@/composables/user/useFilter';
 import { useShop } from '@/composables/user/useShop';
 // const { fetchCate } = useHome()
 const { coursesFilterSection, activeFilter, fetchCoursesSection, changeFilter } = useShop()
-const { fetchCourseFilter, coursesFilter, noProduct, totalCourses } = useFilter();
+const { fetchCourseFilter, coursesFilter, noProduct, totalCourses, currentPage } = useFilter();
 onMounted(() => {
     // fetchCate();
-    fetchCourseFilter()
+    // fetchCourseFilter()
+    fetchCourseFilter(currentPage.value, 12, 12, {});
     fetchCoursesSection(activeFilter.value)
 });
 const handleUpdateFilters = (filters: any) => {
-    fetchCourseFilter(1, 12, 12, filters)
+    currentPage.value = 1;
+    fetchCourseFilter(currentPage.value, 12, 12, filters)
+};
+
+const handlePageChange = (newPage: number) => {
+    currentPage.value = newPage;
+    fetchCourseFilter(currentPage.value, 12, 12, {});
 };
 </script>

@@ -1,11 +1,12 @@
 import api from '@/services/axiosConfig'
+import { apisStore } from '@/store/apis'
 import { ElNotification } from 'element-plus'
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 export function useShop() {
   const coursesFilterSection = ref<any[]>([])
   const activeFilter = ref('new') // Giá trị mặc định
-
+  const apiStore = apisStore()
   // Gọi API dựa trên filter
   const fetchCoursesSection = async (filter: string) => {
     let url = ''
