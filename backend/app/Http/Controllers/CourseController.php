@@ -336,7 +336,7 @@ class CourseController extends Controller
         // Tính trung bình rating và số lượng reviews
         $total_reviews = $course->reviews->count();
         $average_rating = $total_reviews > 0 ? round($course->reviews->avg('rating'), 1) : null;
-
+        $level_name = $course->level->name;
         // Chuẩn bị dữ liệu trả về
         $course_data = [
             'id' => $course->id,
@@ -356,8 +356,9 @@ class CourseController extends Controller
                 ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
                 : ''),
             'average_rating' => $average_rating, // Thêm trung bình rating
-            'total_reviews' => $total_reviews, // Thêm tổng số reviews
+            'reviews_count' => $total_reviews, // Thêm tổng số reviews
             'status' => $course->status,
+            'level' => $level_name
         ];
 
         return formatResponse(STATUS_OK, $course_data, '', __('messages.course_detail_success'));
