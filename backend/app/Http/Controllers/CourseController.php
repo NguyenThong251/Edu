@@ -176,9 +176,9 @@ class CourseController extends Controller
         // Sắp xếp và phân trang
         $query->orderBy($sort_by, $sort_order);
 
-        if ($limit) {
-            $query->limit($limit); // Giới hạn tổng số bản ghi
-        }
+        // if ($limit) {
+        //     $query->limit($limit); // Giới hạn tổng số bản ghi
+        // }
 
         // Lấy danh sách các khóa học đã được phân trang
         $total = $query->get()->count();
