@@ -23,17 +23,17 @@
 <script setup lang="ts">
 import CardProfile from '../ui/card/CardProfile.vue';
 import { useRoute } from 'vue-router';
-import { ArrowLeftStartOnRectangleIcon, FolderOpenIcon, HeartIcon, HomeIcon, LockClosedIcon, UserIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftStartOnRectangleIcon, ClipboardDocumentCheckIcon, FolderOpenIcon, ChatBubbleLeftEllipsisIcon, HeartIcon, HomeIcon, LockClosedIcon, UserIcon } from '@heroicons/vue/24/outline';
 import type { MenuItem } from '@/interfaces/ui.interface';
 
 const route = useRoute();
 const menuItems: MenuItem[] = [
     { path: '/mycourses', label: 'Khóa học của tôi', icon: HomeIcon },
-    { path: '/mycourselist', label: 'Danh sách của tôi', icon: HomeIcon },
     { path: '/myprofile', label: 'Hồ sơ của tôi', icon: UserIcon },
     { path: '/wishlist', label: 'Yêu thích', icon: HeartIcon },
     { path: '/security', label: 'Bảo mật', icon: LockClosedIcon },
-    { path: '/history', label: 'Lịch sử mua hàng', icon: FolderOpenIcon }
+    { path: '/history', label: 'Lịch sử mua hàng', icon: ClipboardDocumentCheckIcon },
+    { path: '/mymessage', label: 'Tin nhắn', icon: ChatBubbleLeftEllipsisIcon }
 ];
 
 const isActive = (path: string) => route.path === path;

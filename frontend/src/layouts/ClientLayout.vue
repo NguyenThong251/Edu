@@ -1,6 +1,7 @@
 <template>
     <div>
-        <!-- <UserHeader /> -->
+        <UserHeaderDesktop />
+        <UserHeaderMobile />
         <main>
             <router-view />
             <!-- <slot></slot> -->
@@ -9,7 +10,8 @@
     </div>
 </template>
 <script lang="ts" setup>
-import UserHeader from '@/components/user/UserHeader.vue';
+import UserHeaderDesktop from '@/components/user/UserHeaderDesktop.vue';
 import UserFooter from '@/components/user/UserFooter.vue';
+import UserHeaderMobile from '@/components/user/UserHeaderMobile.vue';
 
 </script>

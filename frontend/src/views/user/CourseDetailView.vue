@@ -6,6 +6,12 @@
     <p>Loading...</p>
 </div>  -->
 <template>
+    <div class="">
+        <h3>123</h3>
+        <div v-if="course">
+            <h1>{{ course.title }}</h1>
+        </div>
+    </div>
     <main class="container-user py-16">
         <div class="">
             <Breadcrumb />
@@ -214,7 +220,7 @@ import VideoCourse from '@/components/ui/video/VideoCourse.vue';
 import VideoFreeItem from '@/components/ui/video/VideoFreeItem.vue';
 import { PlayIcon, StarIcon, PlayCircleIcon, ClipboardDocumentListIcon, ClockIcon, SpeakerWaveIcon, ComputerDesktopIcon, ShareIcon, GiftIcon } from '@heroicons/vue/20/solid';
 import { HeartIcon, ListBulletIcon } from '@heroicons/vue/24/outline';
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 const outerVisible = ref(false)
 const share = ref(false)
 import { ElNotification, type TabsPaneContext } from 'element-plus'
@@ -224,21 +230,12 @@ import UserNewsLetter from '@/components/user/UserNewsLetter.vue';
 import UserCourseReview from '@/components/user/UserCourseReview.vue';
 import UserCourseLecturer from '@/components/user/UserCourseLecturer.vue';
 import UserCourseOption from '@/components/user/UserCourseOption.vue';
+import { useCourseDetail } from '@/composables/user/useCourseDetail';
 const activeName = ref('first')
 const handleClick = (tab: TabsPaneContext, event: Event) => {
     console.log(tab, event)
 }
-// import { onMounted, ref } from 'vue';
-// import { useRoute } from 'vue-router';
-// // import { fetchCourseDetail } from '@/services/courseService'; // Đảm bảo bạn đã tạo file này
 
-// const course = ref<any>(null);
-// const route = useRoute();
-
-// onMounted(async () => {
-//     const courseId = route.params.id as string; // Đảm bảo rằng courseId là chuỗi
-//     course.value = await fetchCourseDetail(courseId);
-// });
 // Hardcoded text that we want to copy
 const hardcodedText = ref('https://hoangthong.asia/');
 
@@ -260,4 +257,9 @@ const copyText = () => {
     })
 
 };
+
+// LOGIC
+const { courseStore } = useCourseDetail();
+
+const course = computed(() => courseStore.course);
 </script>

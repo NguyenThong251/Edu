@@ -1,3 +1,4 @@
+import LayoutCourseVideo from '@/layouts/LayoutCourseVideo.vue'
 import UserDashboard from '@/layouts/UserDashboard.vue'
 
 const user = [
@@ -16,7 +17,7 @@ const user = [
         component: () => import('@/views/user/CoursePage.vue')
       },
       {
-        path: '/course/detail',
+        path: '/course/detail/:id',
         name: 'user.course.detail',
         component: () => import('@/views/user/CourseDetailView.vue')
       },
@@ -41,6 +42,27 @@ const user = [
         name: 'register',
         component: () => import('@/views/user/Register.vue')
       },
+
+      {
+        path: '/verify-email/:token',
+        name: '/verify-email',
+        component: () => import('@/views/user/Verify.vue')
+      },
+      {
+        path: '/reset-pass/:token',
+        name: 'reset-pass',
+        component: () => import('@/views/user/ResetPass.vue')
+      },
+      {
+        path: '/google/call-back/:jwtToken',
+        name: 'google-call-back',
+        component: () => import('@/views/GoogleCallback.vue')
+      },
+      {
+        path: '/forgot-pass',
+        name: 'forgot-pass',
+        component: () => import('@/views/user/ForgotPass.vue')
+      },
       {
         path: '',
         component: UserDashboard,
@@ -56,11 +78,6 @@ const user = [
             component: () => import('@/views/user/MyProfile.vue')
           },
           {
-            path: '/mycourselist',
-            name: 'mycourselist',
-            component: () => import('@/views/user/MyCourseList.vue')
-          },
-          {
             path: '/wishlist',
             name: 'wishlist',
             component: () => import('@/views/user/MyWishlist.vue')
@@ -74,8 +91,24 @@ const user = [
             path: '/security',
             name: 'security',
             component: () => import('@/views/user/Security.vue')
+          },
+          {
+            path: '/mymessage',
+            name: 'mymessage',
+            component: () => import('@/views/user/MyMessage.vue')
           }
         ]
+      }
+    ]
+  },
+  {
+    path: '/',
+    component: LayoutCourseVideo,
+    children: [
+      {
+        path: '/mylearncourse',
+        name: 'mylearncourse',
+        component: () => import('@/views/user/MyLearnCourse.vue')
       }
     ]
   }

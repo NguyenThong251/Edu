@@ -27,12 +27,16 @@
                 </div>
             </template>
         </el-upload>
+        <div class="flex justify-end">
+            <Button variant="primary">Tải lên</Button>
+        </div>
     </el-dialog>
 </template>
 <script setup lang="ts">
 import { UploadFilled } from '@element-plus/icons-vue'
 import { CloudArrowUpIcon } from '@heroicons/vue/20/solid';
 import { ref } from 'vue';
+import Button from '../button/Button.vue';
 const image = 'https://demo.creativeitem.com/academy-laravel/public/assets/upload/users/student/josel-vosus-1716716132.jpg'
 const centerDialogVisible = ref(false)
 </script>

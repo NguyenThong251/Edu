@@ -3,7 +3,7 @@
         <div class="flex items-center lg:flex-row flex-col justify-between gap-5">
             <div class="lg:w-1/2 ">
                 <div class="md:p-10">
-                    <img class="w-full h-[420px] lg:h-[580px]" :src="Banner" alt="">
+                    <img class="w-full h-[380px] lg:h-[580px]" :src="Banner" alt="">
                 </div>
             </div>
             <div class="lg:w-1/2 ">

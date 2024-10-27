@@ -1,44 +1,52 @@
 <template>
-    <video-player class="video-player vjs-custom-skin w-full h-[20rem]" :options="playerOptions"></video-player>
+    <div class="rounded-lg w-full overflow-hidden">
+        <vue-plyr>
+            <video controls>
+                <source :src="src" type="video/webm" />
+                Your browser does not support the video tag.
+            </video>
+        </vue-plyr>
+    </div>
 </template>
+<!-- <video-player class="video-player vjs-custom-skin w-full h-[20rem]" :options="playerOptions"></video-player> -->
 
 <script setup lang="ts">
 import { ref, defineProps, watch } from 'vue';
 import type { PlayerOptions } from '@/interfaces'
 // Define props
-const props = defineProps({
+defineProps({
     src: {
         type: String,
         required: true,
     },
 });
 
-// Default video player options
-const playerOptions = ref<PlayerOptions>({
-    autoplay: false,
-    playbackRates: [0.5, 1, 1.5, 2],
-    controls: true,
-    controlBar: {
-        volumePanel: {
-            inline: false,
-        },
-        fullscreenToggle: true,
-    },
-    sources: [],
-});
+// // Default video player options
+// const playerOptions = ref<PlayerOptions>({
+//     autoplay: false,
+//     playbackRates: [0.5, 1, 1.5, 2],
+//     controls: true,
+//     controlBar: {
+//         volumePanel: {
+//             inline: false,
+//         },
+//         fullscreenToggle: true,
+//     },
+//     sources: [],
+// });
 
-// Watch for changes in src and update player options
-watch(() => props.src, (newSrc) => {
-    playerOptions.value.sources = [
-        {
-            src: newSrc,
-            type: 'video/mp4',
-        },
-    ];
-}, { immediate: true });
+// // Watch for changes in src and update player options
+// watch(() => props.src, (newSrc) => {
+//     playerOptions.value.sources = [
+//         {
+//             src: newSrc,
+//             type: 'video/mp4',
+//         },
+//     ];
+// }, { immediate: true });
 </script>
 
-<style scoped>
+<!-- <style scoped>
 /* Use deep selector to apply styles to child components even in scoped styles */
 ::v-deep .vjs-control-bar {
     background-color: #1f2937 !important;
@@ -78,4 +86,4 @@ watch(() => props.src, (newSrc) => {
     background-color: #5d5fdf !important;
     /* Custom color for mouse hover time display */
 }
-</style>
+</style> -->
