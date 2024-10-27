@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CourseController extends Controller
@@ -176,16 +177,15 @@ class CourseController extends Controller
 
         // Sắp xếp và phân trang
         $query->orderBy($sort_by, $sort_order);
-
         if ($limit) {
             $query->limit($limit); // Giới hạn tổng số bản ghi
         }
 
         // Lấy danh sách các khóa học đã được phân trang
         $total = $query->get()->count();
-        $courses = $query->paginate($perPage, ['*'], 'page', $page);
+        $courses = $query->get();
         // Tính toán thông tin bổ sung cho từng khóa học
-        $courses = $courses->getCollection()->map(function ($course) use ($newCourses, $popularCourses, $topRatedCourses, $favoriteCourses) {
+        $courses = $courses->map(function ($course) use ($newCourses, $popularCourses, $topRatedCourses, $favoriteCourses) {
             $tag = 'none'; // Giá trị mặc định
             if (in_array($course->id, $newCourses)) {
                 $tag = __('messages.tag_new');
@@ -226,15 +226,21 @@ class CourseController extends Controller
         });
 
         // Tạo thông tin phân trang
-        $paginated = [
-            'data' => $courses,
-            'current_page' => $page,
-            'last_page' => (int) ceil($total / $perPage), // Tính số trang cuối cùng
-            'per_page' => $perPage,
-            'total' => $total,
-        ];
+        $courses = $courses->forPage($page, $perPage)->values();
 
-        return formatResponse(STATUS_OK, $paginated, '', __('messages.course_fetch_success'));
+        $paginatedCourses = new LengthAwarePaginator(
+            $courses,
+            $total,
+            $perPage,
+            $page,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()]
+        );
+        
+        // Chuyển đổi đối tượng phân trang sang mảng với tất cả các thuộc tính chi tiết
+        $paginationData = $paginatedCourses->toArray();
+        
+        // Trả về dữ liệu phân trang
+        return formatResponse(STATUS_OK, $paginationData, '', __('messages.course_fetch_success'));
     }
 
 
