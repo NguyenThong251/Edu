@@ -10,4 +10,4 @@ Step 2: <code> pnpm format </code>
 
 ### Setup
 
-<code> composer install </code>
+<code> composer install || upgrade </code>
