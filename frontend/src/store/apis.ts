@@ -10,6 +10,7 @@ export const apisStore = defineStore('homeStore', () => {
   // State
   const categories = ref<TCategory[]>([])
   const courses = ref<TCardCourse[]>([])
+  const coursesSearch = ref<TCardCourse[]>([])
   const levels = ref<Tlevel[]>([])
   const languagies = ref<Tlevel[]>([])
 
@@ -47,6 +48,21 @@ export const apisStore = defineStore('homeStore', () => {
       console.error('Error fetching courses:', error)
     }
   }
+  const fetchCourseSearch = async (keyword = '') => {
+    try {
+      const res = await api.get('/courses', {
+        params: {
+          limit: 5,
+          keyword: keyword || null
+        }
+      })
+
+      coursesSearch.value = res.data.data.data
+    } catch (error) {
+      console.error('Error fetching courses:', error)
+      coursesSearch.value = []
+    }
+  }
   const getCourses = computed(() => {
     return courses.value.filter((course) => course.status === 'active')
   })
@@ -64,10 +80,12 @@ export const apisStore = defineStore('homeStore', () => {
     categories,
     courses,
     levels,
+    coursesSearch,
     fetchCate,
     fetchCourse,
     fetchLevel,
     fetchLang,
+    fetchCourseSearch,
     getCourses,
     categoriesWithChildren,
     categoriesWithoutChildren

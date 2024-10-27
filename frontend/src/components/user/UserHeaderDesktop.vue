@@ -84,7 +84,7 @@
         </div>
     </el-drawer>
 
-    <el-drawer v-model="searchOpen" title="Tìm kiếm khóa học của bạn" :direction="searchDirection">
+    <el-drawer v-model="searchOpen" size="50%" title="Tìm kiếm khóa học của bạn" :direction="searchDirection">
         <SearchProduct />
     </el-drawer>
 </template>

@@ -1,15 +1,16 @@
 <template>
 
-    <div @click="navigateToDetail(id)"
+    <div
         class=" cursor-pointer rounded-lg p-3 bg-white shadow-md hover:shadow-lg hover:transition-all transition-all hover:duration-300 duration-300 group ">
         <div class="relative overflow-hidden">
             <!-- IMAGE  -->
             <div class="rounded-lg overflow-hidden">
-                <img class="group-hover:scale-105  scale-100 hover:transition-all transition-all hover:duration-300 duration-300 cursor-pointer object-cover w-full h-36"
+                <img @click="navigateToDetail(id)"
+                    class="group-hover:scale-105  scale-100 hover:transition-all transition-all hover:duration-300 duration-300 cursor-pointer object-cover w-full h-36"
                     :src="thumbnail" alt="Product Image" />
             </div>
             <!-- BODY  -->
-            <div class="mt-2 flex flex-col gap-2">
+            <div @click="navigateToDetail(id)" class="mt-2 flex flex-col gap-2">
                 <div class="flex justify-between items-center">
                     <span class="text-sm w-32">{{ creator }}</span>
                     <button v-if="tag !== 'none'" :class="tag === 'Mới' ? 'bg-green-400' : 'bg-pink-400'"
@@ -37,7 +38,7 @@
                 </div>
             </div>
             <div
-                class="absolute top-2 right-2 opacity-0 translate-x-11 group-hover:translate-x-0  hover:transition-all duration-300 group-hover:opacity-100  ">
+                class="absolute  top-2 right-2 opacity-0 translate-x-11 group-hover:translate-x-0  hover:transition-all duration-300 group-hover:opacity-100  ">
                 <div class="flex flex-col gap-2">
                     <button @click="handleAddToCart(id)"
                         class="bg-indigo-500 hover:bg-indigo-600 hover:transition-all transition-all hover:duration-300 duration-300 p-2 rounded-full">
