@@ -2,16 +2,15 @@
 import CategoryImgWeb from '@/assets/images/CategoryImgWeb.jpeg'
 import { ComputerDesktopIcon, PlusCircleIcon, PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/solid';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-// import { faLaravel, faPaintBrush, faAdobe, faCanva, faLaptopCode, faHtml5, faJs, faBullhorn, faSearch, faShareAlt } from '@fortawesome/free-brands-svg-icons';
 import { faHtml5, faJs, faShopify } from '@fortawesome/free-brands-svg-icons';
-import type { ListCategories } from '@/interfaces/admin.interface';
+import type { TListCategories } from '@/interfaces/category.interface';
 import { faBullhorn, faC, faCamera, faCameraRetro, faClipboardCheck, faDatabase, faImage, faLaptopCode, faMobileAlt, faPaintBrush, faPhotoFilm, faRectangleAd } from '@fortawesome/free-solid-svg-icons';
 import { ref } from 'vue';
 import ItemsChild from './ItemsChild.vue';
 import CardActionButton from './CardActionButton.vue';
 
 
-const listCategories = ref<ListCategories[]>([
+const listCategories = ref<TListCategories[]>([
   {
     img: 'https://maytinhhaiphong.com/wp-content/uploads/2022/10/Cong-viec-Designer.jpg',
     icon: faPaintBrush,
@@ -213,19 +212,21 @@ const listCategories = ref<ListCategories[]>([
 </script>
 <template>
   <div v-for="(CartItem,index) in listCategories" :key="index" class="bg-white dark:bg-dark-sidebar rounded-lg dark:border group hover:duration-700">
-    <div class="p-3">
-      <img :src="CartItem.img" class="w-full h-[170px] object-cover rounded-t-md" alt="">
-      <div class="py-4">
-        <div class="flex justify-between pb-4 border-b">
-          <div class="flex gap-2 items-center">
-            <FontAwesomeIcon :icon="CartItem.icon" class="w-5"/>
-            <div class="font-bold">{{CartItem.title}}</div>
+    <div class="p-3 h-full flex flex-wrap justify-center">
+      <div class="">
+        <img :src="CartItem.img" class="w-full h-[170px] object-cover rounded-t-md" alt="">
+        <div class="py-4">
+          <div class="flex justify-between pb-4 border-b">
+            <div class="flex gap-2 items-center">
+              <FontAwesomeIcon :icon="CartItem.icon" class="w-5"/>
+              <div class="font-bold">{{CartItem.title}}</div>
+            </div>
+            <div class="">({{CartItem.children?.length}})</div>
           </div>
-          <div class="">({{CartItem.children?.length}})</div>
+          <ItemsChild v-for="(CartItemChild,index) in CartItem.children" :key="index" :child="CartItemChild"/>
         </div>
-        <ItemsChild v-for="(CartItemChild,index) in CartItem.children" :key="index" :child="CartItemChild"/>
       </div>
-      <div class="flex justify-center gap-4 pb-5 hidden group-hover:flex">
+      <div class="flex justify-center invisible gap-4 pb-5 group-hover:visible">
         <CardActionButton
         link="#"
         :icon="PlusCircleIcon"
@@ -244,4 +245,5 @@ const listCategories = ref<ListCategories[]>([
       </div>
     </div>
   </div>
+  
 </template>

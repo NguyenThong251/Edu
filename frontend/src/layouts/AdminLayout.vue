@@ -12,7 +12,7 @@ import HeaderArea from '@/components/admin/Header/HeaderArea.vue';
 
       <!-- ========= Nội dung các trang ============ -->
       <main class="main-admin text-black dark:text-white">
-        <HeaderArea/>  
+        <HeaderArea/> 
         <router-view></router-view>
       </main>
       <!-- ========= Kết thúc nội dung các trang ============ -->

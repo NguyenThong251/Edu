@@ -16,4 +16,37 @@
     .main-admin{
         @apply rounded-l-[16px]  bg-bg-primary dark:bg-primary-sidebar w-full shadow-main-content z-10
     }
+    .input-style{
+        @apply block w-full rounded-md border-0 py-1.5 pl-3 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus-visible:ring-1 focus:ring-inset  focus-visible:ring-btn-darkmode sm:text-sm sm:leading-6
+    }
+    .label-input{
+        @apply block text-sm font-bold leading-6 text-gray-900 dark:text-white
+    }
+    .background-table{
+        @apply bg-white dark:bg-dark-sidebar border w-full rounded-[5px] shadow-soft
+    }
+
+    /* ==== CUSTOMIZE ELEMENT PLUS ==== */
+
+    .tab-items-style {
+        @apply flex font-bold gap-2 items-center dark:text-white; 
+    }
+    
+
+    .el-table tr {
+        @apply dark:bg-dark-sidebar dark:text-white text-black ; /* Màu nền và màu chữ cho header */
+    }
+    
+    .el-table td {
+        @apply dark:text-white; /* Màu chữ cho ô dữ liệu */
+    }
+    
+    .el-table .el-table__body tr:hover {
+        @apply dark:bg-btn-darkmode bg-bg-primary; /* Màu nền khi hover trên hàng */
+    }
+    
+    .el-tag {
+        @apply rounded-full; 
+    }
+
 }

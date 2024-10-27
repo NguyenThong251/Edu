@@ -38,15 +38,15 @@ const menuGroups = ref<MenuGroup[]>([
         children: [
           {
             label: 'Quản lý khoá học',
-            route: '/admin/course/course-manager'
+            route: '/admin/course/manager-course'
           },
           {
             label: 'Thêm khoá học mới',
-            route: '/admin/course/new-course'
+            route: '/admin/course/add-course'
           },
           {
             label: 'Phiếu giảm giá',
-            route: '/admin/course/coupon-manager'
+            route: '/admin/course/manager-coupon'
           },
         ]
       },
@@ -80,7 +80,7 @@ const menuGroups = ref<MenuGroup[]>([
             children: [
               {
                 label: 'Quản lý admin',
-                route: '/admin/user/user-admin/user-admin-manager',
+                route: '/admin/user/user-admin/user-manager-admin',
               },
               {
                 label: 'Thêm admin',
@@ -94,7 +94,7 @@ const menuGroups = ref<MenuGroup[]>([
             children: [
               {
                 label: 'Quản lý giáo viên',
-                route: '/admin/user/user-teacher/user-teacher-manager',
+                route: '/admin/user/user-teacher/user-manager-teacher',
               },
               {
                 label: 'Thêm giáo viên',
@@ -120,11 +120,11 @@ const menuGroups = ref<MenuGroup[]>([
             children: [
               {
                 label: 'Quản lý học viên',
-                route: '/admin/user/user-student/student-manager',
+                route: '/admin/user/user-student/user-manager-student',
               },
               {
                 label: 'Thêm học viên',
-                route: '/admin/user/user-student/add-student',
+                route: '/admin/user/user-student/user-add-student',
               },
             ]
           },
@@ -147,7 +147,7 @@ const menuGroups = ref<MenuGroup[]>([
         children: [
           {
             label: 'Quản lý bài viết',
-            route: '/admin/blog/blog-manager'
+            route: '/admin/blog/manager-blog'
           },
           {
             label: 'Bài viết đang xử lý',
