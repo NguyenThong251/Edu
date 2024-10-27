@@ -55,9 +55,10 @@ export interface TCourseFilters {
   duration_range?: number
   min_rating?: number
   max_rating?: number
-  level_id?: number[]
+  level_ids?: number[]
+  keyword?: string
   sort_by?: string
   sort_order?: string
-  keyword?: string
+  language_ids?: number[]
   // Add more properties as needed based on the filters you are using.
 }

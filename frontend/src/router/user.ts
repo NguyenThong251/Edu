@@ -17,7 +17,7 @@ const user = [
         component: () => import('@/views/user/CoursePage.vue')
       },
       {
-        path: '/course/detail',
+        path: '/course/detail/:id',
         name: 'user.course.detail',
         component: () => import('@/views/user/CourseDetailView.vue')
       },

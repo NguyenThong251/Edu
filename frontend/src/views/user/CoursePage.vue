@@ -88,11 +88,21 @@
                     </div>
                 </div>
                 <el-drawer direction="ltr" v-model="fillter" title="I am the title" :with-header="false" size="50%">
-                    <UserCourseFilter />
+                    <UserCourseFilter @updateFilters="handleUpdateFilters" />
                 </el-drawer>
 
                 <!-- RESUILT -->
-                <div class="">
+                <div class=" w-full" v-if="noProduct">
+
+                    <div class=" flex justify-center items-center">
+
+                        <img class=""
+                            src="https://cdn3d.iconscout.com/3d/premium/thumb/search-notes-5066175-4235211.png?f=webp"
+                            alt="">
+                    </div>
+
+                </div>
+                <div v-else class="">
                     <h3 class="text-lg">Hiển thị <span class="font-medium">{{ totalCourses }} khóa học </span>
                     </h3>
                     <div class="grid w-full xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2  sm:grid-cols-2  gap-5 mt-5">
@@ -107,9 +117,15 @@
 
                         <el-pagination size="medium" background layout="prev, pager, next" :total="1000" />
                     </div> -->
-                    <div class="mt-10 flex justify-center">
+                    <!-- <div class="mt-10 flex justify-center">
                         <el-pagination size="medium" background layout="prev, pager, next" :total="totalCourses"
-                            :current-page="currentPage" @current-change="handlePageChange" :page-size="12" />
+                            :current-page="currentPage" @current-change="handlePageChange" :page-size="lastPage" />
+                    </div> -->
+                    <div class="mt-10 flex justify-center">
+                        <el-pagination size="default" background layout="prev, pager, next" :current-page="currentPage"
+                            @current-change="handlePageChange" :page-size="perPageData" :total="totalCourses" />
+
+
                     </div>
                 </div>
             </div>
@@ -129,20 +145,19 @@ import { useFilter } from '@/composables/user/useFilter';
 import { useShop } from '@/composables/user/useShop';
 // const { fetchCate } = useHome()
 const { coursesFilterSection, activeFilter, fetchCoursesSection, changeFilter } = useShop()
-const { fetchCourseFilter, coursesFilter, noProduct, totalCourses, currentPage } = useFilter();
-onMounted(() => {
-    // fetchCate();
-    // fetchCourseFilter()
-    fetchCourseFilter(currentPage.value, 12, 12, {});
-    fetchCoursesSection(activeFilter.value)
-});
-const handleUpdateFilters = (filters: any) => {
-    currentPage.value = 1;
-    fetchCourseFilter(currentPage.value, 12, 12, filters)
-};
-
+const { fetchCourseFilter, coursesFilter, noProduct, lastPage, totalCourses, currentPage, paginationLinks, perPageData } = useFilter();
+const pageSize = 99999;
 const handlePageChange = (newPage: number) => {
     currentPage.value = newPage;
-    fetchCourseFilter(currentPage.value, 12, 12, {});
+    fetchCourseFilter(currentPage.value, pageSize, perPageData.value, {}); // Truyền filters nếu có
 };
+onMounted(() => {
+    fetchCoursesSection(activeFilter.value)
+    fetchCourseFilter(currentPage.value, pageSize, perPageData.value, {}); // Truyền filters nếu có
+});
+
+const handleUpdateFilters = (filters: any) => {
+    fetchCourseFilter(currentPage.value, pageSize, perPageData.value, filters);
+};
+
 </script>

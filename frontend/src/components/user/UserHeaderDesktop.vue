@@ -13,7 +13,8 @@
                         <MenuDesktop />
                     </nav>
                     <div class="hidden lg:block">
-                        <form class="flex gap-5 py-2 px-4 border-[1px] rounded-3xl border-gray-900">
+                        <form @click="searchOpen = true"
+                            class="flex gap-5 py-2 px-4 border-[1px] rounded-3xl border-gray-900">
                             <MagnifyingGlassIcon class=" h-6 w-6 text-gray-900" />
                             <input class=" pe-24 focus-visible:outline-none border-none" type="text"
                                 placeholder="Tìm  kiếm nội dung bất kì">
@@ -82,6 +83,10 @@
             <h3 class="text-2xl font-bold mt-3 text-indigo-900 ">Giỏ hàng trống</h3>
         </div>
     </el-drawer>
+
+    <el-drawer v-model="searchOpen" title="Tìm kiếm khóa học của bạn" :direction="searchDirection">
+        <SearchProduct />
+    </el-drawer>
 </template>
 
 <script setup lang="ts">
@@ -97,9 +102,12 @@ import { useCartStore } from '@/store/cart';
 import { RouterLink, useRouter } from 'vue-router';
 import ViewCart from '../ui/dialog/ViewCart.vue';
 import MenuDesktop from '../ui/menu/MenuDesktop.vue';
+import SearchProduct from '../ui/dialog/SearchProduct.vue';
 const direction = ref<DrawerProps['direction']>('ltr')
 const isOpenNav = ref(false)
 const isOpenCart = ref(false)
+const searchOpen = ref(false)
+const searchDirection = ref<DrawerProps['direction']>('ttb')
 const toggleMenu = () => {
     isOpenNav.value = !isOpenNav.value
 }

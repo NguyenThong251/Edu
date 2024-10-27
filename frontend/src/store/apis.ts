@@ -11,6 +11,7 @@ export const apisStore = defineStore('homeStore', () => {
   const categories = ref<TCategory[]>([])
   const courses = ref<TCardCourse[]>([])
   const levels = ref<Tlevel[]>([])
+  const languagies = ref<Tlevel[]>([])
 
   // Actions for fetching different data
   const fetchCate = async () => {
@@ -25,6 +26,14 @@ export const apisStore = defineStore('homeStore', () => {
     try {
       const res = await api.get('/course-levels')
       levels.value = res.data.data.data
+    } catch (error) {
+      console.error('Error fetching course-levels:', error)
+    }
+  }
+  const fetchLang = async () => {
+    try {
+      const res = await api.get('/languages')
+      languagies.value = res.data.data.data
     } catch (error) {
       console.error('Error fetching course-levels:', error)
     }
@@ -51,12 +60,14 @@ export const apisStore = defineStore('homeStore', () => {
     )
   })
   return {
+    languagies,
     categories,
     courses,
     levels,
     fetchCate,
     fetchCourse,
     fetchLevel,
+    fetchLang,
     getCourses,
     categoriesWithChildren,
     categoriesWithoutChildren

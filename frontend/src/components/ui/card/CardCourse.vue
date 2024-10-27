@@ -1,7 +1,7 @@
 <template>
 
-    <div
-        class=" rounded-lg p-3 bg-white shadow-md hover:shadow-lg hover:transition-all transition-all hover:duration-300 duration-300 group ">
+    <div @click="navigateToDetail(id)"
+        class=" cursor-pointer rounded-lg p-3 bg-white shadow-md hover:shadow-lg hover:transition-all transition-all hover:duration-300 duration-300 group ">
         <div class="relative overflow-hidden">
             <!-- IMAGE  -->
             <div class="rounded-lg overflow-hidden">
@@ -60,8 +60,9 @@ import { formatPrice } from '@/utils/formatPrice';
 import { ClockIcon, BookOpenIcon, RocketLaunchIcon, HeartIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
 import type { TCardCourse } from '@/interfaces/course.interface';
 import { useCart } from '@/composables/user/useCart';
-
+import { useCourseDetail } from '@/composables/user/useCourseDetail';
 defineProps<TCardCourse>();
+const { navigateToDetail } = useCourseDetail()
 const { handleAddToCart } = useCart();
 
 </script>

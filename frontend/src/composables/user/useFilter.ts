@@ -10,24 +10,35 @@ export function useFilter() {
   const loading = ref(false)
   const noProduct = ref(false)
   const currentPage = ref(1)
+  const lastPage = ref(1)
+  const perPageData = ref<number>(12)
+  const paginationLinks = ref<any[]>([])
   // Fetch courses based on filters
   const fetchCourseFilter = async (
     page = 1,
-    limit = 12,
-    perPage = 12,
+    limit = 0,
+    perPage = 0,
     filters: TCourseFilters = {}
   ) => {
     loading.value = true
     noProduct.value = false
-
     try {
       // Extract filter parameters from passed object
-      const { duration_range, max_rating, category_ids, level_id, sort_by, sort_order, keyword } =
-        filters
+      const {
+        duration_range,
+        max_rating,
+        category_ids,
+        level_ids,
+        language_ids,
+        sort_by,
+        sort_order,
+        keyword
+      } = filters
 
       // Build query params
       const categoryIds = category_ids ? category_ids.join(',') : ''
-      const level = level_id ? level_id.join(',') : ''
+      const level = level_ids ? level_ids.join(',') : ''
+      const language = language_ids ? language_ids.join(',') : ''
 
       const response = await api.get('/courses', {
         params: {
@@ -38,7 +49,8 @@ export function useFilter() {
           duration_range,
           min_rating: 0,
           max_rating,
-          level_id: level,
+          level_ids: level,
+          language_ids: language,
           sort_by,
           sort_order,
           keyword
@@ -47,7 +59,11 @@ export function useFilter() {
 
       if (response.data.data.data.length > 0) {
         coursesFilter.value = response.data.data.data
-        totalCourses.value = response.data.data.data.length
+        totalCourses.value = response.data.data.total
+        lastPage.value = response.data.data.last_page
+        perPageData.value = response.data.data.per_page
+        currentPage.value = page
+        paginationLinks.value = response.data.data.links
       } else {
         noProduct.value = true
         coursesFilter.value = []
@@ -66,6 +82,9 @@ export function useFilter() {
     totalCourses,
     loading,
     noProduct,
-    currentPage
+    lastPage,
+    currentPage,
+    paginationLinks,
+    perPageData
   }
 }

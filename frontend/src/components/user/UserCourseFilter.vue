@@ -67,10 +67,14 @@
             <!-- Language (Checkboxes) -->
             <div class="font-medium text-lg">
                 <h3 class="font-semibold text-lg mb-2">Ngôn ngữ</h3>
-                <el-checkbox-group class="flex flex-col items-start ">
-                    <el-checkbox class="!text-gray-900" :value="'vietnamese'">Tiếng việt</el-checkbox>
+                <el-checkbox-group v-model="selectedLanguage" class="flex flex-col items-start" @change="applyFilters">
+
+                    <el-checkbox class="!text-gray-900" v-for="language in apiStore.languagies" v-bind:key="language.id"
+                        :value="language.id">{{
+                            language.name }}</el-checkbox>
+                    <!-- <el-checkbox class="!text-gray-900" :value="'vietnamese'">Tiếng việt</el-checkbox>
                     <el-checkbox class="!text-gray-900" :value="'english'">Tiếng anh</el-checkbox>
-                    <el-checkbox class="!text-gray-900" :value="'#'">Tiếng pháp</el-checkbox>
+                    <el-checkbox class="!text-gray-900" :value="'#'">Tiếng pháp</el-checkbox> -->
                 </el-checkbox-group>
             </div>
         </div>
@@ -87,20 +91,21 @@ const apiStore = apisStore()
 onMounted(() => {
     apiStore.fetchCate()
     apiStore.fetchLevel()
+    apiStore.fetchLang()
 })
 const emit = defineEmits(['updateFilters']);
 const selectedRate = ref<number | null>(null);
 const selectedCategories = ref<number[]>([]);
 const selectedDurations = ref<string[]>([]);
 const selectedLevels = ref<number[]>([]);
-// const selectedLanguage = ref<string[]>([]);
+const selectedLanguage = ref<string[]>([]);
 const applyFilters = () => {
     emit('updateFilters', {
         max_rating: selectedRate.value,
         category_ids: selectedCategories.value,
         duration_range: selectedDurations.value,
-        level_id: selectedLevels.value,
-        // language: selectedLanguage.value,
+        level_ids: selectedLevels.value,
+        language_ids: selectedLanguage.value,
     });
 };
 const clearFilters = () => {
@@ -108,7 +113,7 @@ const clearFilters = () => {
     selectedCategories.value = [];
     selectedDurations.value = [];
     selectedLevels.value = [];
-    // selectedLanguage.value = []; // Nếu bạn có trường ngôn ngữ
+    selectedLanguage.value = [];
 
     // Gọi lại hàm applyFilters để cập nhật bộ lọc
     applyFilters();
