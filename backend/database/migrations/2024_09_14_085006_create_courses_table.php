@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('category_id');
             $table->unsignedBigInteger('level_id');
+            $table->unsignedBigInteger('language_id');
             $table->string('title', 100);
             $table->text('description')->nullable();
             $table->text('short_description')->nullable();
@@ -22,7 +23,6 @@ return new class extends Migration
             $table->double('price');
             $table->enum('type_sale', ['percent', 'price'])->default('price');
             $table->double('sale_value')->nullable();
-            $table->enum('language', ['english', 'vietnamese'])->default('vietnamese');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->softDeletes();
             $table->bigInteger('deleted_by')->nullable();
@@ -31,6 +31,7 @@ return new class extends Migration
             $table->bigInteger('updated_by')->nullable();
 
             $table->foreign('level_id')->references('id')->on('course_levels')->onDelete('cascade');
+            $table->foreign('language_id')->references('id')->on('languages')->onDelete('cascade');
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
         });
     }

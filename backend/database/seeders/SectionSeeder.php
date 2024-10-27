@@ -34,7 +34,7 @@ class SectionSeeder extends Seeder
                 'name' => $faker->sentence(2),                    // Tên section với 2 từ
                 'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
                 'deleted_by' => null,                              // Giá trị mặc định là null
-                'created_by' => $faker->optional()->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
+                'created_by' => $faker->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
                 'updated_by' => $faker->optional()->randomElement($userIds), // Người cập nhật ngẫu nhiên hoặc null
             ]);
         }
