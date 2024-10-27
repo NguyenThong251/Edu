@@ -9,6 +9,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CourseLevelController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Api\GoogleController;
 
 /*
@@ -67,6 +68,11 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::put('course-levels/{id}', [CourseLevelController::class, 'update'])->name('courselevels.update');
             Route::get('course-levels/restore/{id}', [CourseLevelController::class, 'restore'])->name('courselevels.restore');
             Route::delete('course-levels/{id}', [CourseLevelController::class, 'destroy'])->name('courselevels.destroy');
+
+            Route::post('languages', [LanguageController::class, 'store'])->name('languages.store');
+            Route::put('languages/{id}', [LanguageController::class, 'update'])->name('languages.update');
+            Route::get('languages/restore/{id}', [LanguageController::class, 'restore'])->name('languages.restore');
+            Route::delete('languages/{id}', [LanguageController::class, 'destroy'])->name('languages.destroy');
         });
 
         // Routes cho instructor
@@ -96,6 +102,9 @@ Route::get('categories/{id}', [CategoryController::class, 'show'])->name('catego
 
 Route::get('course-levels', [CourseLevelController::class, 'index'])->name('courselevels.index');
 Route::get('course-levels/{id}', [CourseLevelController::class, 'show'])->name('courselevels.show');
+
+Route::get('languages', [LanguageController::class, 'index'])->name('languages.index');
+Route::get('languages/{id}', [LanguageController::class, 'show'])->name('languages.show');
 
 Route::get('courses', [CourseController::class, 'search'])->name('courses.search');
 Route::get('courses/{id}', [CourseController::class, 'detail'])->name('courses.detail');

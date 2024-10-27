@@ -44,7 +44,7 @@ class LectureSeeder extends Seeder
                 'preview' => $faker->randomElement(['can', 'cant']),      // Trạng thái preview
                 'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái bài giảng (active hoặc inactive)
                 'deleted_by' => null,                                      // Giá trị mặc định là null
-                'created_by' => $faker->optional()->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
+                'created_by' => $faker->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
                 'updated_by' => $faker->optional()->randomElement($userIds),// Người cập nhật ngẫu nhiên hoặc null
             ]);
         }

@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 use App\Models\Course;
+use App\Models\Language;
 use App\Models\Category;
 use App\Models\CourseLevel;
 use App\Models\User;
@@ -86,11 +87,12 @@ class CourseSeeder extends Seeder
 
         // Lấy tất cả ID từ bảng categories và course_levels
         $categoryIds = Category::pluck('id')->toArray();
+        $languageIds = Language::pluck('id')->toArray();
         $levelIds = CourseLevel::pluck('id')->toArray();
 
         // Nếu không có dữ liệu trong categories hoặc course_levels, hiển thị thông báo
-        if (empty($categoryIds) || empty($levelIds)) {
-            $this->command->info('Không có dữ liệu trong bảng categories hoặc course_levels.');
+        if (empty($categoryIds) || empty($levelIds) || empty($languageIds)) {
+            $this->command->info('Không có dữ liệu trong bảng categories hoặc course_levels hoặc language.');
             return;
         }
         $userIds = User::pluck('id')->toArray();
@@ -98,7 +100,8 @@ class CourseSeeder extends Seeder
         for ($i = 0; $i < 50; $i++) {
             Course::create([
                 'category_id' => $faker->randomElement($categoryIds), // Chọn ngẫu nhiên category_id từ mảng categoryIds
-                'level_id' => $faker->randomElement($levelIds),       // Chọn ngẫu nhiên level_id từ mảng levelIds
+                'level_id' => $faker->randomElement($levelIds), 
+                'language_id' => $faker->randomElement($languageIds),       // Chọn ngẫu nhiên level_id từ mảng levelIds
                 'title' => $faker->sentence(3),                      // Tạo tiêu đề với 3 từ
                 'description' => $faker->paragraph(),                // Mô tả ngẫu nhiên
                 'short_description' => $faker->sentence(6),          // Mô tả ngắn ngẫu nhiên
@@ -108,7 +111,7 @@ class CourseSeeder extends Seeder
                 'sale_value' => $faker->randomFloat(2, 0, 100),      // Giá trị giảm giá ngẫu nhiên
                 'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
                 'deleted_by' => null,                                // Giá trị mặc định là null
-                'created_by' => $faker->optional()->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
+                'created_by' => $faker->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
                 'updated_by' => $faker->optional()->randomElement($userIds), // Người cập nhật ngẫu nhiên hoặc null
             ]);
         }
