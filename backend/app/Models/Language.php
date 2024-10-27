@@ -34,7 +34,7 @@ class Language extends Model
     /**
      * Định nghĩa mối quan hệ với người dùng đã xóa.
      */
-    public function deletedByUser()
+    public function deleter()
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }
@@ -42,7 +42,7 @@ class Language extends Model
     /**
      * Định nghĩa mối quan hệ với người dùng tạo bản ghi.
      */
-    public function createdByUser()
+    public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
@@ -50,7 +50,7 @@ class Language extends Model
     /**
      * Định nghĩa mối quan hệ với người dùng cập nhật bản ghi.
      */
-    public function updatedByUser()
+    public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
