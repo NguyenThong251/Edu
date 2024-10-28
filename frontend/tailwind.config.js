@@ -5,7 +5,7 @@ export default {
   theme: {
     extend: {
       screens: {
-        ssm: { max: '639px' }, // Tạo breakpoint cho kích thước <= 640px
+        ssm: { max: '786px' }, // Tạo breakpoint cho kích thước <= 640px
       },
       boxShadow: {
         'sidebar': '0 0 10px rgba(0, 0, 0, 0.7);', 

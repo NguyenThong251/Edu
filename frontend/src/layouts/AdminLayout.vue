@@ -5,7 +5,7 @@ import HeaderArea from '@/components/admin/Header/HeaderArea.vue';
 <template>
   <!-- ========= Bắt đầu trang============ -->
   <div class="container-admin" >
-    <div class="p-3 flex gap-3 w-full">
+    <div class="p-3 flex gap-3 w-full h-screen">
       <!-- ========= Bắt đầu Siderbar============ -->
       <SiderArea/>
       <!-- ========= Kết thúc Siderbar============ -->

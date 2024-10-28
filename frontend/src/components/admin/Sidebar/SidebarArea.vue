@@ -57,11 +57,11 @@ const menuGroups = ref<MenuGroup[]>([
         children: [
           {
             label: 'Doanh thu admin',
-            route: '/admin/reportpayment/admin-revenua'
+            route: '/admin/reportpayment/admin-revenue'
           },
           {
             label: 'Doanh thu giáo viên',
-            route: '/admin/reportpayment/teacher-revenua'
+            route: '/admin/reportpayment/teacher-revenue'
           },
           {
             label: 'Lịch sử mua hàng',
@@ -74,20 +74,6 @@ const menuGroups = ref<MenuGroup[]>([
         label: 'Người dùng',
         route: '#',
         children: [
-          {
-            label: 'Admin',
-            route: '#',
-            children: [
-              {
-                label: 'Quản lý admin',
-                route: '/admin/user/user-admin/user-manager-admin',
-              },
-              {
-                label: 'Thêm admin',
-                route: '/admin/user/user-admin/user-add-admin',
-              },
-            ]
-          },
           {
             label: 'Giáo viên',
             route: '#',
@@ -140,29 +126,29 @@ const menuGroups = ref<MenuGroup[]>([
         label: 'Tin tức',
         route: '/admin/newletter',
       },
-      {
-        icon: DocumentTextIcon,
-        label: 'Bài viết',
-        route: '#',
-        children: [
-          {
-            label: 'Quản lý bài viết',
-            route: '/admin/blog/manager-blog'
-          },
-          {
-            label: 'Bài viết đang xử lý',
-            route: '/admin/blog/blog-pedding'
-          },
-          {
-            label: 'Doanh mục bài viết',
-            route: '/admin/blog/blog-category'
-          },
-          {
-            label: 'Cài đặt bài viết',
-            route: '/admin/blog/blog-settings'
-          },
-        ]
-      },
+      // {
+      //   icon: DocumentTextIcon,
+      //   label: 'Bài viết',
+      //   route: '#',
+      //   children: [
+      //     {
+      //       label: 'Quản lý bài viết',
+      //       route: '/admin/blog/manager-blog'
+      //     },
+      //     {
+      //       label: 'Bài viết đang xử lý',
+      //       route: '/admin/blog/blog-pedding'
+      //     },
+      //     {
+      //       label: 'Doanh mục bài viết',
+      //       route: '/admin/blog/blog-category'
+      //     },
+      //     {
+      //       label: 'Cài đặt bài viết',
+      //       route: '/admin/blog/blog-settings'
+      //     },
+      //   ]
+      // },
     ]
   },
   {

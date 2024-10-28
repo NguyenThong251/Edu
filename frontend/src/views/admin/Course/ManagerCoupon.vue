@@ -118,47 +118,48 @@ const couponData = [
         </div>
       </div>
       <div class="py-3">
-        <div class="overflow-x-auto">
-          <el-table class="!dark:el-table w-full" ref="tableRef" row-key="date" :data="couponData">
-            <el-table-column label="Stt" width="50">
-              <template v-slot="scope">
-                {{ scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="code" label="Mã giảm" />
-            <el-table-column prop="discount" label="Phần trăm giảm" width="180" />
-            <el-table-column prop="expiry" label="Ngày hết hạn" sortable column-key="date" :filters="[
-                { text: '2016-05-01', value: '2016-05-01' },
-                { text: '2016-05-02', value: '2016-05-02' },
-                { text: '2016-05-03', value: '2016-05-03' },
-                { text: '2016-05-04', value: '2016-05-04' },
-              ]" :filter-method="filterHandler" />
-            <el-table-column prop="status" label="Trạng thái" width="200" :filters="[
-                { text: 'Active', value: 'Active' },
-                { text: 'Inactive', value: 'Inactive' },
-              ]" :filter-method="filterTag" filter-placement="bottom-end">
-              <template #default="scope">
-                <el-tag :type="scope.row.status === 'Active' ? 'success' : 'danger'" disable-transitions>{{
-                  scope.row.status }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="Option" width="200">
-              <template #default="scope">
-                <el-dropdown trigger="click" placement="bottom-start">
-                  <!-- <el-button>  -->
-                  <EllipsisVerticalIcon class="el-dropdown-link cursor-pointer w-5" />
-                  <!-- </el-button> -->
-                  <template #dropdown>
-                    <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item @click="deactivate">Deactivate</el-dropdown-item>
-                      <el-dropdown-item @click="edit">Edit</el-dropdown-item>
-                      <el-dropdown-item @click="deleteCoupon">Delete</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </template>
-            </el-table-column>
-          </el-table>
+        <div class="overflow-x-auto flex">
+            <el-table class="!dark:el-table w-full overflow-x-auto" ref="tableRef" row-key="date" :data="couponData">
+              <el-table-column label="Stt" width="50">
+                <template v-slot="scope">
+                  {{ scope.$index + 1 }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="code" label="Mã giảm" />
+              <el-table-column prop="discount" label="Phần trăm giảm" />
+              <el-table-column prop="expiry" label="Ngày hết hạn" sortable column-key="date" :filters="[
+                  { text: '2016-05-01', value: '2016-05-01' },
+                  { text: '2016-05-02', value: '2016-05-02' },
+                  { text: '2016-05-03', value: '2016-05-03' },
+                  { text: '2016-05-04', value: '2016-05-04' },
+                ]" :filter-method="filterHandler" />
+              <el-table-column prop="status" label="Trạng thái" :filters="[
+                  { text: 'Active', value: 'Active' },
+                  { text: 'Inactive', value: 'Inactive' },
+                ]" :filter-method="filterTag" filter-placement="bottom-end">
+                <template #default="scope">
+                  <el-tag :type="scope.row.status === 'Active' ? 'success' : 'danger'" disable-transitions>{{
+                    scope.row.status }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="Option" >
+                <template #default="scope">
+                  <el-dropdown trigger="click" placement="bottom-start">
+                    <!-- <el-button>  -->
+                    <EllipsisVerticalIcon class="el-dropdown-link cursor-pointer w-5" />
+                    <!-- </el-button> -->
+                    <template #dropdown>
+                      <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item @click="deactivate">Deactivate</el-dropdown-item>
+                        <el-dropdown-item @click="edit">Edit</el-dropdown-item>
+                        <el-dropdown-item @click="deleteCoupon">Delete</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+            
+                </template>
+              </el-table-column>
+            </el-table>
         </div>
       </div>
     </div>

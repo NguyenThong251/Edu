@@ -2,201 +2,155 @@
 import ButtonPrimary from '@/components/admin/Button/ButtonPrimary.vue';
 import ButtonSecondary from '@/components/admin/Button/ButtonSecondary.vue';
 import InputSearch from '@/components/admin/Button/InputSearch.vue';
-import DialogView from '@/components/admin/Dialog/DialogView.vue';
 import HeaderNavbar from '@/components/admin/Headernavbar/HeaderNavbar.vue';
+import RenderOptions from '@/components/admin/Table/RenderOptions.vue';
 import { useSidebarStore } from '@/store/sidebar';
-import { ArrowUpOnSquareIcon, FunnelIcon } from '@heroicons/vue/24/outline';
-import { DocumentPlusIcon } from '@heroicons/vue/24/solid';
-const sidebarStore = useSidebarStore()
+import { ArrowUpOnSquareIcon, DocumentPlusIcon } from '@heroicons/vue/24/outline';
+import { EllipsisVerticalIcon} from '@heroicons/vue/24/solid';
+import { reactive, ref } from 'vue';
+import TableLite from 'vue3-table-lite/ts';
 
-import { ref } from 'vue'
-//dialog
+// Khai báo store
+const sidebarStore = useSidebarStore();
+
+// Dialog
 const dialogVisible = ref(false);
-
 const openDialog = () => {
   dialogVisible.value = true;
 };
-//end dialog
+// Hàm toggle menu
+const toggleMenu = (id: string) => {
+  const menu = document.getElementById(`menu-${id}`);
+  if (menu) {
+    menu.classList.toggle('hidden');
+  }
+};
+// Cấu hình bảng
+const table = reactive({
+  isLoading: false,
+  columns: [
+    { label: "ID", field: "id", width: "5%", sortable: true },
+    { label: "Title", field: "title", width: "30%", sortable: true },
+    { label: "Instructor", field: "instructor", width: "15%", sortable: true },
+    { label: "Category", field: "category", width: "10%", sortable: true },
+    { label: "Lessons", field: "lessons", width: "10%", sortable: true },
+    { label: "Sections", field: "sections", width: "10%", sortable: true },
+    { label: "Enrolled Students", field: "enrolled", width: "10%", sortable: true },
+    { label: "Status", field: "status", width: "10%", sortable: true },
+    { label: "Price", field: "price", width: "10%", sortable: true },
+    {
+        label: "Options",
+        field: "options",
+        width: "20%",
+      },
 
-const tableData: User[] = [
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Home',
+  ],
+  messages: {
+    pagingInfo: "Hiển thị {0} - {1} trên {2}",
+    pageSizeChangeLabel: "Số hàng:",
+    gotoPageLabel: "Số trang hiện tại:",
+    noDataAvailable: "Không có dữ liệu",
   },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Office',
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Home',
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Office',
-  },
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Home',
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Office',
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Home',
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Office',
-  },
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Home',
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Office',
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Home',
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Office',
-  },
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Home',
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Office',
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Home',
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-    tag: 'Office',
-  },
-]
+  rows: [] as Array<any>,
+  totalRecordCount: 0,
+  sortable: { order: "id", sort: "asc" },
+});
+
+// Dữ liệu giả cho khóa học
+const sampleCourses = (offset: number, limit: number) => {
+  const courses = [
+    {
+      id: 1,
+      title: "Responsive Web Design Essentials - HTML5 CSS Bootstrap",
+      instructor: "John Doe",
+      category: "Responsive Design",
+      lessons: 13,
+      sections: 4,
+      enrolled: 3,
+      status: "Active",
+      price: "25 $ 30 $",
+    },
+    {
+      id: 2,
+      title: "Build Websites from Scratch with HTML & CSS",
+      instructor: "James Mariyati",
+      category: "HTML & CSS",
+      lessons: 7,
+      sections: 4,
+      enrolled: 1,
+      status: "Active",
+      price: "Free",
+    },
+    // Thêm các khóa học khác...
+    {
+      id: 20,
+      title: "How to Use Lighting Design to Transform your Home",
+      instructor: "John Doe",
+      category: "Lighting Design",
+      lessons: 13,
+      sections: 4,
+      enrolled: 0,
+      status: "Active",
+      price: "66 $",
+    },
+  ];
+
+  return courses.slice(offset, offset + limit);
+};
+
+// Hàm tìm kiếm
+const doSearch = (offset: number, limit: number, order: string, sort: string) => {
+  table.isLoading = true;
+  setTimeout(() => {
+    if (offset >= 10 || limit >= 20) {
+      limit = 20;
+    }
+    table.rows = sort === "asc" ? sampleCourses(offset, limit) : sampleCourses(offset, limit);
+    table.totalRecordCount = 20; // Giả lập tổng số bản ghi
+    table.sortable.order = order; 
+    table.sortable.sort = sort; 
+    table.isLoading = false; 
+  }, 600);
+};
+
+// Lần đầu tiên lấy dữ liệu
+doSearch(0, 10, "id", "asc");
+
 </script>
+
 <template>
   <div class="p-4">
-    <HeaderNavbar :namePage="sidebarStore.page" >
-      <ButtonPrimary
-        :icon="DocumentPlusIcon"
-        link="#"
-        title="Thêm khoá học"
-        />
+    <HeaderNavbar :namePage="sidebarStore.page">
+      <ButtonPrimary :icon="DocumentPlusIcon" link="#" title="Thêm khoá học" />
     </HeaderNavbar>
-  </div>
-  <div class="px-4 py-2">
-    <div class="background-table">
-      <div class="lg:flex justify-between pb-2">
-        <div class="p-3 flex gap-2">
-          <ButtonSecondary
-          :icon="ArrowUpOnSquareIcon"
-          link="#"
-          title="Xuất"
-          customStyle="flex-row-reverse"
-          />
-          <ButtonSecondary
-            :icon="FunnelIcon"
-            link="#"
-            title="Lọc"
-          />
+    <div class="px-4 py-2">
+      <div class="background-table">
+        <div class="lg:flex justify-between pb-2">
+          <div class="p-3 flex gap-2">
+            <ButtonSecondary :icon="ArrowUpOnSquareIcon" link="#" title="Xuất" customStyle="flex-row-reverse" />
+          </div>
+          <div class="p-3 flex gap-2">
+            <InputSearch title="Lọc" inputPlaceHoder="10/01/2024 - 10/31/2024" modelValue="dateRange" @update:modelValue="updateDateRange" />
+          </div>
         </div>
-        <div class="p-3 flex gap-2">
-          <InputSearch
-          title="Tìm kiếm"
-          inputPlaceHoder="Nhập để tìm kiếm..."
-          />
-        </div>
-      </div>
-      <div class="py-3">
-        <div class="max-w-full overflow-x-auto">
-          <el-table class="!dark:el-table" ref="tableRef" row-key="date" :data="tableData" style="width: 100%">
-            <el-table-column
-              label="Stt"
-              width="50"
-              sortable
-              show-overflow-tooltip
-            />
-            <el-table-column prop="name" label="Name" width="180" />
-            <el-table-column prop="address" label="Address" :formatter="formatter" />
-            <el-table-column
-              prop="tag"
-              label="Tag"
-              width="100"
-              :filters="[
-                { text: 'Home', value: 'Home' },
-                { text: 'Office', value: 'Office' },
-              ]"
-              :filter-method="filterTag"
-              filter-placement="bottom-end"
-            >
-              <template #default="scope">
-                <el-tag
-                  :type="scope.row.tag === 'Home' ? 'primary' : 'success'"
-                  disable-transitions
-                  >{{ scope.row.tag }}</el-tag
-                >
-              </template>
-            </el-table-column>
-          </el-table>
+        <div class="py-3 px-2">
+          <table-lite
+            :max-height="300"
+            :is-loading="table.isLoading"
+            :columns="table.columns"
+            :rows="table.rows"
+            :total="table.totalRecordCount"
+            :sortable="table.sortable"
+            :messages="table.messages"
+            @do-search="doSearch"
+            @is-finished="table.isLoading = false"
+          >
+          <template v-slot:options="{ row }">
+              <RenderOptions :row="row" />
+            </template>
+        </table-lite>
         </div>
       </div>
-    </div>
-    <div class="demo-pagination-block mt-5 ">
-      <el-pagination 
-        class="flex justify-between"
-        v-model:current-page="currentPage3"
-        v-model:page-size="pageSize3"
-        :size="size"
-        :disabled="disabled"
-        :background="background"
-        layout="prev, pager, next, jumper"
-        :total="1000"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
     </div>
   </div>
 </template>

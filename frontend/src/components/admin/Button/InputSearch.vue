@@ -10,6 +10,9 @@ const props = defineProps<{
   modelValue: string; 
   title: string
 }>();
+
+const emit = defineEmits(['update:modelValue']);
+
 </script>
 <template>
     <input 
@@ -18,6 +21,7 @@ const props = defineProps<{
     :id="inputId"
     :placeholder="inputPlaceHoder"
     :v-model="modelValue"
+    @input="event => emit('update:modelValue', event.target.value)"
     class="input-style w-auto md:w-full" 
     />
     <ButtonPrimary

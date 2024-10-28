@@ -2,6 +2,7 @@
   --el-color-primary: #3C50E0 !important; 
   --el-color-primary-light-8: #a9c0f8;
   --el-color-primary-light-9: #C9D9FC;
+  --el-color-primary-light-10: #e1ebfe;
 }
 .shadow-switcher {
   --tw-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2), inset 0px 2px 2px #FFFFFF, inset 0px -1px 1px rgba(0, 0, 0, 0.1);
@@ -58,6 +59,40 @@
 .el-pager {
   gap: 0.5rem;
 }
+.vtl-table thead th[data-v-1e91228a]{
+  vertical-align: bottom;
+    color: black;
+    background-color: transparent;
+    border-color: transparent;
+    border-bottom: 2px solid #dee2e6;
+}
+.page-link[data-v-1e91228a]{
+  color: var(--el-color-primary);
+}
+.vtl-table-bordered td[data-v-1e91228a], .vtl-table-bordered th[data-v-1e91228a] {
+  border: none;
+}
+.vtl-table-hover tbody tr[data-v-1e91228a]:hover{
+  background-color: var(--el-color-primary-light-10);
+}
+
+
+@media (min-width: 576px) {
+  .vtl-table-responsive-sm[data-v-1e91228a] {
+    display: block;
+    width: 100%;
+    overflow-x: auto; 
+    -webkit-overflow-scrolling: touch;
+    max-height: none !important; 
+  }
+}
+@media (min-width: 876px) {
+  .vtl-table-responsive-sm[data-v-1e91228a] {
+    overflow-x: auto; 
+  }
+}
+
+
 /* End Table */
 
 /* Form  */
@@ -150,3 +185,4 @@
   margin: 0 8px 0 auto;
 }
 /* End Collapse */
+
