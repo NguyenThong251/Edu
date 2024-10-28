@@ -16,24 +16,24 @@
 
                     </el-dropdown-item>
                     <el-dropdown-item divided>
-                        <router-link to="">
+                        <RouterLink to="">
                             Khóa học của tôi
-                        </router-link>
+                        </RouterLink>
                     </el-dropdown-item>
                     <el-dropdown-item>
-                        <router-link to="">
+                        <RouterLink to="">
                             Khóa học yêu thích
-                        </router-link>
+                        </RouterLink>
                     </el-dropdown-item>
                     <el-dropdown-item>
-                        <router-link to="">
+                        <RouterLink to="/history">
                             Lịch sử mua
-                        </router-link>
+                        </RouterLink>
                     </el-dropdown-item>
                     <el-dropdown-item>
-                        <router-link to="">
+                        <RouterLink to="">
                             Cá nhân
-                        </router-link>
+                        </RouterLink>
                     </el-dropdown-item>
                     <el-dropdown-item divided @click="handleLogout">Đăng xuất</el-dropdown-item>
                 </el-dropdown-menu>
@@ -46,7 +46,7 @@
 import type { TUserAuth } from '@/interfaces';
 import { useAuthStore } from '@/store/auth'
 import { onServerPrefetch } from 'vue';
-import { useRouter } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 const router = useRouter()
 const props = defineProps<{
     dataUser: TUserAuth | null

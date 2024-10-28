@@ -112,12 +112,14 @@ import UserHero from '@/components/user/UserHero.vue';
 import UserCompany from '@/components/user/UserCompany.vue';
 import CardCategory from '@/components/ui/card/CardCategory.vue';
 import CardCourse from '@/components/ui/card/CardCourse.vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 import UserHero2 from '@/components/user/UserHero2.vue';
 import UserNewsLetter from '@/components/user/UserNewsLetter.vue';
 import { useI18n } from 'vue-i18n';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { apisStore } from '@/store/apis';
+import api from '@/services/axiosConfig';
+import { ElNotification } from 'element-plus';
 const { locale } = useI18n();
 // const changeLanguage = (event: Event) => {
 //     const selectedLanguage = (event.target as HTMLSelectElement).value;
@@ -128,9 +130,40 @@ const { locale } = useI18n();
 //     fetchCate();
 //     fetchCourse()
 // });
+const route = useRoute();
+const router = useRouter()
 const apiStore = apisStore()
-onMounted(() => {
+const session_id = ref<string | undefined>('')
+const status = ref<'success' | 'error'>('error');
+const message = ref('');
+const loading = ref(true);
+onMounted(async () => {
     apiStore.fetchCate()
     apiStore.fetchCourse()
+
+    const sessionId = route.query.session_id as string | undefined;
+    session_id.value = sessionId
+    if (session_id.value) {
+        try {
+            await api.get('/orders/verify-payment/', {
+                params: { session_id: session_id.value },
+            });
+            ElNotification({
+                title: 'Thành công ',
+                message: 'Thanh toán của bạn thành công ',
+                type: 'success'
+            })
+            router.push('/')
+        } catch (error: any) {
+            ElNotification({
+                title: 'Thông báo',
+                message: 'Thanh toán của bạn chưa giải quyết ',
+                type: 'warning'
+            })
+            router.push('/')
+
+        }
+    }
+    loading.value = false;
 })
 </script>

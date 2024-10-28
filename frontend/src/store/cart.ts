@@ -82,7 +82,6 @@ export const useCartStore = defineStore('cart', () => {
     try {
       if (isAuthenticated.value) {
         const response = await api.get('/auth/cart/courses')
-        console.log(response)
         cartDb.value = await response.data.data
       } else {
         //
