@@ -66,7 +66,11 @@ class CourseController extends Controller
         $query = Course::with(['category', 'level', 'creator:id,last_name,first_name', 'sections.lectures', 'reviews'])
             ->withCount('reviews')
             ->withAvg('reviews', 'rating')
-            ->where('status', 'active');
+            // ->where('status', 'active');
+            ->where('courses.status', 'active')
+            ->join('users as creators', 'creators.id', '=', 'courses.created_by');
+
+
         // // Áp dụng các bộ lọc
         if ($category_ids) {
             // Chia nhỏ danh sách category_id thành mảng
@@ -109,16 +113,23 @@ class CourseController extends Controller
             }
         }
         // Áp dụng các bộ lọc khác
+        // if ($keyword) {
+        //     $query->where(function ($q) use ($keyword) {
+        //         $q->where('title', 'like', '%' . $keyword . '%')
+        //             ->orWhere(function ($subQuery) use ($keyword) {
+        //                 $subQuery->whereRaw("CONCAT(users.last_name, ' ', users.first_name) LIKE ?", ['%' . $keyword . '%']);
+        //             });
+        //     })
+        //         ->join('users', 'users.id', '=', 'created_by'); // Join with users table
+        // }
         if ($keyword) {
             $query->where(function ($q) use ($keyword) {
                 $q->where('title', 'like', '%' . $keyword . '%')
                     ->orWhere(function ($subQuery) use ($keyword) {
-                        $subQuery->whereRaw("CONCAT(users.last_name, ' ', users.first_name) LIKE ?", ['%' . $keyword . '%']);
+                        $subQuery->whereRaw("CONCAT(creators.last_name, ' ', creators.first_name) LIKE ?", ['%' . $keyword . '%']); // Sử dụng alias "creators"
                     });
-            })
-                ->join('users', 'users.id', '=', 'created_by'); // Join with users table
+            });
         }
-
         // if ($min_price) {
         //     $query->where('price', '>=', $min_price);
         // }
