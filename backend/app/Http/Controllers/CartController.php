@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\CartItem;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +10,52 @@ use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
-    public function getCoursesFromCart()
+    private function getOrCreateUserCart($user)
+    {
+        // Tạo giỏ hàng nếu chưa tồn tại
+        return Cart::firstOrCreate(['user_id' => $user->id]);
+    }
+
+    private function formatResponse($status, $message, $data = null, $code = 200)
+    {
+        $response = [
+            'status' => $status,
+            'message' => $message,
+        ];
+
+        if ($data) {
+            // Tạo đối tượng mới chứa dữ liệu cần thiết
+            $formattedData = $data->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'thumbnail' => $item->thumbnail,
+                    'title' => $item->title,
+                    'category_name' => $item->category->name,
+                    'creator' => $item->creator ? trim($item->creator->last_name . ' ' . $item->creator->first_name) : null,
+                    'old_price' => round($item->price),
+                    'current_price' => $item->type_sale === 'percent'
+                        ? round($item->price - ($item->price * $item->sale_value / 100))
+                        : round($item->price - $item->sale_value),
+                    'average_rating' => round($item->reviews->avg('rating'), 1),
+                    'reviews_count' => $item->reviews->count(),
+                    'total_duration' => round($item->sections->reduce(function ($carry, $section) {
+                        return $carry + $section->lectures->sum('duration');
+                    }, 0) / 3600, 1),
+                    'lectures_count' => $item->sections->reduce(function ($carry, $section) {
+                        return $carry + $section->lectures->count();
+                    }, 0),
+                    'level' => $item->level->name,
+                ];
+            });
+
+            // Gán dữ liệu đã format vào response
+            $response['data'] = $formattedData;
+        }
+
+        return response()->json($response, $code);
+    }
+
+    public function index()
     {
         try {
             // Lấy người dùng đã đăng nhập
@@ -35,7 +79,7 @@ class CartController extends Controller
         }
     }
 
-    public function addCourseToCart(Request $request)
+    public function store(Request $request)
     {
         try {
             // Xác thực dữ liệu đầu vào
@@ -84,7 +128,7 @@ class CartController extends Controller
         }
     }
 
-    public function removeCourseFromCart($course_id)
+    public function destroy($course_id)
     {
         try {
             $user = Auth::user();
@@ -109,7 +153,7 @@ class CartController extends Controller
         }
     }
 
-    public function clearCart()
+    public function destroyAll()
     {
         try {
             // Lấy người dùng đã đăng nhập
@@ -136,50 +180,5 @@ class CartController extends Controller
                 'message' => $e->getMessage()
             ], $statusCode);
         }
-    }
-
-    private function getOrCreateUserCart($user)
-    {
-        // Tạo giỏ hàng nếu chưa tồn tại
-        return Cart::firstOrCreate(['user_id' => $user->id]);
-    }
-
-    private function formatResponse($status, $message, $data = null, $code = 200)
-    {
-        $response = [
-            'status' => $status,
-            'message' => $message,
-        ];
-
-        if ($data) {
-            // Tạo đối tượng mới chứa dữ liệu cần thiết
-            $formattedData = $data->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'thumbnail' => $item->thumbnail,
-                    'title' => $item->title,
-                    'category_name' => $item->category->name,
-                    'creator' => $item->creator ? trim($item->creator->last_name . ' ' . $item->creator->first_name) : null,
-                    'old_price' => round($item->price),
-                    'current_price' => $item->type_sale === 'percent'
-                        ? round($item->price - ($item->price * $item->sale_value / 100))
-                        : round($item->price - $item->sale_value),
-                    'average_rating' => round($item->reviews->avg('rating'), 1),
-                    'reviews_count' => $item->reviews->count(),
-                    'total_duration' => round($item->sections->reduce(function ($carry, $section) {
-                        return $carry + $section->lectures->sum('duration');
-                    }, 0) / 3600, 1),
-                    'lectures_count' => $item->sections->reduce(function ($carry, $section) {
-                        return $carry + $section->lectures->count();
-                    }, 0),
-                    'level' => $item->level->name,
-                ];
-            });
-
-            // Gán dữ liệu đã format vào response
-            $response['data'] = $formattedData;
-        }
-
-        return response()->json($response, $code);
     }
 }

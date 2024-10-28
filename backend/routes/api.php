@@ -84,19 +84,19 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::middleware(['role:student'])->group(function () {
             // Các route dành cho student có thể thêm tại đây
             // Cart
-            Route::get('/cart/courses', [CartController::class, 'getCoursesFromCart']);
-            Route::post('/cart/courses', [CartController::class, 'addCourseToCart']);
-            Route::delete('/cart/courses/{course_id}', [CartController::class, 'removeCourseFromCart']);
-            Route::delete('/cart/courses', [CartController::class, 'clearCart']);
+            Route::get('/cart/courses', [CartController::class, 'index']);
+            Route::post('/cart/courses', [CartController::class, 'store']);
+            Route::delete('/cart/courses/{course_id}', [CartController::class, 'destroy']);
+            Route::delete('/cart/courses', [CartController::class, 'destroyAll']);
             // Order
-            Route::post('/orders', [OrderController::class, 'createOrder']);
-            Route::post('/orders/create-payment-intent', [OrderController::class, 'createPaymentIntent']);
-            Route::get('/orders', [OrderController::class, 'listOrders']);
-            Route::get('/orders/{id}', [OrderController::class, 'getOrderDetails']);
-            Route::post('/orders/{id}/confirm-payment', [OrderController::class, 'confirmPayment']);
+            Route::post('/orders', [OrderController::class, 'store']);
         });
     });
 });
+// Order check status
+Route::get('/orders/success', [OrderController::class, 'success'])->name('orders.success');
+Route::get('/orders/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
 
@@ -112,5 +112,3 @@ Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses']
 Route::get('get-new-courses', [CourseController::class, 'getNewCourses'])->name('courses.getNewCourses');
 Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourses'])->name('courses.getTopRatedCourses');
 Route::get('get-favourite-courses', [CourseController::class, 'getFavouriteCourses'])->name('courses.getFavouriteCourses');
-
-Route::post('/webhooks/payment', [WebhookController::class, 'handlePaymentWebhook']);
