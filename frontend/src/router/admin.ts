@@ -1,6 +1,7 @@
-import AdminLayout from "@/layouts/AdminLayout.vue";
-import Dashboard from "@/views/admin/Dashboard.vue";
-import Category from "@/views/admin/Category.vue";
+import AdminLayout from '@/layouts/AdminLayout.vue'
+import Dashboard from '@/views/admin/Dashboard.vue'
+import Category from '@/views/admin/Category.vue'
+import AddCategory from '@/views/admin/AddCategory.vue'
 const admin = [
   {
     path: '/admin/dashboard',
@@ -26,6 +27,14 @@ const admin = [
           title: 'Danh mục khoá học | Edunity'
         }
       },
+      {
+        path: '/admin/add-category',
+        name: 'admin.add-category',
+        component: AddCategory,
+        meta: {
+          title: 'Danh mục khoá học | Edunity'
+        }
+      }
     ]
   }
 ]

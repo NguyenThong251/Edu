@@ -6,30 +6,10 @@ import router from './router/index'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import '@/assets/index.css'
-<<<<<<< HEAD
-import '@/assets/css/style.css'
-
-
-// Icon Awesome
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'; 
-import { fas } from '@fortawesome/free-solid-svg-icons';
-=======
->>>>>>> feature/course-detail
 
 // video
 import VideoPlayer from 'vue-video-player'
 import 'video.js/dist/video-js.css'
-<<<<<<< HEAD
-
-library.add(fas)
-
-const app = createApp(App)
-const pinia = createPinia() // Khởi tạo pinia
-
-app.component('font-awesome-icon', FontAwesomeIcon);
-
-=======
 import VuePlyr from 'vue-plyr'
 import 'vue-plyr/dist/vue-plyr.css'
 import 'vue-loading-overlay/dist/css/index.css'
@@ -54,7 +34,6 @@ app.use(VuePlyr, {
   plyr: {}
 })
 app.use(i18n)
->>>>>>> feature/course-detail
 app.use(VideoPlayer)
 app.use(ElementPlus)
 app.use(router)

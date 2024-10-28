@@ -19,7 +19,7 @@ const props = defineProps<{
       /> -->
       <ButtonPrimary
       :icon="FolderPlusIcon"
-      link="#"
+      link="/admin/add-category"
       title="Thêm danh mục"
       />
     
