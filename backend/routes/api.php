@@ -11,6 +11,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CourseLevelController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Api\GoogleController;
+use App\Http\Controllers\StripeWebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -93,9 +94,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         });
     });
 });
-// Order check status
-Route::get('/orders/success', [OrderController::class, 'success'])->name('orders.success');
-Route::get('/orders/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+// Order webhook
+Route::get('/orders/verify-payment', [OrderController::class, 'verifyPayment']);
+Route::post('/stripe/webhook', [OrderController::class, 'handleWebhook']);
 
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
