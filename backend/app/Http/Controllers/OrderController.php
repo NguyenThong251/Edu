@@ -35,7 +35,7 @@ class OrderController extends Controller
             $total = $total * 100;
         }
 
-        // TODO Handle voucher later
+        // TODO: Handle voucher if applicable
         $voucher = $request->voucher;
 
         try {
@@ -48,9 +48,7 @@ class OrderController extends Controller
                         'price_data' => [
                             'currency' => $currency,
                             'product_data' => [
-                                'name' => $cartItems->map(function ($item) {
-                                    return $item->course->title;
-                                })->join(', '),
+                                'name' => 'Edunity Courses',
                             ],
                             'unit_amount' => $total,
                         ],
@@ -58,12 +56,11 @@ class OrderController extends Controller
                     ],
                 ],
                 'mode' => 'payment',
-                'success_url' => route('orders.success') . '?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('orders.cancel'),
+                'success_url' => config('services.frontend_url') . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => config('services.frontend_url'),
             ]);
 
-            dd($response);
-
+            // Create order in the database
             $order = Order::create([
                 'user_id' => $user->id,
                 'voucher_id' => $voucher ?? null,
@@ -91,6 +88,7 @@ class OrderController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Order created successfully',
+                'checkout_url' => $response->url,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -98,34 +96,67 @@ class OrderController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Order creation failed',
+                'message' => 'Order creation failed: ' . $e->getMessage(),
             ], 500);
         }
     }
 
-    public function success(Request $request)
+    public function verifyPayment(Request $request)
     {
-        if (!$request->session_id) {
+        $sessionId = $request->query('session_id');
+        if (!$sessionId) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Session ID is required',
             ], 400);
         }
-        $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
-        $response = $stripe->checkout->sessions->retrieve($request->session_id);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Order completed successfully',
-            'data' => $response,
-        ], 201);
+        // Truy vấn đơn hàng bằng mã session ID (payment_code)
+        $order = Order::where('payment_code', $sessionId)->first();
+
+        if ($order) {
+            return response()->json([
+                'status' => 'success',
+                'payment_status' => $order->payment_status,
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Order not found',
+            ], 404);
+        }
     }
 
-    public function cancel(Request $request)
+    public function handleWebhook(Request $request)
     {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Order cancelled',
-        ], 400);
+        $endpoint_secret = config('services.stripe.webhook_secret');
+        $payload = $request->getContent();
+        $sig_header = $request->header('Stripe-Signature');
+
+        try {
+            $event = \Stripe\Webhook::constructEvent(
+                $payload,
+                $sig_header,
+                $endpoint_secret
+            );
+
+            if ($event->type === 'checkout.session.completed') {
+                $session = $event->data->object;
+
+                // Update order payment status to "paid"
+                $order = Order::where('payment_code', $session->id)->first();
+                if ($order) {
+                    $order->update(['payment_status' => 'paid']);
+                }
+            }
+
+            return response()->json(['status' => 'success'], 200);
+        } catch (\UnexpectedValueException $e) {
+            Log::error('Invalid payload');
+            return response()->json(['status' => 'error', 'message' => 'Invalid payload'], 400);
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            Log::error('Invalid signature');
+            return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 400);
+        }
     }
 }
