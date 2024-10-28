@@ -114,7 +114,7 @@ class OrderController extends Controller
         // Truy vấn đơn hàng bằng mã session ID (payment_code)
         $order = Order::where('payment_code', $sessionId)->first();
 
-        if ($order) {
+        if ($order && $order->payment_status === 'paid') {
             return response()->json([
                 'status' => 'success',
                 'payment_status' => $order->payment_status,
@@ -122,8 +122,8 @@ class OrderController extends Controller
         } else {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Order not found',
-            ], 404);
+                'message' => 'Payment not completed',
+            ], 400);
         }
     }
 
