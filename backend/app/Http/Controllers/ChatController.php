@@ -15,7 +15,7 @@ class ChatController extends Controller
     public function index($receiverId)
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $messages = ChatMessages::with(['sender:id,first_name,last_name', 'receiver:id,first_name,last_name'])
+        $messages = ChatMessages::with(['sender:id,first_name,last_name,avatar', 'receiver:id,first_name,last_name,avatar'])
             ->where(function ($query) use ($user, $receiverId) {
                 $query->where('sender_id', $user->id)
                     ->where('receiver_id', $receiverId);
@@ -53,6 +53,7 @@ class ChatController extends Controller
     public function getUsers()
     {
         $user = JWTAuth::parseToken()->authenticate();
+
         $users = User::where('id', '!=', $user->id)
             ->whereIn('id', function ($query) use ($user) {
                 $query->select('sender_id')
@@ -65,6 +66,23 @@ class ChatController extends Controller
                     ->where('sender_id', $user->id);
             })
             ->get(['id', 'first_name', 'last_name', 'avatar', 'email']);
+
+        // Attach latest message for each user
+        $users->each(function ($otherUser) use ($user) {
+            $latestMessage = ChatMessages::where(function ($query) use ($user, $otherUser) {
+                $query->where('sender_id', $user->id)
+                    ->where('receiver_id', $otherUser->id);
+            })
+                ->orWhere(function ($query) use ($user, $otherUser) {
+                    $query->where('sender_id', $otherUser->id)
+                        ->where('receiver_id', $user->id);
+                })
+                ->latest('created_at')
+                ->first();
+
+            $otherUser->first_message = $latestMessage ? $latestMessage->message : null;
+        });
+
         return formatResponse(STATUS_OK, $users, '', 'Get user successfully');
     }
 }
