@@ -34,7 +34,7 @@ class Cart extends Model
                     ? trim($item->course->creator->last_name . ' ' . $item->course->creator->first_name)
                     : null,
                 'old_price' => round($item->course->price),
-                'current_price' => $item->course->formatted_price,
+                'current_price' => $item->current_price,
                 'average_rating' => round($item->course->reviews->avg('rating'), 1),
                 'reviews_count' => $item->course->reviews->count(),
                 'total_duration' => $item->course->total_duration,

@@ -43,10 +43,8 @@ class CartController extends Controller
                 throw new \Exception(__('messages.course_already_in_cart'), 400);
             }
 
-            $course = Course::find($validatedData['course_id']);
             $cart->cartItems()->create([
-                'course_id' => $course->id,
-                'price' => $course->price,
+                'course_id' => $validatedData['course_id'],
             ]);
 
             DB::commit();
@@ -54,12 +52,7 @@ class CartController extends Controller
             $courses = $cart->getFormattedItems();
             return $this->formatResponse('success', __('messages.course_added_success'), $courses, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->formatResponse(
-                'error',
-                'Validation Error',
-                $e->errors(),
-                422
-            );
+            return $this->formatResponse('error', 'Validation Error', $e->errors(), 422);
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
