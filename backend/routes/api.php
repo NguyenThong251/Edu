@@ -10,7 +10,9 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CourseLevelController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Api\GoogleController;
+use App\Http\Controllers\StripeWebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,6 +70,11 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::put('course-levels/{id}', [CourseLevelController::class, 'update'])->name('courselevels.update');
             Route::get('course-levels/restore/{id}', [CourseLevelController::class, 'restore'])->name('courselevels.restore');
             Route::delete('course-levels/{id}', [CourseLevelController::class, 'destroy'])->name('courselevels.destroy');
+
+            Route::post('languages', [LanguageController::class, 'store'])->name('languages.store');
+            Route::put('languages/{id}', [LanguageController::class, 'update'])->name('languages.update');
+            Route::get('languages/restore/{id}', [LanguageController::class, 'restore'])->name('languages.restore');
+            Route::delete('languages/{id}', [LanguageController::class, 'destroy'])->name('languages.destroy');
         });
 
         // Routes cho instructor
@@ -87,24 +94,31 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
             // Các route dành cho student có thể thêm tại đây
             // Cart
-            Route::get('/cart/courses', [CartController::class, 'getCoursesFromCart']);
-            Route::post('/cart/courses', [CartController::class, 'addCourseToCart']);
-            Route::delete('/cart/courses/{course_id}', [CartController::class, 'removeCourseFromCart']);
-            Route::delete('/cart/courses', [CartController::class, 'clearCart']);
+            Route::get('/cart/courses', [CartController::class, 'index']);
+            Route::post('/cart/courses', [CartController::class, 'store']);
+            Route::delete('/cart/courses/{course_id}', [CartController::class, 'destroy']);
+            Route::delete('/cart/courses', [CartController::class, 'destroyAll']);
             // Order
-            Route::post('/orders', [OrderController::class, 'createOrder']);
-            Route::post('/orders/create-payment-intent', [OrderController::class, 'createPaymentIntent']);
-            Route::get('/orders', [OrderController::class, 'listOrders']);
-            Route::get('/orders/{id}', [OrderController::class, 'getOrderDetails']);
-            Route::post('/orders/{id}/confirm-payment', [OrderController::class, 'confirmPayment']);
+            Route::get('/orders', [OrderController::class, 'index']);
+            Route::post('/orders', [OrderController::class, 'store']);
+            Route::get('/orders/{id}', [OrderController::class, 'show']);
+            Route::patch('/orders/{id}', [OrderController::class, 'cancel']);
+            Route::patch('/orders/{id}/restore', [OrderController::class, 'restore']);
         });
     });
 });
+// Order webhook
+Route::get('/orders/verify-payment', [OrderController::class, 'verifyPayment']);
+Route::post('/stripe/webhook', [OrderController::class, 'handleWebhook']);
+
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
 
 Route::get('course-levels', [CourseLevelController::class, 'index'])->name('courselevels.index');
 Route::get('course-levels/{id}', [CourseLevelController::class, 'show'])->name('courselevels.show');
+
+Route::get('languages', [LanguageController::class, 'index'])->name('languages.index');
+Route::get('languages/{id}', [LanguageController::class, 'show'])->name('languages.show');
 
 Route::get('courses', [CourseController::class, 'search'])->name('courses.search');
 Route::get('courses/{id}', [CourseController::class, 'detail'])->name('courses.detail');
@@ -112,5 +126,3 @@ Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses']
 Route::get('get-new-courses', [CourseController::class, 'getNewCourses'])->name('courses.getNewCourses');
 Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourses'])->name('courses.getTopRatedCourses');
 Route::get('get-favourite-courses', [CourseController::class, 'getFavouriteCourses'])->name('courses.getFavouriteCourses');
-
-Route::post('/webhooks/payment', [WebhookController::class, 'handlePaymentWebhook']);

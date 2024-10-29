@@ -36,7 +36,6 @@ class CategoryController extends Controller
         $currentPage = $request->get('page', 1); // Lấy trang hiện tại từ request, mặc định là 1
         $total = $filteredCategories->count(); // Tổng số danh mục đã lọc
         $filteredCategories = $filteredCategories->slice(($currentPage - 1) * $perPage, $perPage)->values(); // Lấy các mục cho trang hiện tại
-
         // Tạo thông tin phân trang
         $paginated = [
             'data' => $filteredCategories,

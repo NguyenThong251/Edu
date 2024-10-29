@@ -16,11 +16,10 @@ return new class extends Migration
             $table->string('name', 100)->unique();
             $table->string('image', 255)->nullable();
             $table->text('description')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->unsignedBigInteger('parent_id')->nullable(); 
             $table->softDeletes();
             $table->bigInteger('deleted_by')->nullable();
-            $table->boolean('is_deleted')->default(0);
             $table->timestamps();
             $table->bigInteger('created_by')->nullable();
             $table->bigInteger('updated_by')->nullable();

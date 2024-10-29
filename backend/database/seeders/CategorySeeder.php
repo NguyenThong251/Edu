@@ -27,8 +27,7 @@ class CategorySeeder extends Seeder
                 'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
                 'parent_id' => $faker->optional()->numberBetween(1, 15), // Ngẫu nhiên chọn parent_id hoặc null
                 'deleted_by' => null, // Giá trị mặc định là null
-                'is_deleted' => 0, // Không bị xóa
-                'created_by' => $faker->optional()->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
+                'created_by' => $faker->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
                 'updated_by' => $faker->optional()->randomElement($userIds), // Ngẫu nhiên người cập nhật hoặc null
             ]);
         }
