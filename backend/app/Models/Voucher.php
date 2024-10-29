@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class Voucher extends Model
 {
@@ -15,20 +16,43 @@ class Voucher extends Model
      *
      * @var array<int, string>
      */
+    use HasFactory;
+
     protected $fillable = [
         'code',
         'description',
         'discount_type',
         'discount_value',
-        'max_discount',
+        'usage_limit',
+        'usage_count',
+        'expires_at',
         'min_order_value',
-        'start_date',
-        'end_date',
-        'usage_remain',
-        'deleted_by',
+        'max_discount_value',
+        'status',
         'created_by',
-        'updated_by',
+        'deleted_by',
+        'updated_by'
     ];
+
+    // Kiểm tra voucher có hợp lệ không
+    public function isValid($orderTotal)
+    {
+        return $this->status === 'active' &&
+            $this->expires_at >= Carbon::now() &&
+            ($this->usage_limit === null || $this->usage_count < $this->usage_limit) &&
+            ($this->min_order_value === null || $orderTotal >= $this->min_order_value);
+    }
+
+
+    // Áp dụng giảm giá và trả về số tiền giảm giá (giới hạn trong max_discount_value nếu có)
+    public function applyDiscount($orderTotal)
+    {
+        $discount = $this->discount_type === 'percent'
+            ? $orderTotal * $this->discount_value / 100
+            : $this->discount_value;
+
+        return min($discount, $this->max_discount_value ?? $discount);
+    }
 
     /**
      * Các thuộc tính sẽ được coi là kiểu ngày tháng.

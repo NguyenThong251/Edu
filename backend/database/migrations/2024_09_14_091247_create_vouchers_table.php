@@ -18,12 +18,9 @@ return new class extends Migration {
             // $table->string('description')->nullable();
             // $table->tinyInteger('discount_type');
             // $table->double('discount_value');
-            // $table->double('min_order_value')->nullable();
-            // $table->double('max_discount_value')->nullable();
             // $table->date('start_date')->nullable();
             // $table->date('end_date')->nullable();
             // $table->integer('remain_quantity')->nullable();
-            // $table->enum('status', ['active', 'inactive'])->default('active');
 
             // new
             $table->string('code')->unique();
@@ -33,6 +30,9 @@ return new class extends Migration {
             $table->integer('usage_limit')->nullable(); // số lần có thể sử dụng
             $table->integer('usage_count')->default(0); // số lần đã sử dụng
             $table->date('expires_at')->nullable(); // ngày hết hạn
+            $table->double('min_order_value')->nullable();
+            $table->double('max_discount_value')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
 
             $table->bigInteger('created_by')->nullable();
             $table->bigInteger('deleted_by')->nullable();
