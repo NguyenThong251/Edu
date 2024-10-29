@@ -143,13 +143,13 @@ return [
     'language_not_found' => 'Language not found.',
 
     // CART: handle courses in cart
-    'cart_cleared' => 'All courses have been removed from the cart.',
-    'cart_empty' => 'Your cart is empty.',
-    'cart_item_not_found' => 'Cart item not found.',
-    'course_already_in_cart' => 'Course already in cart.',
-    'course_added_success' => 'Course added successfully.',
-    'course_removed_success' => 'Course removed successfully.',
+    'cart_items_fetched' => 'List of courses in cart retrieved successfully.',
     'course_not_found_in_cart' => 'Course not in cart.',
+    'course_added_success' => 'Course added successfully.',
+    'course_already_in_cart' => 'Course already in cart.',
+    'course_already_in_paid_order' => 'Course already in paid order.',
+    'course_removed_success' => 'Course removed successfully.',
+    'cart_cleared' => 'All courses have been removed from the cart.',
 
     // ORDER: handle orders
     'order_created_success' => 'Order created successfully.',
