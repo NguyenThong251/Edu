@@ -16,6 +16,7 @@ import 'vue-loading-overlay/dist/css/index.css'
 // language
 import enHome from './locales/en/home.json'
 import viHome from './locales/vi/home.json'
+
 const i18n = createI18n({
   locale: 'vi', // Ngôn ngữ mặc định
   fallbackLocale: 'en', // Ngôn ngữ dự phòng
