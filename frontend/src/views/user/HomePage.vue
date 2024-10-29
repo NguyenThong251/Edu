@@ -21,7 +21,7 @@
             <div class="grid  md:grid-cols-2 lg:grid-cols-3 gap-5 mt-10">
                 <CardCategory v-for="category in apiStore.categories" :key="category.id" :name="category.name"
                     :image="category.image || 'https://demo.creativeitem.com/academy-laravel/public/uploads/category-logo/web-development-logo-1718273508.png'"
-                    :countCourse="10" />
+                    :courses_count="category.id" />
 
             </div>
         </section>
@@ -42,7 +42,7 @@
                 <!-- FILTER -->
                 <div class="">
 
-                    <ul class="sm:flex gap-3 hidden ">
+                    <!-- <ul class="sm:flex gap-3 hidden ">
                         <li class="text-lg font-medium p-2  border-indigo-600 border-b-4 text-indigo-600">Thiết kế đồ
                             họa
                         </li>
@@ -59,7 +59,7 @@
                             class="text-md font-medium p-2 hover:text-indigo-600 hover:border-b-4 hover:border-indigo-600 cursor-pointer animation text-gray-500">
                             Vẽ</li>
 
-                    </ul>
+                    </ul> -->
                     <div class="flex">
                         <RouterLink to="/course" class="sm:hidden block ">
                             <div class="px-3 py-3 flex items-center justify-center rounded-lg bg-indigo-600">
@@ -68,13 +68,13 @@
                         </RouterLink>
                     </div>
                     <h3 class="mt-5 font-semibold text-2xl">
-                        Giúp bạn có thêm cơ hội nghề nghiệp với Thiết kế đồ họa
+                        Giúp bạn có thêm cơ hội nghề nghiệp với những khóa học phổ biến
                     </h3>
                 </div>
 
                 <div class="mt-5 gap-5 grid xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2">
 
-                    <CardCourse v-for="course in apiStore.getCourses" :key="course.id" :id="course.id"
+                    <CardCourse v-for="course in apiStore.coursesPopular" :key="course.id" :id="course.id"
                         :title="course.title"
                         :thumbnail="course.thumbnail || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'"
                         :creator="course.creator" :tag="course.tag" :lectures_count="course.lectures_count"
@@ -89,7 +89,11 @@
                     Khóa học hàng đầu
                 </h3>
                 <div class="mt-5 gap-5 grid xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2">
-
+                    <CardCourse v-for="course in apiStore.coursesRate" :key="course.id" :id="course.id"
+                        :title="course.title"
+                        :thumbnail="course.thumbnail || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'"
+                        :creator="course.creator" :tag="course.tag" :lectures_count="course.lectures_count"
+                        :level="course.level" :current_price="course.current_price" :old_price="course.old_price" />
                 </div>
             </div>
         </section>
@@ -137,9 +141,12 @@ const session_id = ref<string | undefined>('')
 const status = ref<'success' | 'error'>('error');
 const message = ref('');
 const loading = ref(true);
+
 onMounted(async () => {
     apiStore.fetchCate()
     apiStore.fetchCourse()
+    apiStore.fetchPopularCourse()
+    apiStore.fetchRateCourse()
 
     const sessionId = route.query.session_id as string | undefined;
     session_id.value = sessionId

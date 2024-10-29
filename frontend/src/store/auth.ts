@@ -3,6 +3,9 @@ import { ref } from 'vue'
 import api from '@/services/axiosConfig'
 import type { AuthState, TUserAuth } from '@/interfaces'
 import Cookies from 'js-cookie'
+import { useRouter } from 'vue-router'
+import { ElNotification } from 'element-plus'
+const router = useRouter()
 export const useAuthStore = defineStore('auth', () => {
   const state = ref<AuthState>({
     user: null,
@@ -42,10 +45,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   const userData = async () => {
+    if (!state.value.token) return
+    state.value.loading = true
     try {
       const response = await api.get('/auth/profile')
-      state.value.user = response.data.data
-      return response.data.data
+      const isToken = await response.data
+      if (isToken.status === 'FAIL') {
+        logout()
+        router.push('/')
+        ElNotification({
+          title: 'Thất bại',
+          message: isToken.message || 'Bạn không có quyền truy cập',
+          type: 'error'
+        })
+        return null
+      }
+      state.value.user = await response.data.data
+      // console.log(state.value.user)
+      // return response.data.data
     } catch (err: any) {
       state.value.error = err.response?.data?.message || 'Registration failed'
     } finally {

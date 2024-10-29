@@ -91,18 +91,18 @@
 
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
-import { Bars3Icon, MagnifyingGlassIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
-import { ElNotification, type DrawerProps } from 'element-plus';
-import { onMounted, ref } from 'vue';
-import logo from '../../assets/images/logo1.svg';
-import UserProfile from './UserProfile.vue';
 import { useCart } from '@/composables/user/useCart';
 import { useAuthStore } from '@/store/auth';
-import { useCartStore } from '@/store/cart';
+import { Bars3Icon, MagnifyingGlassIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
+import { ElNotification, type DrawerProps } from 'element-plus';
+import { storeToRefs } from 'pinia';
+import { onMounted, ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
+import logo from '../../assets/images/logo1.svg';
+import SearchProduct from '../ui/dialog/SearchProduct.vue';
 import ViewCart from '../ui/dialog/ViewCart.vue';
 import MenuDesktop from '../ui/menu/MenuDesktop.vue';
-import SearchProduct from '../ui/dialog/SearchProduct.vue';
+import UserProfile from './UserProfile.vue';
 const direction = ref<DrawerProps['direction']>('ltr')
 const isOpenNav = ref(false)
 const isOpenCart = ref(false)
@@ -117,25 +117,12 @@ const toggleCart = () => {
 }
 const router = useRouter()
 const authStore = useAuthStore()
-const { state, userData } = authStore
-const profileData = ref(null)
+const { state } = storeToRefs(authStore)
+const { userData } = authStore;
 const currentPath = router.currentRoute.value.fullPath
 localStorage.setItem('redirectAfterLogin', currentPath);
 onMounted(async () => {
-    if (!state.user && state.token) {
-        const res = await userData()
-        if (res?.status === 'FAIL') {
-            authStore.logout()
-            router.push('/')
-            ElNotification({
-                title: 'Thất bại',
-                message: res.message || 'Bạn không có quyền truy cập',
-                type: 'error'
-            })
-        } else {
-            profileData.value = res
-        }
-    }
+    await userData()
 })
 
 

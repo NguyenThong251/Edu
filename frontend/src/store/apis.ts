@@ -5,6 +5,7 @@ import api from '@/services/axiosConfig'
 import type { Tlevel } from '@/interfaces/level.interface'
 import type { TCardCourse } from '@/interfaces/course.interface'
 import type { TCategory } from '@/interfaces/category.interface'
+import type { TBill } from '@/interfaces/bill.interface'
 
 export const apisStore = defineStore('homeStore', () => {
   // State
@@ -13,6 +14,9 @@ export const apisStore = defineStore('homeStore', () => {
   const coursesSearch = ref<TCardCourse[]>([])
   const levels = ref<Tlevel[]>([])
   const languagies = ref<Tlevel[]>([])
+  const coursesPopular = ref<TCardCourse[]>([])
+  const coursesRate = ref<TCardCourse[]>([])
+  const billHistory = ref<TBill[]>([])
 
   // Actions for fetching different data
   const fetchCate = async () => {
@@ -21,6 +25,22 @@ export const apisStore = defineStore('homeStore', () => {
       categories.value = res.data.data.data
     } catch (error) {
       console.error('Error fetching categories:', error)
+    }
+  }
+  const fetchRateCourse = async () => {
+    try {
+      const res = await api.get('/get-top-rated-courses?limit=5')
+      coursesRate.value = res.data.data
+    } catch (error) {
+      console.error('Error fetching :', error)
+    }
+  }
+  const fetchPopularCourse = async () => {
+    try {
+      const res = await api.get('/get-popular-courses?limit=5')
+      coursesPopular.value = res.data.data
+    } catch (error) {
+      console.error('Error fetching :', error)
     }
   }
   const fetchLevel = async () => {
@@ -63,6 +83,15 @@ export const apisStore = defineStore('homeStore', () => {
       coursesSearch.value = []
     }
   }
+  const fetchBill = async () => {
+    try {
+      const res = await api.get('/auth/orders')
+      billHistory.value = res.data.data
+    } catch (error) {
+      console.error('Error fetching:', error)
+      billHistory.value = []
+    }
+  }
   const getCourses = computed(() => {
     return courses.value.filter((course) => course.status === 'active')
   })
@@ -75,17 +104,24 @@ export const apisStore = defineStore('homeStore', () => {
       (category) => !category.children || category.children.length === 0
     )
   })
+
   return {
+    billHistory,
     languagies,
     categories,
     courses,
     levels,
     coursesSearch,
+    coursesPopular,
+    coursesRate,
     fetchCate,
     fetchCourse,
     fetchLevel,
     fetchLang,
     fetchCourseSearch,
+    fetchRateCourse,
+    fetchPopularCourse,
+    fetchBill,
     getCourses,
     categoriesWithChildren,
     categoriesWithoutChildren
