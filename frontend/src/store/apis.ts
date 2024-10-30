@@ -17,6 +17,7 @@ export const apisStore = defineStore('homeStore', () => {
   const coursesPopular = ref<TCardCourse[]>([])
   const coursesRate = ref<TCardCourse[]>([])
   const billHistory = ref<TBill[]>([])
+  const billHistoryDetail = ref<TBill | null>(null)
 
   // Actions for fetching different data
   const fetchCate = async () => {
@@ -92,6 +93,15 @@ export const apisStore = defineStore('homeStore', () => {
       billHistory.value = []
     }
   }
+  const fetchBillDetail = async (id: number) => {
+    try {
+      const res = await api.get(`/auth/orders/${id}`)
+      billHistoryDetail.value = res.data.data
+    } catch (error) {
+      console.error('Error fetching:', error)
+      billHistoryDetail.value = null
+    }
+  }
   const getCourses = computed(() => {
     return courses.value.filter((course) => course.status === 'active')
   })
@@ -106,6 +116,7 @@ export const apisStore = defineStore('homeStore', () => {
   })
 
   return {
+    billHistoryDetail,
     billHistory,
     languagies,
     categories,
@@ -122,6 +133,7 @@ export const apisStore = defineStore('homeStore', () => {
     fetchRateCourse,
     fetchPopularCourse,
     fetchBill,
+    fetchBillDetail,
     getCourses,
     categoriesWithChildren,
     categoriesWithoutChildren

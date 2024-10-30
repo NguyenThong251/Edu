@@ -22,7 +22,6 @@ export const useOrderStore = defineStore('order', () => {
     try {
       const response = await api.post('auth/orders', { param: { token: token } })
       order.value = response.data.order
-      console.log(response.data.order)
       return response.data.client_secret
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to create order'

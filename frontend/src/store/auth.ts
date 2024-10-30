@@ -97,7 +97,6 @@ export const useAuthStore = defineStore('auth', () => {
   const getGoogleSignInUrl = async (role: string) => {
     try {
       const response = await api.post('/auth/get-google-sign-in-url', { role })
-      console.log(response)
       return response.data.data.url
     } catch (err: any) {
       state.value.error = err.response?.data?.message || 'Failed to get Google sign-in URL'

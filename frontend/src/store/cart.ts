@@ -34,17 +34,17 @@ export const useCartStore = defineStore('cart', () => {
     try {
       if (isAuthenticated.value) {
         try {
-          await api.post('/auth/cart/courses', { course_id: courseId })
+          await api.post('/auth/cart/', { course_id: courseId })
 
           ElNotification({
             title: 'Thành công',
             message: 'Sản phẩm của bạn đã thêm vào giỏ hàng',
             type: 'success'
           })
-        } catch (error) {
+        } catch (error: any) {
           ElNotification({
             title: 'Thông báo',
-            message: 'Khóa học đã có trong giỏ hàng.',
+            message: error.response.data.message,
             type: 'warning'
           })
         }
@@ -71,7 +71,7 @@ export const useCartStore = defineStore('cart', () => {
           saveCartToLocalStorage()
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding course to cart:', error)
     } finally {
       loading.value = false
@@ -81,7 +81,7 @@ export const useCartStore = defineStore('cart', () => {
     loading.value = true
     try {
       if (isAuthenticated.value) {
-        const response = await api.get('/auth/cart/courses')
+        const response = await api.get('/auth/cart/')
         cartDb.value = await response.data.data
       } else {
         //
@@ -102,7 +102,7 @@ export const useCartStore = defineStore('cart', () => {
     })
     try {
       if (isAuthenticated.value) {
-        await api.delete(`/auth/cart/courses/${courseId}`)
+        await api.delete(`/auth/cart/${courseId}`)
         await fetchCartCourses()
       } else {
         removeCourseFromLocalStorage(courseId)
@@ -123,7 +123,7 @@ export const useCartStore = defineStore('cart', () => {
     })
     try {
       if (isAuthenticated.value) {
-        await api.delete('/auth/cart/courses')
+        await api.delete('/auth/cart')
         await fetchCartCourses()
         cartDb.value = []
       } else {
