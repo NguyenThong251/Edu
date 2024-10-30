@@ -103,7 +103,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 Route::get('/', [CartController::class, 'index']);
                 Route::post('/', [CartController::class, 'store']);
                 Route::delete('/{course_id}', [CartController::class, 'destroy']);
-                Route::delete('/', [CartController::class, 'destroyAll']);
+                Route::delete('/all', [CartController::class, 'destroyAll']);
             });
 
             // Order
