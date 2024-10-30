@@ -144,7 +144,7 @@ return [
     'language_force_delete_success' => 'Xóa vĩnh viễn ngôn ngữ thành công.',
     'language_not_found' => 'Ngôn ngữ không tồn tại.',
 
-    // Cart: handle courses in cart
+    // CART
     'cart_items_fetched' => 'Danh sách khóa học trong giỏ hàng đã được lấy thành công.',
     'course_not_found_in_cart' => 'Khóa học không có trong giỏ hàng.',
     'course_added_success' => 'Khóa học đã được thêm thành công.',
@@ -153,7 +153,10 @@ return [
     'course_removed_success' => 'Khóa học đã được xóa thành công.',
     'cart_cleared' => 'Tất cả các khóa học đã được xóa khỏi giỏ hàng.',
 
-    // Order
+    // VOUCHER
+    'voucher_created_success' => 'Voucher đã được tạo thành công.',
+
+    // ORDER
     'order_created_success' => 'Đơn hàng đã được tạo thành công.',
     'order_create_failed' => 'Tạo đơn hàng thất bại.',
 ];
