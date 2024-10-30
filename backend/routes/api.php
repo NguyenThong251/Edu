@@ -57,6 +57,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
             Route::get('getAdmin', [ManageController::class, 'getAdmins'])->name('users.admins');
+            Route::get('getInstructor', [ManageController::class, 'getInstructor'])->name('users.instructors');
+            Route::get('getStudent', [ManageController::class, 'getStudent'])->name('users.students');
             Route::put('updateUser/{id}', [ManageController::class, 'updateUserAccount']);
 //            Route::post('/users', [ManageController::class, 'updateFoundationAccount']);
             Route::put('updateFoundation/{id}', [ManageController::class, 'updateFoundationAccount']);
@@ -64,6 +66,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::delete('delUserAdmin/{id}', [ManageController::class, 'delUserAdmin']);
             Route::get('getAdminRp', [ManageController::class, 'getAdminRpPayment']);
             Route::get('getInstructorRp', [ManageController::class, 'getInstructorRp']);
+            Route::get('order-history', [ManageController::class, 'getOrderHistory']);
 
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');

@@ -67,11 +67,12 @@ class ManageController extends Controller
         ]);
     }
 
-    //Sửa tài khoản role "admin"
+    //Sửa tài khoản và mật khẩu
     public function updateUserAccount(Request $request, $id)
     {
         $request->validate([
             'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'required|min:8',
         ]);
         $user = User::find($id);
         if (!$user) {
@@ -82,6 +83,7 @@ class ManageController extends Controller
         }
         // Update email
         $user->email = $request->input('email');
+        $user->password = bcrypt($request->input('password'));
         // Lưu vào db
         $user->save();
         // In phản hồi
@@ -183,59 +185,157 @@ class ManageController extends Controller
     }
 
     //Report Payment
-    public function getAdminRpPayment()
+    public function getAdminRpPayment(Request $request)
     {
         $userId = Auth::id();
 
-        // Truy vấn các đơn hàng dựa trên user_id
-        $orders = Order::where('user_id', $userId)
-            ->with(['orderItems.course']) // Sử dụng Eloquent để lấy thông tin khóa học
-            ->get();
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
 
-        $result = $orders->map(function($order) {
+        $orders = Order::where('user_id', $userId)
+            ->with(['orderItems.course'])
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $result = $orders->map(function ($order) {
             return [
                 'id' => $order->id,
-                'total_price' => $order->total_price,
-                'admin_revenue' => $order->total_price, // giả định doanh thu admin là tổng số tiền
-                'created_at' => $order->created_at,
-                'courses' => $order->orderItems->map(function($item) {
-                    return $item->course->name; // Lấy tên của khóa học
+                'total_price' => $order->total_price, //Tổng tiền
+                'admin_revenue' => $order->total_price, // Doanh thu admin
+                'created_at' => $order->created_at, // Ngày có order
+                'courses' => $order->orderItems->map(function ($item) {
+                    return $item->course->name; // Tên khóa học
                 }),
             ];
         });
 
         return response()->json([
-            $result,
             'status' => 'success',
+            'data' => $result,
+            'pagination' => [
+                'total' => $orders->total(), // Tổng số đơn hàng
+                'current_page' => $orders->currentPage(), // Trang hiện tại
+                'last_page' => $orders->lastPage(), // Trang cuối cùng
+                'per_page' => $orders->perPage(), // Số lượng đơn hàng trên mỗi trang
+            ],
         ]);
     }
-    public function getInstructorRp()
-    {
-        // Truy vấn các đơn hàng dựa trên user_id
-        $instructor = User::where('role', 'instructor')
-        ->with(['orders.orderItems.course']) // Lấy tất cả các đơn hàng và khóa học liên quan
-        ->get();
 
-        $result = $instructor->map(function($instructor) {
+    public function getInstructorRp(Request $request)
+    {
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+
+        $instructors = User::where('role', 'instructor')
+            ->with(['orders.orderItems.course'])
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $result = $instructors->map(function ($instructor) {
             return [
                 'instructor_name' => $instructor->name,
                 'instructor_email' => $instructor->email,
-                'orders' => $instructor->orders->map(function($order) {
+                'orders' => $instructor->orders->map(function ($order) {
                     return [
                         'order_id' => $order->id,
                         'total_price' => $order->total_price,
                         'created_at' => $order->created_at,
-                        'courses' => $order->orderItems->map(function($item) {
+                        'courses' => $order->orderItems->map(function ($item) {
                             return $item->course->name;
-                        })
+                        }),
                     ];
-                })
+                }),
             ];
         });
 
         return response()->json([
-            $result,
             'status' => 'success',
+            'data' => $result,
+            'pagination' => [
+                'total' => $instructors->total(), // Tổng số instructor
+                'current_page' => $instructors->currentPage(), // Trang hiện tại
+                'last_page' => $instructors->lastPage(), // Trang cuối cùng
+                'per_page' => $instructors->perPage(), // Số lượng instructor trên mỗi trang
+            ],
         ]);
     }
+
+    //Order history, Order detail
+    public function getOrderHistory(Request $request)
+    {
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+
+        $orders = Order::with(['user', 'orderItems.course']) // Dùng Eager Loading để lấy dữ liệu người dùng và khóa học
+        ->paginate($perPage, ['*'], 'page', $page);
+
+        $result = $orders->getCollection()->map(function($order) {
+            return [
+                'id' => $order->id,
+                'user_name' => $order->user->name, // Lấy tên người dùng
+                'user_email' => $order->user->email, // Lấy email người dùng
+                'courses' => $order->orderItems->map(function($item) {
+                    return $item->course->name; // Lấy tên của khóa học
+                }),
+                'total_price' => $order->total_price, // Lấy tổng số tiền
+                'payment_method' => $order->payment_method, // Lấy phương thức thanh toán
+                'created_at' => $order->created_at->format('d-m-Y'), // Ngày tạo đơn hàng
+            ];
+        });
+
+        // Trả về phản hồi JSON
+        return response()->json([
+            'status' => 'success',
+            'data' => $result,
+            'pagination' => [
+                'total' => $orders->total(), // Tổng số đơn hàng
+                'current_page' => $orders->currentPage(), // Trang hiện tại
+                'last_page' => $orders->lastPage(), // Trang cuối cùng
+                'per_page' => $orders->perPage(), // Số lượng đơn hàng trên mỗi trang
+            ],
+        ]);
+    }
+
+    //Lấy user role "instructor"
+    public function getInstructor(Request $request) {
+        $perPage = $request->input('per_page', 10); // Số lượng admin trên mỗi trang, mặc định là 10
+        $page = $request->input('page', 1); // Trang hiện tại, mặc định là trang 1
+
+        $instructors = User::where('role', 'instructor')->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $instructors->items(),
+            'pagination' => [
+                'total' => $instructors->total(), // Tổng số user
+                'current_page' => $instructors->currentPage(), // Trang hiện tại
+                'last_page' => $instructors->lastPage(), // Trang cuối cùng
+                'per_page' => $instructors->perPage(), // Số lượng user trên mỗi trang
+            ],
+        ]);
+    }
+    //Lấy user role "student"
+    public function getStudent(Request $request) {
+        $perPage = $request->input('per_page', 10); // Số lượng admin trên mỗi trang, mặc định là 10
+        $page = $request->input('page', 1); // Trang hiện tại, mặc định là trang 1
+
+        $studens = User::where('role', 'student')->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $studens->items(),
+            'pagination' => [
+                'total' => $studens->total(), // Tổng số user
+                'current_page' => $studens->currentPage(), // Trang hiện tại
+                'last_page' => $studens->lastPage(), // Trang cuối cùng
+                'per_page' => $studens->perPage(), // Số lượng user trên mỗi trang
+            ],
+        ]);
+    }
+
+    //Filter cho Report Admin và Instructor
+
+
+
+
+
+
 }
