@@ -105,8 +105,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::prefix('cart')->group(function () {
                 Route::get('/', [CartController::class, 'index']);
                 Route::post('/', [CartController::class, 'store']);
+                Route::delete('/all', [CartController::class, 'destroyAll']);
                 Route::delete('/{course_id}', [CartController::class, 'destroy']);
-                Route::delete('/', [CartController::class, 'destroyAll']);
             });
 
             // Order
