@@ -1,9 +1,8 @@
-
+// ======  INTERFACE MENU SIDEBAR ======
 export interface SidebarItemChildren2 {
   label: string
   route?: string
 }
-// Interface cho mục con của SidebarItem
 export interface SidebarItemChildren {
   label: string
   route?: string
@@ -15,27 +14,53 @@ export interface SidebarItem {
   icon?: any
   children?: SidebarItemChildren[]
 }
-
-//  Interface cho nhóm menu
 export interface MenuGroup {
-  name: string; // Tên của nhóm menu
-  menuItems: SidebarItem[]; // Mảng các mục trong nhóm menu
+  name: string; 
+  menuItems: SidebarItem[]; 
 }
+// ====== END INTERFACE MENU SIDEBAR ======
 
 
-//Interface category
-export interface ListCategories {
-  img: string;
-  icon: any;
-  title: string;
-  keyword?: string;
-  description?: string;
-  children?: ListCategoriesChildren[];
+// ====== INTERFACE FORM INPUT DIALOG ======
+
+export interface TBaseInputProps {
+  label: string;
+  inputId?: string;
+  inputPlaceHoder?: string;
+  modelValue?: string; 
+  required?: string;
+  customsClass?: string;
+  customsClassChild?: string;
+  customsClassChild2?: string;
 }
-export interface ListCategoriesChildren { 
-  img: string;
-  icon: any;
-  title: string;
-  keyword?: string;
-  description?: string;
+export interface SelectGroupProps extends TBaseInputProps { 
+  optionsData: Option[];
 }
+interface Option {
+  value: any;
+  label: string;
+}
+
+export interface InputGroupProps extends TBaseInputProps {
+}
+export interface InputOpionGroupProps extends SelectGroupProps {
+}
+
+export interface RadioGroupProps extends TBaseInputProps {
+}
+export interface InputItemsProps extends TBaseInputProps {
+  icon: any;
+  link?: string;
+}
+
+export interface ContentGroupProps extends TBaseInputProps {
+  value?: string; // Cả hai đều có value
+}
+
+export interface DescriptionGroupProps extends ContentGroupProps {}
+
+export interface CkeditorGroupProps extends ContentGroupProps {}
+
+
+// ====== END INTERFACE FORM INPUT DIALOG ======
+

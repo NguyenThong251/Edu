@@ -9,7 +9,7 @@ const props = defineProps<{
 }>();
 </script>
 <template>
-  <div class="bg-white rounded-[10px] shadow-soft px-4 py-3 dark:bg-dark-sidebar border dark:shadow-none flex justify-between items-center">
+  <div class="bg-white rounded-[10px] shadow-soft px-4 py-2 dark:bg-dark-sidebar border dark:shadow-none flex justify-between items-center">
     <p class="text-xl font-bold">{{ props.namePage }}</p>
     <div class="flex items-center gap-2">
       <!-- <Secondary
@@ -17,15 +17,15 @@ const props = defineProps<{
       link="#"
       title="Trước"
       /> -->
-      <ButtonPrimary
+      <!-- <ButtonPrimary
       :icon="FolderPlusIcon"
       link="/admin/add-category"
       title="Thêm danh mục"
-      />
-    
-      <!-- <AllCoursesButton v-if="showAllCoursesButton" :text="allCoursesText" /> -->
-      <!-- <HelpButton v-if="showHelpButton" :text="helpButtonText" /> -->
+      /> -->
+      <slot>
+      </slot>
     </div>
+
   </div>
 </template>
 
