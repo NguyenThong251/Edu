@@ -20,17 +20,17 @@ class JWTMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+
         try {
             // Xác thực token JWT
             $user = JWTAuth::parseToken()->authenticate();
         } catch (TokenInvalidException $e) {
-            return formatResponse(STATUS_FAIL, '', '', __('messages.token_invalid'));
+            return formatResponse(STATUS_FAIL, '', '', __('messages.token_invalid'), CODE_OK);
         } catch (TokenExpiredException $e) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.token_expired'));
         } catch (\Exception $e) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.token_not_found'));
         }
         return $next($request);
-        
     }
 }
