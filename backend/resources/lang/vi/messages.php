@@ -145,13 +145,13 @@ return [
     'language_not_found' => 'Ngôn ngữ không tồn tại.',
 
     // Cart: handle courses in cart
-    'cart_cleared' => 'Tất cả các khóa học đã được xóa khỏi giỏ hàng.',
-    'cart_empty' => 'Giỏ hàng của bạn đang trống.',
-    'cart_item_not_found' => 'Không tìm thấy mặt hàng trong giỏ hàng.',
-    'course_already_in_cart' => 'Khóa học đã có trong giỏ hàng.',
-    'course_added_success' => 'Khóa học đã được thêm thành công.',
-    'course_removed_success' => 'Khóa học đã được xóa thành công.',
+    'cart_items_fetched' => 'Danh sách khóa học trong giỏ hàng đã được lấy thành công.',
     'course_not_found_in_cart' => 'Khóa học không có trong giỏ hàng.',
+    'course_added_success' => 'Khóa học đã được thêm thành công.',
+    'course_already_in_cart' => 'Khóa học đã có trong giỏ hàng.',
+    'course_already_in_paid_order' => 'Khóa học đã có trong đơn hàng đã thanh toán.',
+    'course_removed_success' => 'Khóa học đã được xóa thành công.',
+    'cart_cleared' => 'Tất cả các khóa học đã được xóa khỏi giỏ hàng.',
 
     // Order
     'order_created_success' => 'Đơn hàng đã được tạo thành công.',

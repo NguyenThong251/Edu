@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('voucher_id')->nullable();
             $table->string('order_code')->unique();
             $table->double('total_price');
-            $table->string('currency')->default('usd'); // Mặc định là USD
+            $table->string('currency')->default('vnd'); // Mặc định là VND
             $table->string('payment_method');
             $table->string('payment_status');
             $table->string('payment_code')->nullable();

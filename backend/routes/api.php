@@ -11,6 +11,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CourseLevelController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Api\GoogleController;
+use App\Http\Controllers\VoucherController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +74,14 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::put('languages/{id}', [LanguageController::class, 'update'])->name('languages.update');
             Route::get('languages/restore/{id}', [LanguageController::class, 'restore'])->name('languages.restore');
             Route::delete('languages/{id}', [LanguageController::class, 'destroy'])->name('languages.destroy');
+
+            // Voucher
+            Route::prefix('vouchers')->group(function () {
+                Route::post('/create', [VoucherController::class, 'create']);
+                Route::post('/validate', [VoucherController::class, 'validateVoucher']);
+                Route::post('/apply', [VoucherController::class, 'applyVoucher']);
+                Route::post('/cancel', [VoucherController::class, 'cancelVoucher']);
+            });
         });
 
         // Routes cho instructor
@@ -86,20 +95,32 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         // Routes cho student
         Route::middleware(['role:student'])->group(function () {
             // Các route dành cho student có thể thêm tại đây
+
+            // ...
+
             // Cart
-            Route::get('/cart/courses', [CartController::class, 'getCoursesFromCart']);
-            Route::post('/cart/courses', [CartController::class, 'addCourseToCart']);
-            Route::delete('/cart/courses/{course_id}', [CartController::class, 'removeCourseFromCart']);
-            Route::delete('/cart/courses', [CartController::class, 'clearCart']);
+            Route::prefix('cart')->group(function () {
+                Route::get('/', [CartController::class, 'index']);
+                Route::post('/', [CartController::class, 'store']);
+                Route::delete('/{course_id}', [CartController::class, 'destroy']);
+                Route::delete('/', [CartController::class, 'destroyAll']);
+            });
+
             // Order
-            Route::post('/orders', [OrderController::class, 'createOrder']);
-            Route::post('/orders/create-payment-intent', [OrderController::class, 'createPaymentIntent']);
-            Route::get('/orders', [OrderController::class, 'listOrders']);
-            Route::get('/orders/{id}', [OrderController::class, 'getOrderDetails']);
-            Route::post('/orders/{id}/confirm-payment', [OrderController::class, 'confirmPayment']);
+            Route::prefix('orders')->group(function () {
+                Route::get('/', [OrderController::class, 'index']);
+                Route::post('/', [OrderController::class, 'store']);
+                Route::get('/{id}', [OrderController::class, 'show']);
+                Route::patch('/{id}', [OrderController::class, 'cancel']);
+                Route::patch('/{id}/restore', [OrderController::class, 'restore']);
+            });
         });
     });
 });
+// Order webhook
+Route::get('/orders/verify-payment', [OrderController::class, 'verifyPayment']);
+Route::post('/stripe/webhook', [OrderController::class, 'handleWebhook']);
+
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
 
@@ -115,5 +136,3 @@ Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses']
 Route::get('get-new-courses', [CourseController::class, 'getNewCourses'])->name('courses.getNewCourses');
 Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourses'])->name('courses.getTopRatedCourses');
 Route::get('get-favourite-courses', [CourseController::class, 'getFavouriteCourses'])->name('courses.getFavouriteCourses');
-
-Route::post('/webhooks/payment', [WebhookController::class, 'handlePaymentWebhook']);

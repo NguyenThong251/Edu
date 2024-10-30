@@ -15,8 +15,8 @@ return new class extends Migration {
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('course_id');
             $table->double('price');
-            $table->softDeletes();
             $table->enum('status', ['active', 'inactive'])->default('inactive');
+            $table->softDeletes();
             $table->bigInteger('created_by')->nullable();
             $table->bigInteger('updated_by')->nullable();
             $table->bigInteger('deleted_by')->nullable();

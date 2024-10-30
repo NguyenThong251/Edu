@@ -20,7 +20,7 @@ class Order extends Model
         'voucher_id',
         'order_code',
         'total_price',
-        'currency',
+        // 'currency',
         'payment_method',
         'payment_status',
         'payment_code',
