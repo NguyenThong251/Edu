@@ -57,6 +57,8 @@ return [
     'email_not_verified' => 'Email not verified.',
 
     'description_string' => 'Description must be a string.',
+    'icon_string' => 'Icon must be a string.',
+    'keyword_string' => 'Keyword must be a string.',
     'status_required' => 'Status is required.',
     'status_invalid' => 'Status is invalid.',
     'parent_id_invalid' => 'Parent ID is invalid.',

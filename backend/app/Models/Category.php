@@ -15,6 +15,8 @@ class Category extends Model
         'name',
         'image',
         'description',
+        'icon',
+        'keyword',
         'status',
         'parent_id',
         'created_by',

@@ -60,6 +60,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
+            Route::get('courses', [CourseController::class, 'getListAdmin'])->name('courses.getListAdmin');
+
+            Route::get('categories', [CategoryController::class, 'getListAdmin'])->name('categories.getListAdmin');
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
             Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
