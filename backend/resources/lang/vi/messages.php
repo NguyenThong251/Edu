@@ -60,6 +60,8 @@ return [
     'email_send_ok' => 'Gửi email thành công.',
 
     'description_string' => 'Mô tả phải là chuỗi.',
+    'icon_string' => 'Biểu tượng phải là chuỗi.',
+    'keyword_string' => 'Từ khóa phải là chuỗi.',
     'status_required' => 'Trạng thái không được để trống.',
     'status_invalid' => 'Trạng thái không hợp lệ.',
     'parent_id_invalid' => 'ID cha không hợp lệ.',

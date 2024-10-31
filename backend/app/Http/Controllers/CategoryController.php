@@ -11,6 +11,48 @@ use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
+    public function getListAdmin(Request $request)
+    {
+        // Query để lấy danh sách Category, không kiểm tra trạng thái
+        $categoriesQuery = Category::query();
+
+        // Lấy số lượng limit và thông tin phân trang từ request
+        $limit = $request->get('limit', null);
+        $perPage = $request->get('per_page', 10);
+        $currentPage = $request->get('page', 1);
+
+        // Nếu có limit thì giới hạn kết quả trước khi phân trang thủ công
+        if ($limit) {
+            // Lấy các kết quả giới hạn
+            $categories = $categoriesQuery->limit($limit)->get();
+
+            // Lấy tổng số lượng kết quả
+            $total = $categories->count();
+
+            // Phân trang thủ công cho kết quả đã giới hạn
+            $categories = $categories->forPage($currentPage, $perPage)->values();
+
+            $paginatedCategories = new \Illuminate\Pagination\LengthAwarePaginator(
+                $categories,
+                $total,
+                $perPage,
+                $currentPage,
+                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+            );
+
+            // Chuyển đổi đối tượng phân trang sang mảng với tất cả các thuộc tính chi tiết
+            $paginationData = $paginatedCategories->toArray();
+
+            return formatResponse(STATUS_OK, $paginationData, '', __('messages.category_fetch_success'));
+        } else {
+            // Nếu không có limit, phân trang như bình thường
+            $categories = $categoriesQuery->paginate($perPage, ['*'], 'page', $currentPage);
+            return formatResponse(STATUS_OK, $categories, '', __('messages.category_fetch_success'));
+        }
+    }
+
+
+
     public function index(Request $request)
     {
         // Số mục trên mỗi trang, mặc định là 10 nếu không có trong request
@@ -57,6 +99,8 @@ class CategoryController extends Controller
             'name' => 'required|string|max:100|unique:categories',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
+            'icon' => 'nullable|string',
+            'keyword' => 'nullable|string',
             'status' => 'required|in:active,inactive',
             'parent_id' => 'nullable|exists:categories,id',
         ], [
@@ -68,6 +112,8 @@ class CategoryController extends Controller
             'image.mimes' => __('messages.thumbnail_mimes'),
             'image.max' => __('messages.thumbnail_max'), 
             'description.string' => __('messages.description_string'),
+            'icon.string' => __('messages.icon_string'),
+            'keyword.string' => __('messages.keyword_string'),
             'status.required' => __('messages.status_required'),
             'status.in' => __('messages.status_invalid'),
             'parent_id.exists' => __('messages.parent_id_invalid'),
@@ -80,6 +126,8 @@ class CategoryController extends Controller
         $category = new Category();
         $category->name = $request->name;
         $category->description = $request->description;
+        $category->icon = $request->icon;
+        $category->keyword = $request->keyword;
         $category->status = $request->status;
         $category->parent_id = $request->parent_id;
         if($request->image){
@@ -143,6 +191,8 @@ class CategoryController extends Controller
             ],
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
+            'icon' => 'nullable|string',
+            'keyword' => 'nullable|string',
             'status' => 'required|in:active,inactive',
             'parent_id' => 'nullable|exists:categories,id',
         ], [
@@ -154,6 +204,8 @@ class CategoryController extends Controller
             'image.mimes' => __('messages.thumbnail_mimes'),
             'image.max' => __('messages.thumbnail_max'), 
             'description.string' => __('messages.description_string'),
+            'icon.string' => __('messages.icon_string'),
+            'keyword.string' => __('messages.keyword_string'),
             'status.required' => __('messages.status_required'),
             'status.in' => __('messages.status_invalid'),
             'parent_id.exists' => __('messages.parent_id_invalid'),
@@ -167,6 +219,8 @@ class CategoryController extends Controller
         // Cập nhật thông tin category
         $category->name = $request->name;
         $category->description = $request->description;
+        $category->icon = $request->icon;
+        $category->keyword = $request->keyword;
         $category->status = $request->status;
         if($request->image){
             if($category->image){

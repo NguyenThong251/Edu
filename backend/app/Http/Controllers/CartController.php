@@ -23,42 +23,83 @@ class CartController extends Controller
         }
     }
 
+    // public function store(Request $request)
+    // {
+    //     try {
+    //         $validatedData = $request->validate([
+    //             'course_id' => 'required|exists:courses,id',
+    //         ]);
+
+    //         $user = Auth::user();
+    //         $cart = Cart::getOrCreateForUser($user);
+
+    //         if ($cart->isCourseInPaidOrder($validatedData['course_id'], $user->id)) {
+    //             return $this->formatResponse('error', __('messages.course_already_in_paid_order'), null, 400);
+    //         }
+
+    //         DB::beginTransaction();
+    //         $existingCartItem = $cart->cartItems()->where('course_id', $validatedData['course_id'])->first();
+    //         if ($existingCartItem) {
+    //             throw new \Exception(__('messages.course_already_in_cart'), 400);
+    //         }
+
+    //         $cart->cartItems()->create([
+    //             'course_id' => $validatedData['course_id'],
+    //         ]);
+
+    //         DB::commit();
+
+    //         $courses = $cart->getFormattedItems();
+    //         return $this->formatResponse('success', __('messages.course_added_success'), $courses, 201);
+    //     } catch (\Illuminate\Validation\ValidationException $e) {
+    //         return $this->formatResponse('error', 'Validation Error', $e->errors(), 422);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
+    //     }
+    // }
     public function store(Request $request)
     {
         try {
+            // Xác thực dữ liệu đầu vào
             $validatedData = $request->validate([
-                'course_id' => 'required|exists:courses,id',
+                'course_id' => 'required|exists:courses,id', // Kiểm tra rằng course_id là bắt buộc và tồn tại trong bảng courses
             ]);
 
             $user = Auth::user();
-            $cart = Cart::getOrCreateForUser($user);
+            $cart = Cart::getOrCreateForUser($user); // Lấy cart cho người dùng hoặc tạo mới nếu không tồn tại
 
+            // Kiểm tra nếu khóa học đã có trong đơn hàng đã thanh toán
             if ($cart->isCourseInPaidOrder($validatedData['course_id'], $user->id)) {
                 return $this->formatResponse('error', __('messages.course_already_in_paid_order'), null, 400);
             }
 
-            DB::beginTransaction();
+            DB::beginTransaction(); // Bắt đầu giao dịch cơ sở dữ liệu
+
+            // Kiểm tra xem khóa học đã có trong giỏ hàng hay chưa
             $existingCartItem = $cart->cartItems()->where('course_id', $validatedData['course_id'])->first();
             if ($existingCartItem) {
                 throw new \Exception(__('messages.course_already_in_cart'), 400);
             }
 
+            // Thêm khóa học vào giỏ hàng
             $cart->cartItems()->create([
                 'course_id' => $validatedData['course_id'],
             ]);
 
-            DB::commit();
+            DB::commit(); // Cam kết giao dịch
 
+            // Lấy danh sách khóa học đã được định dạng
             $courses = $cart->getFormattedItems();
             return $this->formatResponse('success', __('messages.course_added_success'), $courses, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            // Xử lý lỗi xác thực
             return $this->formatResponse('error', 'Validation Error', $e->errors(), 422);
         } catch (\Exception $e) {
-            DB::rollBack();
+            DB::rollBack(); // Hoàn tác giao dịch nếu có lỗi
             return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
         }
     }
-
     public function destroy($course_id)
     {
         try {

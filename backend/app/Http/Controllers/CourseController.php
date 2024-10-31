@@ -26,7 +26,47 @@ class CourseController extends Controller
     //             ]
     //         ]);
     // }
+    public function getListAdmin(Request $request)
+    {
+        // Query để lấy danh sách Course, không kiểm tra trạng thái
+        $coursesQuery = Course::query();
 
+        // Lấy số lượng limit và thông tin phân trang từ request
+        $limit = $request->get('limit', null);
+        $perPage = $request->get('per_page', 10);
+        $currentPage = $request->get('page', 1);
+
+        // Nếu có limit thì giới hạn kết quả trước khi phân trang thủ công
+        if ($limit) {
+            // Lấy các kết quả giới hạn
+            $courses = $coursesQuery->limit($limit)->get();
+
+            // Lấy tổng số lượng kết quả
+            $total = $courses->count();
+
+            // Phân trang thủ công cho kết quả đã giới hạn
+            $courses = $courses->forPage($currentPage, $perPage)->values();
+
+            $paginatedCourses = new \Illuminate\Pagination\LengthAwarePaginator(
+                $courses,
+                $total,
+                $perPage,
+                $currentPage,
+                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+            );
+
+            // Chuyển đổi đối tượng phân trang sang mảng với tất cả các thuộc tính chi tiết
+            $paginationData = $paginatedCourses->toArray();
+
+            return formatResponse(STATUS_OK, $paginationData, '', __('messages.course_fetch_success'));
+        } else {
+            // Nếu không có limit, phân trang như bình thường
+            $courses = $coursesQuery->paginate($perPage, ['*'], 'page', $currentPage);
+            return formatResponse(STATUS_OK, $courses, '', __('messages.course_fetch_success'));
+        }
+    }
+
+    
     public function search(Request $request)
     {
         // Lấy các tham số lọc từ request
