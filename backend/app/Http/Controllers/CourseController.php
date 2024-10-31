@@ -423,10 +423,11 @@ class CourseController extends Controller
         $course->updated_by = auth()->id();
         $course->save();
 
-        return formatResponse(STATUS_OK, $course, '', __('messages.course_update_success'));
+            return formatResponse(STATUS_OK, $course, '', __('messages.course_update_success'));
     }
 
     // Xóa mềm khóa học
+
     public function destroy($id)
     {
         $course = Course::find($id);

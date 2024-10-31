@@ -119,4 +119,9 @@ return [
     'course_added_success' => 'Khóa học đã được thêm thành công.',
     'course_removed_success' => 'Khóa học đã được xóa thành công.',
     'course_not_found_in_cart' => 'Khóa học không có trong giỏ hàng.',
+
+    // Admin user
+    'getUsers' => 'Lấy dữ liệu thành công',
+    'updateUser' => 'Cập nhật thành công',
+
 ];

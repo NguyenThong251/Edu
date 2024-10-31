@@ -14,7 +14,7 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         // Số mục trên mỗi trang, mặc định là 10 nếu không có trong request
-        $perPage = $request->get('per_page', 10); 
+        $perPage = $request->get('per_page', 10);
 
         // Lấy tất cả các danh mục cùng với danh mục con
         $categories = Category::with('children')->withCount('courses')->get();
@@ -65,9 +65,9 @@ class CategoryController extends Controller
             'name.string' => __('messages.name_string'),
             'name.max' => __('messages.name_max'),
             'name.unique' => __('messages.name_unique'),
-            'image.image' => __('messages.thumbnail_image'), 
+            'image.image' => __('messages.thumbnail_image'),
             'image.mimes' => __('messages.thumbnail_mimes'),
-            'image.max' => __('messages.thumbnail_max'), 
+            'image.max' => __('messages.thumbnail_max'),
             'description.string' => __('messages.description_string'),
             'status.required' => __('messages.status_required'),
             'status.in' => __('messages.status_invalid'),
@@ -151,9 +151,9 @@ class CategoryController extends Controller
             'name.string' => __('messages.name_string'),
             'name.max' => __('messages.name_max'),
             'name.unique' => __('messages.name_unique'),
-            'image.image' => __('messages.thumbnail_image'), 
+            'image.image' => __('messages.thumbnail_image'),
             'image.mimes' => __('messages.thumbnail_mimes'),
-            'image.max' => __('messages.thumbnail_max'), 
+            'image.max' => __('messages.thumbnail_max'),
             'description.string' => __('messages.description_string'),
             'status.required' => __('messages.status_required'),
             'status.in' => __('messages.status_invalid'),
@@ -206,14 +206,14 @@ class CategoryController extends Controller
     {
         // Tìm danh mục bị xóa mềm
         $category = Category::onlyTrashed()->find($id);
-        
+
         // Kiểm tra xem danh mục có bị xóa mềm hay không
         if (!$category) {
             // Kiểm tra xem danh mục có tồn tại nhưng chưa bị xóa mềm không
             $existingCategory = Category::find($id);
             if ($existingCategory) {
                 return formatResponse(STATUS_FAIL, '', '', __('messages.category_not_deleted')); // Thông báo danh mục chưa bị xóa
-            }    
+            }
 
             // Nếu danh mục không tồn tại
             return formatResponse(STATUS_FAIL, '', '', __('messages.category_not_found')); // Thông báo danh mục không tồn tại

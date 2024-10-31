@@ -59,7 +59,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
-            Route::get('getAdmin', [ManageController::class, 'getAdmins'])->name('users.admins');
+            Route::get('getAdmin', [ManageController::class, 'getAdmin'])->name('users.admins');
             Route::get('getInstructor', [ManageController::class, 'getInstructor'])->name('users.instructors');
             Route::get('getStudent', [ManageController::class, 'getStudent'])->name('users.students');
             Route::put('updateUser/{id}', [ManageController::class, 'updateUserAccount']);
@@ -90,7 +90,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             // Các route dành cho student có thể thêm tại đây
             // Cart
             Route::get('/cart/courses', [CartController::class, 'getCoursesFromCart']);
-            Route::post('/cart/courses', [CartController::class, 'addCourseToCart']);
+                Route::post('/cart/courses', [CartController::class, 'addCourseToCart']);
             Route::delete('/cart/courses/{course_id}', [CartController::class, 'removeCourseFromCart']);
             Route::delete('/cart/courses', [CartController::class, 'clearCart']);
         });
