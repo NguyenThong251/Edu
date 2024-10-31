@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Order;
+use App\Models\Wishlist;
+use App\Models\Course;
 
 class ManageController extends Controller
 {
@@ -171,7 +173,7 @@ class ManageController extends Controller
     }
 
     //Delete user follow id
-    public function delUserAdmin($id)
+    public function delUser($id)
     {
         $user = User::find($id);
 
@@ -188,7 +190,6 @@ class ManageController extends Controller
     public function getAdminRpPayment(Request $request)
     {
         $userId = Auth::id();
-
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
@@ -258,6 +259,44 @@ class ManageController extends Controller
         ]);
     }
 
+    //Filter cho Report Admin
+    /*private function applyDateFilter($query, Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        if ($startDate && $endDate) {
+            // Đảm bảo định dạng ngày trước khi lọc
+            $startDate = Carbon::createFromFormat('Y-m-d', $startDate)->startOfDay();
+            $endDate = Carbon::createFromFormat('Y-m-d', $endDate)->endOfDay();
+
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+    }*/
+    //Xóa báo cáo doanh thu
+    public function delInstructorRp(Request $request, $orderId)
+    {
+        $userId = Auth::id();
+
+        // Kiểm tra xem order có tồn tại và thuộc về admin hiện tại không
+        $order = Order::where('id', $orderId)->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Không tìm thấy đơn hàng.',
+            ], 404);
+        }
+
+        // Xóa order
+        $order->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Đã xóa báo cáo doanh thu thành công.',
+        ]);
+    }
+
     //Order history, Order detail
     public function getOrderHistory(Request $request)
     {
@@ -314,8 +353,8 @@ class ManageController extends Controller
     }
     //Lấy user role "student"
     public function getStudent(Request $request) {
-        $perPage = $request->input('per_page', 10); // Số lượng admin trên mỗi trang, mặc định là 10
-        $page = $request->input('page', 1); // Trang hiện tại, mặc định là trang 1
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
 
         $studens = User::where('role', 'student')->paginate($perPage, ['*'], 'page', $page);
 
@@ -323,18 +362,52 @@ class ManageController extends Controller
             'status' => 'success',
             'data' => $studens->items(),
             'pagination' => [
-                'total' => $studens->total(), // Tổng số user
-                'current_page' => $studens->currentPage(), // Trang hiện tại
-                'last_page' => $studens->lastPage(), // Trang cuối cùng
-                'per_page' => $studens->perPage(), // Số lượng user trên mỗi trang
+                'total' => $studens->total(),
+                'current_page' => $studens->currentPage(),
+                'last_page' => $studens->lastPage(),
+                'per_page' => $studens->perPage(),
             ],
         ]);
     }
 
-    //Filter cho Report Admin và Instructor
 
+    // Wishlist
+    public function addToWishlist(Request $request)
+    {
+        $userId = Auth::id();
+        $courseId = $request->course_id;
 
+        // Kiểm tra xem khóa học đã tồn tại trong wishlist chưa
+        $exists = Wishlist::where('user_id', $userId)
+            ->where('course_id', $courseId)
+            ->exists();
 
+        if ($exists) {
+            return response()->json(['message' => 'Khóa học đã có trong wishlist'], 400);
+        }
+        if (!Course::where('id', $courseId)->exists()) {
+            return response()->json(['message' => 'Khóa học không tồn tại'], 400);
+        }
+
+        // Tạo mới wishlist
+        Wishlist::create([
+            'user_id' => $userId,
+            'course_id' => $courseId
+        ]);
+
+        return response()->json(['message' => 'Đã thêm khóa học vào wishlist'], 201);
+    }
+    public function getWishlist()
+    {
+        $userId = Auth::id();
+        $wishlistItems = Wishlist::where('user_id', $userId)
+            ->with(['course' => function ($query) {
+                $query->select('id', 'title', 'thumbnail', 'price', 'created_by');
+            }])
+            ->get();
+
+        return response()->json($wishlistItems);
+    }
 
 
 

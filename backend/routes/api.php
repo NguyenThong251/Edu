@@ -53,6 +53,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::delete('delete-user/{id}', [AuthController::class, 'deleteUser']);
         Route::post('restore-user/{id}', [AuthController::class, 'restoreUser']);
         Route::post('force-delete-user/{id}', [AuthController::class, 'forceDeleteUser']);
+        //wishlist
+        Route::post('wishlist', [ManageController::class, 'addToWishlist']);
+        Route::get('wishlist', [ManageController::class, 'getWishlist']);
 
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
@@ -63,7 +66,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 //            Route::post('/users', [ManageController::class, 'updateFoundationAccount']);
             Route::put('updateFoundation/{id}', [ManageController::class, 'updateFoundationAccount']);
             Route::put('contact-info/{id}', [ManageController::class, 'updateContactInfo']);
-            Route::delete('delUserAdmin/{id}', [ManageController::class, 'delUserAdmin']);
+            Route::delete('delUserAdmin/{id}', [ManageController::class, 'delUser']);
             Route::get('getAdminRp', [ManageController::class, 'getAdminRpPayment']);
             Route::get('getInstructorRp', [ManageController::class, 'getInstructorRp']);
             Route::get('order-history', [ManageController::class, 'getOrderHistory']);
