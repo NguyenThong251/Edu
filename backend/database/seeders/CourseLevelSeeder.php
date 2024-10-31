@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\CourseLevel;
-use App\Models\User; // Import User model
+use App\Models\User;
 use Faker\Factory as Faker;
 
 class CourseLevelSeeder extends Seeder
@@ -19,6 +19,9 @@ class CourseLevelSeeder extends Seeder
 
         // Lấy tất cả user IDs hiện có từ bảng users
         $userIds = User::pluck('id')->toArray();
+        $randomUserId = function() use ($userIds) {
+            return $userIds[array_rand($userIds)];
+        };
 
         // Nếu không có user ID nào, dừng việc seed
         if (empty($userIds)) {
@@ -26,15 +29,34 @@ class CourseLevelSeeder extends Seeder
             return;
         }
 
-        // Tạo 10 bản ghi ngẫu nhiên cho bảng course_levels
-        for ($i = 0; $i < 3; $i++) {
-            CourseLevel::create([
-                'name' => $faker->unique()->word(), // Tên cấp độ ngẫu nhiên và duy nhất
-                'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
-                'deleted_by' => null, // Không có giá trị ban đầu
-                'created_by' => $faker->randomElement($userIds), // Lấy một user id ngẫu nhiên từ danh sách user IDs
-                'updated_by' => null, // Không có giá trị ban đầu
-            ]);
+        // Tạo các bản ghi cụ thể cho các cấp độ khóa học
+        $courseLevels = [
+            [
+                'name' => 'Mới bắt đầu',
+                'status' => 'active',
+                'created_by' => $randomUserId(),
+                'updated_by' => null,
+                'deleted_by' => null,
+            ],
+            [
+                'name' => 'Trung cấp',
+                'status' => 'active',
+                'created_by' => $randomUserId(),
+                'updated_by' => null,
+                'deleted_by' => null,
+            ],
+            [
+                'name' => 'Nâng cao',
+                'status' => 'active',
+                'created_by' => $randomUserId(),
+                'updated_by' => null,
+                'deleted_by' => null,
+            ]
+        ];
+
+        // Chèn các bản ghi vào bảng course_levels
+        foreach ($courseLevels as $level) {
+            CourseLevel::create($level);
         }
     }
 }

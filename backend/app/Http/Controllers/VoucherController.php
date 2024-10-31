@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Voucher;
+use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
 class VoucherController extends Controller
@@ -26,7 +28,7 @@ class VoucherController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Voucher created successfully',
+            'message' => __('messages.voucher_created_success'),
             'data' => $voucher
         ], 201);
     }

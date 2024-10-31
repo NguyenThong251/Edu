@@ -57,6 +57,8 @@ return [
     'email_not_verified' => 'Email not verified.',
 
     'description_string' => 'Description must be a string.',
+    'icon_string' => 'Icon must be a string.',
+    'keyword_string' => 'Keyword must be a string.',
     'status_required' => 'Status is required.',
     'status_invalid' => 'Status is invalid.',
     'parent_id_invalid' => 'Parent ID is invalid.',
@@ -142,7 +144,7 @@ return [
     'language_force_delete_success' => 'Language permanently deleted successfully.',
     'language_not_found' => 'Language not found.',
 
-    // CART: handle courses in cart
+    // CART
     'cart_items_fetched' => 'List of courses in cart retrieved successfully.',
     'course_not_found_in_cart' => 'Course not in cart.',
     'course_added_success' => 'Course added successfully.',
@@ -151,7 +153,10 @@ return [
     'course_removed_success' => 'Course removed successfully.',
     'cart_cleared' => 'All courses have been removed from the cart.',
 
-    // ORDER: handle orders
+    // VOUCHER
+    'voucher_created_success' => 'Voucher created successfully.',
+
+    // ORDER
     'order_created_success' => 'Order created successfully.',
     'order_create_failed' => 'Failed to create order',
 ];
