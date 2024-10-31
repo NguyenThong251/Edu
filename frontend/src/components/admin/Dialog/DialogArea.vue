@@ -8,9 +8,8 @@ import { ElDialog } from 'element-plus'
 const props = defineProps<{
   dialogVisible: boolean;
   title: string;
+  submitForm: (data: opject) => Promise<void>;
 }>();
-
-
 
 //Gửi dữ liệu đến sever
 // const submitForm = () => {
@@ -21,7 +20,7 @@ const props = defineProps<{
 //     method: 'POST',
 //     headers: {
 //       'Content-Type': 'application/json',
-//     },
+//     }, 
 //     body: JSON.stringify(formAddNewData.value),
 //   })
 //     .then(response => response.json())
@@ -45,17 +44,17 @@ const props = defineProps<{
     <template #title >
       <span class="custom-dialog-title text-lg font-bold">{{ props.title }}</span>
     </template>
-    <!-- <form @submit.prevent="submitForm"> -->
-    <div class="border-t-2 border-primary-sidebar dark:border-bg-primary">
-      <slot>
-      </slot>
-    </div>
-      <div class="flex mt-5">
-        <SubmitButtonPrimary
-        title="Xác nhận"
-        />
+    <form @submit.prevent="submitForm">
+      <div class="border-t-2 border-primary-sidebar dark:border-bg-primary">
+        <slot>
+        </slot>
       </div>
-    <!-- </form> -->
+        <div class="flex mt-5">
+          <SubmitButtonPrimary
+          title="Xác nhận"
+          />
+        </div>
+    </form>
     <!-- <template #footer>
       <div class="dialog-footer pt-5 border-t-2 border-primary-sidebar dark:border-bg-primary flex justify-end">
         <ButtonSecondary

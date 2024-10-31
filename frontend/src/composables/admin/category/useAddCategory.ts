@@ -1,3 +1,4 @@
+import type { TListCategories } from '@/interfaces/admin.interface'
 import Cookies from 'js-cookie'
 import { ref } from 'vue'
 
@@ -5,12 +6,14 @@ export default function useAddCategory() {
   const userToken = ref(Cookies.get('token_user_edu'))
   const imageUrl = ref<string | null>(null)
 
-  const formData = ref({
+  const formData = ref<TListCategories>({
     name: '',
     image: null,
     description: '',
+    icon: '',
+    keyword:'',
     status: 'active',
-    parent_id: null
+    children_id: null
   })
 
   function handlePreviewImg(event: any) {
@@ -34,11 +37,11 @@ export default function useAddCategory() {
       }
       requestData.append('description', formData.value.description)
       requestData.append('status', formData.value.status)
-      if (formData.value.parent_id !== null) {
-        requestData.append('parent_id', String(formData.value.parent_id))
+      if (formData.value.children_id !== null) {
+        requestData.append('children_id', String(formData.value.children_id))
       }
 
-      const response = await fetch('http://localhost:8000/api/auth/categories', {
+      const response = await fetch('../../../db.json', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${userToken.value}`

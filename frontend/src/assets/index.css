@@ -73,7 +73,7 @@
     }
     
     .el-table .el-table__body tr:hover {
-        @apply dark:bg-btn-darkmode bg-bg-primary; /* Màu nền khi hover trên hàng */
+        @apply dark:bg-btn-darkmode bg-bg-primary; 
     }
     
     .el-tag {

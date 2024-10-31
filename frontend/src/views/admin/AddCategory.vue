@@ -3,8 +3,12 @@ import Button from '@/components/ui/button/Button.vue';
 import useAddCategory from '@/composables/admin/category/useAddCategory';
 import { PlusIcon } from '@heroicons/vue/20/solid';
 
-const {handlePreviewImg,
-submitForm,formData,imageUrl} = useAddCategory();
+const {
+  handlePreviewImg,
+  submitForm,
+  formData,
+  imageUrl
+} = useAddCategory();
 
 
 </script>
@@ -47,7 +51,6 @@ submitForm,formData,imageUrl} = useAddCategory();
       </form>
     </div>
   </template>
-  
 
 
   

@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import type { InputGroupProps } from '@/interfaces';
+import type { UploadGroupProps } from '@/interfaces/admin.interface';
 import {ref, defineProps } from 'vue';
 
-const props = defineProps<InputGroupProps>();
-
-
+const props = defineProps<UploadGroupProps>();
 
 </script>
 
@@ -19,12 +17,14 @@ const props = defineProps<InputGroupProps>();
     <div class="relative mt-1 rounded-md shadow-sm"
     :class="customsClassChild2"
     >
-      <input 
-        type="file" 
-        :name="inputId" 
-        :id="inputId"
-        class="input-style dark:bg-white "
-      />
+    <img v-if="imageUrl" :src="imageUrl" class="w-[200px] h-[70px]" />
+    <input 
+      type="file" 
+      :name="inputId" 
+      :id="inputId"
+      class="input-style dark:bg-white"
+      @change="handlePreviewImg"
+    />
     </div>
   </div>
 </template>

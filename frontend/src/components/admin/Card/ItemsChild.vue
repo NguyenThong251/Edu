@@ -12,8 +12,8 @@ const props = defineProps<{
 <template>
     <div class="hoverItem hover:bg-bg-primary dark:hover:text-black rounded-sm p-1 flex justify-between items-center hover:duration-300">
       <div class="flex gap-2 items-center">
-        <FontAwesomeIcon :icon="child.icon" class="w-4" />
-        <div class="text-sm">{{child.title}}</div>
+        <!-- <FontAwesomeIcon :icon="child.icon" class="w-4" /> -->
+        <div class="text-sm">{{child.name}}</div>
       </div>
       <div class="flex gap-2">
         <router-link class="hidden overItemChild" to="#" >

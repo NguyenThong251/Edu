@@ -16,7 +16,7 @@ import SettingsTeacher from "@/views/admin/Users/SettingsTeacher.vue";
 import AcceptTeacher from "@/views/admin/Users/AcceptTeacher.vue";
 const admin = [
   {
-    path: '/admin/dashboard',
+    path: '/admin',
     name: 'admin',
     component: AdminLayout,
     meta: {
@@ -28,7 +28,7 @@ const admin = [
         name: 'admin.dashboard',
         component: Dashboard,
         meta: {
-          title: 'Bảng điều khiển | Edunity'
+          title: 'Bảng điều khiển '
         }
       },
       {

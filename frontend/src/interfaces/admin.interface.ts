@@ -45,6 +45,10 @@ export interface InputGroupProps extends TBaseInputProps {
 }
 export interface InputOpionGroupProps extends SelectGroupProps {
 }
+export interface UploadGroupProps extends TBaseInputProps {
+  imageUrl: string
+  handlePreviewImg: (event: any) => void
+}
 
 export interface RadioGroupProps extends TBaseInputProps {
 }
