@@ -77,10 +77,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
             // Voucher
             Route::prefix('vouchers')->group(function () {
+                Route::get('/', [VoucherController::class, 'index']);
+                Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
+                Route::get('/{idOrCode}', [VoucherController::class, 'show']);
                 Route::post('/create', [VoucherController::class, 'create']);
-                Route::post('/validate', [VoucherController::class, 'validateVoucher']);
-                Route::post('/apply', [VoucherController::class, 'applyVoucher']);
-                Route::post('/cancel', [VoucherController::class, 'cancelVoucher']);
+                Route::post('/delete', [VoucherController::class, 'destroy']);
+                Route::post('/restore', [VoucherController::class, 'restoreVoucher']);
+                Route::put('/{id}', [VoucherController::class, 'update']);
             });
         });
 
@@ -104,6 +107,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 Route::post('/', [CartController::class, 'store']);
                 Route::delete('/all', [CartController::class, 'destroyAll']);
                 Route::delete('/{course_id}', [CartController::class, 'destroy']);
+                Route::post('apply-voucher', [CartController::class, 'applyVoucher']);
             });
 
             // Order
@@ -117,6 +121,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         });
     });
 });
+
 // Order webhook
 Route::get('/orders/verify-payment', [OrderController::class, 'verifyPayment']);
 Route::post('/stripe/webhook', [OrderController::class, 'handleWebhook']);

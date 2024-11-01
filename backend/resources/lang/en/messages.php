@@ -153,8 +153,17 @@ return [
 
     // VOUCHER
     'voucher_created_success' => 'Voucher created successfully.',
+    'voucher_code_already_exists' => 'Voucher code already exists.',
+    'voucher_creation_failed' => 'Voucher creation failed.',
+    'voucher_not_found' => 'Voucher not found.',
+    'voucher_updated_success' => 'Voucher updated successfully.',
+    'voucher_soft_deleted_success' => 'Voucher soft deleted successfully.',
+    'voucher_restore_success' => 'Voucher restored successfully.',
+    'voucher_has_expired' => 'Voucher has expired.',
+    'voucher_usage_limit_reached' => 'Voucher usage limit reached.',
+    'voucher_apply_success' => 'Voucher applied successfully.',
 
     // ORDER
-    'order_created_success' => 'Order created successfully.',
-    'order_create_failed' => 'Failed to create order',
+    'order_created_success' => 'Order created successfully..',
+    'order_create_failed' => 'Failed to create order.',
 ];
