@@ -7,11 +7,23 @@ const props = defineProps<CkeditorGroupProps>();
 
 const editor = ClassicEditor;
 const editorData = ref(props.value || ''); // Dữ liệu khởi tạo của CKEditor
+const editorInstance = ref<any>(null); // Tham chiếu tới CKEditor instance
 
 const onChange = (event: any) => {
   console.log(event);
 };
+const emit = defineEmits(['update:modelValue']);
 
+// Hàm xử lý khi dữ liệu CKEditor thay đổi
+const onInput = () => {
+  if (editorInstance.value && typeof editorInstance.value.getData === 'function') {
+    const data = editorInstance.value.getData();
+    editorData.value = data;
+    emit('update:modelValue', data);
+  } else {
+    console.error('editorInstance chưa được khởi tạo đúng cách hoặc getData không phải là một hàm');
+  }
+};
 // Cấu hình editor với plugin
 const editorConfig = {
   toolbar: [
@@ -23,7 +35,10 @@ const editorConfig = {
   ],
   // Thêm các tùy chọn khác nếu cần
 };
-
+// Hàm xử lý khi CKEditor đã sẵn sàng
+const onReady = (instance: any) => {
+  editorInstance.value = instance; // Gán instance khi CKEditor đã sẵn sàng
+};
 </script>
 
 <template>
@@ -41,7 +56,8 @@ const editorConfig = {
     <ckeditor
       :editor="editor"
       @change="onChange"
-      :v-model="modelValue"
+      @input="onInput($event, editor)"
+      @ready="instance => (editorInstance.value = instance)"
       class="w-full !h-[400px]"
       :config="editorConfig"
       rows="4"

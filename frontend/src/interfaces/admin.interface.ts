@@ -34,6 +34,7 @@ export interface TBaseInputProps {
   customsClassChild2?: string;
 }
 export interface SelectGroupProps extends TBaseInputProps { 
+  value: string | number;
   optionsData: Option[];
 }
 interface Option {

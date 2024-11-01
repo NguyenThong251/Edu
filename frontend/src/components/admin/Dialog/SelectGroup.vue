@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import type { SelectGroupProps, TBaseInputProps } from '@/interfaces/admin.interface';
-import { defineProps } from 'vue';
-import { ref } from 'vue'
+import { defineProps, defineEmits ,ref} from 'vue';
 const props = defineProps<SelectGroupProps>();
 const value = ref(''); 
+const emit = defineEmits(['update:modelValue']); // Phát sự kiện để cập nhật dữ liệu
+
+const handleChange = (selectedValue: string | number) => {
+  emit('update:modelValue', selectedValue); // Phát sự kiện khi dữ liệu thay đổi
+};
 </script>
 <template>
   <div>
@@ -20,6 +24,7 @@ const value = ref('');
           :placeholder="props.inputPlaceHoder"
           class="w-full"
           filterable
+          @change="handleChange"
           >
           <template #empty>
               <span>Không có giá trị nào</span> 

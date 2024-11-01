@@ -9,6 +9,7 @@ const handleChange = (event: Event) => {
     props.handlePreviewImg(event);
   }
 };
+
 </script>
 
 <template>
