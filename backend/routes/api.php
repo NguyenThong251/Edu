@@ -65,6 +65,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('categories', [CategoryController::class, 'getListAdmin'])->name('categories.getListAdmin');
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+            Route::post('categories/{id}/children', [CategoryController::class, 'addChildren'])->name('categories.addChildren');
+            Route::patch('categories/{id}/status', [CategoryController::class, 'updateStatus'])->name('categories.updateStatus');
             Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
             Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 

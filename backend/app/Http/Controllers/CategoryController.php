@@ -138,6 +138,10 @@ class CategoryController extends Controller
 
         return formatResponse(STATUS_OK, $category, '', __('messages.category_create_success'));
     }
+    public function addChildren(){
+        
+    }
+
     public function uploadImage(Request $request)
     {
         // Tải lên tệp hình ảnh
@@ -210,7 +214,7 @@ class CategoryController extends Controller
             'status.in' => __('messages.status_invalid'),
             'parent_id.exists' => __('messages.parent_id_invalid'),
         ]);
-
+        
         // Kiểm tra validation
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
@@ -234,6 +238,47 @@ class CategoryController extends Controller
         $category->save();
 
         return formatResponse(STATUS_OK, $category, '', __('messages.category_update_success'));
+    }
+
+    // Cập nhật status của categorry
+    public function updateStatus(Request $request, $id)
+    {
+        // Tìm category
+        $category = Category::find($id);
+        if (!$category) {
+            return response()->json([
+                'status' => 'FAIL',
+                'message' => __('messages.category_not_found')
+            ], 404);
+        }
+
+        // Validation chỉ yêu cầu trường `status`
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|in:active,inactive'
+        ], [
+            'status.required' => __('messages.status_required'),
+            'status.in' => __('messages.status_invalid')
+        ]);
+
+        // Kiểm tra validation
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'FAIL',
+                'error' => $validator->errors(),
+                'message' => __('messages.validation_error')
+            ], 422);
+        }
+
+        // Cập nhật status
+        $category->status = $request->status;
+        $category->updated_by = auth()->id(); // Thêm thông tin người cập nhật
+        $category->save();
+
+        return response()->json([
+            'status' => 'OK',
+            'data' => $category,
+            'message' => __('messages.category_update_success')
+        ]);
     }
 
     // Xóa mềm category (cập nhật is_deleted và deleted_by)
