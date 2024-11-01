@@ -123,7 +123,7 @@ export const useCartStore = defineStore('cart', () => {
     })
     try {
       if (isAuthenticated.value) {
-        await api.delete('/auth/cart')
+        await api.delete('/auth/cart/all')
         await fetchCartCourses()
         cartDb.value = []
       } else {

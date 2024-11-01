@@ -3,7 +3,7 @@
     <tr>
         <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ voucher_id }}</td> -->
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order_code }}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ total_price }}{{ currency }}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatPrice(total_price) }}</td>
         <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"></td> -->
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment_method }}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -18,7 +18,10 @@
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ created_at }}</td>
         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
             <div class="flex gap-3">
-                <CreditCardIcon @click="BillRestore(id)" class="cursor-pointer h-5 w-5 text-indigo-600" />
+                <div class="" v-if="payment_status === 'cancelled'">
+
+                    <CreditCardIcon @click="BillRestore(id)" class="cursor-pointer h-5 w-5 text-indigo-600" />
+                </div>
 
                 <!-- <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a> -->
                 <EyeIcon @click="openBillDetail(id)" class="cursor-pointer h-5 w-5 text-indigo-600" />
@@ -27,7 +30,7 @@
         </td>
     </tr>
     <el-dialog v-model="dialogFormVisible" title="Chi tiết đơn" width="800">
-        <BillDetail v-if="billHistoryDetail" :data="billHistoryDetail" />
+        <BillDetail v-if="billHistoryDetail" :data="billHistoryDetail" @closeDialog="closeDialog" />
     </el-dialog>
 </template>
 
@@ -46,8 +49,11 @@ const dialogFormVisible = ref(false)
 const store = apisStore();
 const { billHistoryDetail } = storeToRefs(store)
 const { fetchBillDetail } = store;
+import { formatPrice } from '@/utils/formatPrice'
 defineProps<TBill>()
 const router = useRouter()
+
+
 const BillRestore = async (id: number) => {
     const response = await api.patch(`/auth/orders/${id}/restore`)
     if (response.data.status === 'success') {
@@ -75,4 +81,8 @@ const openBillDetail = async (id: number) => {
     dialogFormVisible.value = true; // Mở dialog
     await fetchBillDetail(id); // Gọi API để lấy chi tiết hóa đơn
 };
+const closeDialog = () => {
+    dialogFormVisible.value = false; // Đóng dialog
+};
+
 </script>

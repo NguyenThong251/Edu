@@ -25,9 +25,9 @@
                 <div class="hidden xl:block">
                     <div class=" flex items-center gap-5">
                         <ul class="flex gap-5">
-                            <router-link class="animation hover:text-indigo-600" to="/">
+                            <RouterLink class="animation hover:text-indigo-600" to="/login">
                                 Giảng viên trên Edunity
-                            </router-link>
+                            </RouterLink>
                         </ul>
 
                         <el-badge @click="toggleCart" :value="cart?.length || 0" type="primary" badge-style="text-lg">

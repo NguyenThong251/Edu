@@ -4,7 +4,11 @@
             <h3 class="text-4xl font-bold">Giỏ hàng</h3>
             <div class="flex md:flex-row flex-col gap-5">
                 <!-- COURSE ITEM -->
-                <div class="flex flex-col md:w-4/6 w-full gap-5">
+
+
+
+
+                <div v-if="cart?.length > 0" class="flex flex-col md:w-4/6 w-full gap-5">
                     <div class="flex justify-between items-center">
                         <span class="text-lg"> <span class="font-semibold">{{ cart.length }} </span> khóa học trong giỏ
                             hàng</span>
@@ -17,6 +21,11 @@
                         :average_rating="course.average_rating" :reviews_count="course.reviews_count"
                         :lectures_count="course.lectures_count" :creator="course?.creator" />
 
+                </div>
+                <div v-else class=" items-center flex flex-col md:w-4/6 w-full gap-5 justify-center">
+                    <img class="w-48" src="https://ovanlink.com/images/icon-empty-cart.png" alt="">
+                    <h3 class="text-2xl font-bold mt-3 text-indigo-900 ">Giỏ hàng trống</h3>
+                    <RouterLink to="/course"><Button variant="primary">Quay lại chọn khóa học</Button></RouterLink>
                 </div>
                 <!-- TOTAL -->
                 <div class="md:w-2/6 w-full">

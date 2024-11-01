@@ -1,7 +1,16 @@
 <template>
     <div class="mb-20">
+        <div class=" w-full" v-if="noBill">
 
-        <div class="w-full">
+            <div class=" flex justify-center items-center">
+
+                <img class="" src="https://cdn3d.iconscout.com/3d/premium/thumb/search-notes-5066175-4235211.png?f=webp"
+                    alt="">
+            </div>
+
+        </div>
+
+        <div class="w-full" v-else>
             <div class="overflow-x-auto">
                 <table class=" bg-white">
                     <thead>
@@ -43,13 +52,14 @@
 import Button from '@/components/ui/button/Button.vue';
 import EmptyData from '@/components/ui/empty/EmptyData.vue';
 import BillItem from '@/components/ui/item/BillItem.vue';
+import { useBill } from '@/composables/user/userBill';
 import { apisStore } from '@/store/apis';
 import { ShoppingCartIcon } from '@heroicons/vue/20/solid';
 import { onMounted } from 'vue';
-const apiStore = apisStore()
-onMounted(async () => {
-    await apiStore.fetchBill()
-})
-</script>
+// const apiStore = apisStore()
+// onMounted(async () => {
+//     await apiStore.fetchBill()
+// })
 
-<style scoped></style>
+const { noBill, apiStore } = useBill();
+</script>

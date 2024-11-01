@@ -19,7 +19,7 @@ export interface TBill {
   total_price: number
   currency: 'usd' | 'vnd'
   payment_method?: string
-  payment_status: 'pending' | 'paid'
+  payment_status: 'pending' | 'paid' | 'cancelled'
   payment_code: string
   status: 'active' | 'inactive'
   created_at?: string

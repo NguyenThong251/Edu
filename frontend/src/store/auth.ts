@@ -5,7 +5,6 @@ import type { AuthState, TUserAuth } from '@/interfaces'
 import Cookies from 'js-cookie'
 import { useRouter } from 'vue-router'
 import { ElNotification } from 'element-plus'
-const router = useRouter()
 export const useAuthStore = defineStore('auth', () => {
   const state = ref<AuthState>({
     user: null,
@@ -19,6 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await api.post('/auth/login', { email, password })
       state.value.token = response.data.access_token
+      state.value.user = await response.data.data
       Cookies.set('token_user_edu', response.data.access_token, { expires: 7 }) // Lưu token vào localStorage
       return response.data
     } catch (err: any) {
@@ -28,9 +28,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   const logout = () => {
+    const router = useRouter()
+
     state.value.user = null
     state.value.token = null
     Cookies.remove('token_user_edu')
+    router.push('/')
   }
   const register = async (userData: TUserAuth) => {
     state.value.loading = true
@@ -47,6 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
   const userData = async () => {
     if (!state.value.token) return
     state.value.loading = true
+    const router = useRouter()
     try {
       const response = await api.get('/auth/profile')
       const isToken = await response.data
