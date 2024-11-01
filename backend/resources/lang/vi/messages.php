@@ -161,4 +161,9 @@ return [
     // ORDER
     'order_created_success' => 'Đơn hàng đã được tạo thành công.',
     'order_create_failed' => 'Tạo đơn hàng thất bại.',
+
+    // Admin user
+    'getUsers' => 'Lấy dữ liệu thành công',
+    'updateUser' => 'Cập nhật thành công',
+
 ];

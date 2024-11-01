@@ -19,6 +19,10 @@ return new class extends Migration {
             $table->string('first_name', 50)->nullable();
             $table->string('last_name', 50)->nullable();
             $table->string('avatar')->nullable();
+            $table->text('biography')->nullable();  // Thêm trường tiểu sử
+            $table->string('phone_number', 20)->nullable();  // Thêm số điện thoại
+            $table->string('address', 255)->nullable();  // Thêm địa chỉ
+            $table->json('contact_info')->nullable();
             $table->enum('gender', ['male', 'female', 'unknown'])->default('unknown');
             $table->date('date_of_birth')->nullable();
             $table->boolean('email_verified')->default(false);
