@@ -58,17 +58,16 @@ class ManageController extends Controller
 
         $admins = User::where('role', 'admin')->paginate($perPage, ['*'], 'page', $page);
 
-//        return response()->json([
-//            'status' => 'success',
-//            'data' => $admins->items(),
-//            'pagination' => [
-//                'total' => $admins->total(), // Tổng số user
-//                'current_page' => $admins->currentPage(), // Trang hiện tại
-//                'last_page' => $admins->lastPage(), // Trang cuối cùng
-//                'per_page' => $admins->perPage(), // Số lượng user trên mỗi trang
-//            ],
-//        ]);
-        return formatResponse(STATUS_OK, $admins, '', __('messages.getUsers'));
+        $pagination = [
+            'total' => $admins->total(),
+            'current_page' => $admins->currentPage(),
+            'last_page' => $admins->lastPage(),
+            'per_page' => $admins->perPage(),
+        ];
+        return formatResponse(STATUS_OK,[
+            'data' => $admins,
+            'pagination' => $pagination,
+        ], '', __('messages.getUsers'));
     }
 
     //Sửa tài khoản và mật khẩu
@@ -85,14 +84,11 @@ class ManageController extends Controller
                 'message' => 'User không tồn tại',
             ], 404);
         }
-        // Update email
         $user->email = $request->input('email');
         $user->password = bcrypt($request->input('password'
 
         ));
-        // Lưu vào db
         $user->save();
-        // In phản hồi
         return formatResponse(STATUS_OK, $user, '', __('messages.updateUser'));
     }
 
@@ -103,7 +99,7 @@ class ManageController extends Controller
             'biography' => 'nullable|string',
             'phone_number' => 'nullable|string|max:15',
             'address' => 'nullable|string|max:255',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB max
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
         $nameParts = explode(' ', trim($request->input('name')));
         $firstName = array_shift($nameParts); // Lấy phần tử đầu tiên làm first_name
@@ -112,10 +108,6 @@ class ManageController extends Controller
         $user = User::find($id);
 
         if (!$user) {
-//            return response()->json([
-//               "status" => "fail",
-//               "message" =>"Tài khoản không tồn tại",
-//            ],404);
             return formatResponse(STATUS_FAIL, null, '', __('messages.user_not_found'));
         }
 
@@ -131,11 +123,7 @@ class ManageController extends Controller
             $user->background_image = $fileName;
         }
         $user->save();
-//        return response()->json([
-//            'status' => 'success',
-//            'message' => $id ? 'Thông tin user đã được cập nhật thành công' : 'Tài khoản này không tồn tại',
-//            'data' => $user,
-//        ]);
+
         return formatResponse(STATUS_OK, $user, '', __('messages.updateUser'));
     }
 
@@ -147,7 +135,6 @@ class ManageController extends Controller
             'linkedin' => 'nullable|string|url',
         ]);
 
-        // Tìm user theo ID
         $user = User::find($id);
 
         if ($user) {
@@ -165,14 +152,8 @@ class ManageController extends Controller
 
             $user->save();
 
-//            return response()->json([
-//                'status' => 'success',
-//                'message' => 'Thông tin liên lạc đã được cập nhật',
-//                'data' => $user->contact_info,
-//            ]);
             return formatResponse(STATUS_OK, $user->contact_info, '', __('messages.update_success'));
         }
-//        return response()->json(['status' => 'error', 'message' => 'User không tồn tại'], 404);
         return formatResponse(CODE_NOT_FOUND, null, 404, __('messages.user_not_found'));
     }
 
@@ -212,17 +193,16 @@ class ManageController extends Controller
                 }),
             ];
         });
-//        return response()->json([
-//            'status' => 'success',
-//            'data' => $result,
-//            'pagination' => [
-//                'total' => $orders->total(), // Tổng số đơn hàng
-//                'current_page' => $orders->currentPage(), // Trang hiện tại
-//                'last_page' => $orders->lastPage(), // Trang cuối cùng
-//                'per_page' => $orders->perPage(), // Số lượng đơn hàng trên mỗi trang
-//            ],
-//        ]);
-        return formatResponse(STATUS_OK, $result, '', __('messages.getUsers'));
+        $pagination = [
+            'total' => $orders->total(),
+            'current_page' => $orders->currentPage(),
+            'last_page' => $orders->lastPage(),
+            'per_page' => $orders->perPage(),
+        ];
+        return formatResponse(STATUS_OK,[
+            'data' => $result,
+            'pagination' => $pagination,
+        ], '', __('messages.getUsers'));
     }
 
     public function getInstructorRp(Request $request)
@@ -230,36 +210,30 @@ class ManageController extends Controller
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
-        $instructors = User::where('role', 'instructor')
-        ->with(['orders.orderItems.course'])->paginate($perPage, ['*'], 'page', $page);
-        $result = $instructors->map(function ($instructor) {
+        $orderItems = OrderItem::with(['course'])
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $result = $orderItems->getCollection()->map(function ($item) {
             return [
-                'instructor_name' => $instructor->name,
-                'instructor_email' => $instructor->email,
-                'orders' => $instructor->orders->map(function ($order) {
-                    return [
-                        'order_id' => $order->id,
-                        'total_price' => $order->total_price,
-                        'created_at' => $order->created_at,
-                        'courses' => $order->orderItems->map(function ($item) {
-                            return $item->course->name;
-                        }),
-                    ];
-                }),
+                'order_id' => $item->id,
+                'course_name' => $item->course->title,
+                'instructor_name' => $item->course->creator->last_name.' ' . $item->course->creator->first_name ?? 'N/A',
+                'total_price' => $item->price,
+                'admin_revenue' => $item->price * 0.3,
+                'instructor_email' => $item->course->creator->email ?? 'N/A',
+                'created_date' => $item->created_at->format('d/m/Y'),
             ];
         });
-
-//        return response()->json([
-//            'status' => 'success',
-//            'data' => $result,
-//            'pagination' => [
-//                'total' => $instructors->total(), // Tổng số instructor
-//                'current_page' => $instructors->currentPage(), // Trang hiện tại
-//                'last_page' => $instructors->lastPage(), // Trang cuối cùng
-//                'per_page' => $instructors->perPage(), // Số lượng instructor trên mỗi trang
-//            ],
-//        ]);
-        return formatResponse(STATUS_OK, $result, '', __('messages.getUsers'));
+        $pagination = [
+            'total' => $orderItems->total(),
+            'current_page' => $orderItems->currentPage(),
+            'last_page' => $orderItems->lastPage(),
+            'per_page' => $orderItems->perPage(),
+        ];
+        return formatResponse(STATUS_OK, [
+            'data' => $result,
+            'pagination' => $pagination,
+        ], '', __('messages.getUsers'));
     }
 
     //Filter cho Report Admin (Đang sai, chưa hoàn thành)
@@ -307,20 +281,30 @@ class ManageController extends Controller
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
-        $orderItems = OrderItem::with(['course.user'])
+        $orders = Order::with(['user', 'orderItems.course'])
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $result = $orderItems->getCollection()->map(function ($item) {
+        $result = $orders->getCollection()->map(function ($item) {
             return [
+                'order_id' => $item->id,
+                'user_name' => $item->user->last_name.' '.$item->user->first_name ?? 'N/A',
+                'user_email' => $item->user->email ?? 'N/A',
                 'course_name' => $item->course->title,
-                'instructor_name' => $item->course->user->name ?? 'N/A',
                 'total_price' => $item->price,
-                'admin_revenue' => $item->price * 0.3,
-                'instructor_email' => $item->course->user->email ?? 'N/A',
+                'payment_method' => $item->payment_method,
                 'created_date' => $item->created_at->format('d/m/Y'),
             ];
         });
-        return formatResponse(STATUS_OK, $result, '', __('messages.getUsers'));
+        $pagination = [
+            'total' => $orders->total(),
+            'current_page' => $orders->currentPage(),
+            'last_page' => $orders->lastPage(),
+            'per_page' => $orders->perPage(),
+        ];
+        return formatResponse(STATUS_OK, [
+            'data' => $result,
+            'pagination' => $pagination,
+        ], '', __('messages.getUsers'));
     }
     public function getOrderDetail(Request $request){
         $perPage = $request->input('per_page', 10);
@@ -348,18 +332,16 @@ class ManageController extends Controller
         $page = $request->input('page', 1); // Trang hiện tại, mặc định là trang 1
 
         $instructors = User::where('role', 'instructor')->paginate($perPage, ['*'], 'page', $page);
-
-//        return response()->json([
-//            'status' => 'success',
-//            'data' => $instructors->items(),
-//            'pagination' => [
-//                'total' => $instructors->total(), // Tổng số user
-//                'current_page' => $instructors->currentPage(), // Trang hiện tại
-//                'last_page' => $instructors->lastPage(), // Trang cuối cùng
-//                'per_page' => $instructors->perPage(), // Số lượng user trên mỗi trang
-//            ],
-//        ]);
-        return formatResponse(STATUS_OK, $instructors, '', __('messages.getUsers'));
+        $pagination = [
+            'total' => $instructors->total(),
+            'current_page' => $instructors->currentPage(),
+            'last_page' => $instructors->lastPage(),
+            'per_page' => $instructors->perPage(),
+        ];
+        return formatResponse(STATUS_OK,[
+            'data'=> $instructors,
+            'pagination' => $pagination,
+        ], '', __('messages.getUsers'));
     }
     //Lấy user role "student"
     public function getStudent(Request $request) {
@@ -367,20 +349,14 @@ class ManageController extends Controller
         $page = $request->input('page', 1);
 
         $studens = User::where('role', 'student')->paginate($perPage, ['*'], 'page', $page);
-
-//        return response()->json([
-//            'status' => 'success',
-//            'data' => $studens->items(),
-//            'pagination' => [
-//                'total' => $studens->total(),
-//                'current_page' => $studens->currentPage(),
-//                'last_page' => $studens->lastPage(),
-//                'per_page' => $studens->perPage(),
-//            ],
-//        ]);
-        return formatResponse(STATUS_OK, $studens, '', __('messages.getUsers'));
+        $pagination = [
+            'total' => $studens->total(),
+            'current_page' => $studens->currentPage(),
+            'last_page' => $studens->lastPage(),
+            'per_page' => $studens->perPage(),
+        ];
+        return formatResponse(STATUS_OK,['data' => $studens, 'pagination' => $pagination], '', __('messages.getUsers'));
     }
-
 
     // Wishlist
     public function addToWishlist(Request $request)
