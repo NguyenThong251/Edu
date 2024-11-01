@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Order;
 use App\Models\Wishlist;
 use App\Models\Course;
+use App\Models\OrderItem;
 
 class ManageController extends Controller
 {
@@ -306,34 +307,38 @@ class ManageController extends Controller
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
-        $orders = Order::with(['user', 'orderItems.course']) // Dùng Eager Loading để lấy dữ liệu người dùng và khóa học
-        ->paginate($perPage, ['*'], 'page', $page);
+        $orderItems = OrderItem::with(['course.user'])
+            ->paginate($perPage, ['*'], 'page', $page);
 
-        $result = $orders->getCollection()->map(function($order) {
+        $result = $orderItems->getCollection()->map(function ($item) {
             return [
-                'id' => $order->id,
-                'user_name' => $order->user->name, // Lấy tên người dùng
-                'user_email' => $order->user->email, // Lấy email người dùng
-                'courses' => $order->orderItems->map(function($item) {
-                    return $item->course->name; // Lấy tên của khóa học
-                }),
-                'total_price' => $order->total_price, // Lấy tổng số tiền
-                'payment_method' => $order->payment_method, // Lấy phương thức thanh toán
-                'created_at' => $order->created_at->format('d-m-Y'), // Ngày tạo đơn hàng
+                'course_name' => $item->course->title,
+                'instructor_name' => $item->course->user->name ?? 'N/A',
+                'total_price' => $item->price,
+                'admin_revenue' => $item->price * 0.3,
+                'instructor_email' => $item->course->user->email ?? 'N/A',
+                'created_date' => $item->created_at->format('d/m/Y'),
             ];
         });
+        return formatResponse(STATUS_OK, $result, '', __('messages.getUsers'));
+    }
+    public function getOrderDetail(Request $request){
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
 
-        // Trả về phản hồi JSON
-//        return response()->json([
-//            'status' => 'success',
-//            'data' => $result,
-//            'pagination' => [
-//                'total' => $orders->total(), // Tổng số đơn hàng
-//                'current_page' => $orders->currentPage(), // Trang hiện tại
-//                'last_page' => $orders->lastPage(), // Trang cuối cùng
-//                'per_page' => $orders->perPage(), // Số lượng đơn hàng trên mỗi trang
-//            ],
-//        ]);
+        $orderItems = OrderItem::with(['course.user'])
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $result = $orderItems->getCollection()->map(function ($item) {
+            return [
+                'course_name' => $item->course->title,
+                'instructor_name' => $item->course->user->name ?? 'N/A',
+                'total_price' => $item->price,
+                'admin_revenue' => $item->price * 0.3,
+                'instructor_email' => $item->course->user->email ?? 'N/A',
+                'created_date' => $item->created_at->format('d/m/Y'),
+            ];
+        });
         return formatResponse(STATUS_OK, $result, '', __('messages.getUsers'));
     }
 
@@ -413,9 +418,8 @@ class ManageController extends Controller
             }])
             ->get();
 
-        return formatResponse()->json($wishlistItems);
+        return formatResponse(STATUS_OK, $wishlistItems, '', __('messages.course_update_success'));
     }
-
 
 
 }
