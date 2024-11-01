@@ -29,7 +29,7 @@ class CourseController extends Controller
     public function getListAdmin(Request $request)
     {
         // Query để lấy danh sách Course, không kiểm tra trạng thái
-        $coursesQuery = Course::query();
+        $coursesQuery = Course::with(['language', 'level', 'category']);
 
         // Lấy số lượng limit và thông tin phân trang từ request
         $limit = $request->get('limit', null);
@@ -40,6 +40,8 @@ class CourseController extends Controller
         if ($limit) {
             // Lấy các kết quả giới hạn
             $courses = $coursesQuery->limit($limit)->get();
+
+            $courses->makeHidden(['category_id', 'level_id', 'language_id']);
 
             // Lấy tổng số lượng kết quả
             $total = $courses->count();
