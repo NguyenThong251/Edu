@@ -12,28 +12,38 @@ import IconGroup from '@/components/admin/Dialog/IconGroup.vue';
 import DescriptionGroup from '@/components/admin/Dialog/DescriptionGroup.vue';
 import UploadGroup from '@/components/admin/Dialog/UploadGroup.vue';
 import useAddCategory from '@/composables/admin/category/useAddCategory';
-// const pageTitle = route.meta.title;
+import useFetchCategories from '@/composables/admin/category/useCardCategory';
+import SelectGroup from '@/components/admin/Dialog/SelectGroup.vue';
+import useEditCategory from '@/composables/admin/category/useEditCategory';
 const sidebarStore = useSidebarStore();
 const dialogFormVisible = ref(false);
-const listCategories = ref<TListCategories[]>([]);
-const AddCategory = useAddCategory();
 
-import useFetchCategories from '@/composables/admin/category/useCardCategory';
-const {categories, loading, error, fetchCategories} = useFetchCategories()
+const { categories, loading, error, fetchCategories } = useFetchCategories()
+const { handlePreviewImg, submitForm, formData, imageUrl } = useAddCategory();
+
+const { formDataEdit, handlePreviewImgEdit, submitFormEdit, initializeForm } = useEditCategory();
+
+
 onMounted(async () => {
   await fetchCategories(); // Gọi hàm fetchCategories khi component được mount
   console.log(categories.value); // In dữ liệu đã lấy được
 });
 
+const dialogEditVisible = ref(false);
+const categoryIdToEdit = ref<number | null>(null); // Biến để lưu id danh mục cần chỉnh sửa
 
-// Hàm để thêm danh mục mới
-// const addCategory = () => {
-//   // props.onAddCategory({ ...formAddNewData.value });
-//   console.log('Dữ liệu hiện tại:', formAddNewData.value); 
-//   const newCategory = { ...formAddNewData.value }; 
-//   console.log('Kiểm tra dữ liệu from:', newCategory);
-//   formAddNewData.value = { name: '', icon: '', keyword: '', description: '', image: '', parent_id: [] }; // Reset form
-// };
+// Hàm mở Dialog chỉnh sửa
+const openEditDialog = (id: number) => {
+  console.log('Mở dialog chỉnh sửa cho id:', id);
+  categoryIdToEdit.value = id;
+  // Khởi tạo dữ liệu form với id của danh mục
+  const category = categories.value.find((cat: TListCategories) => cat.id === id);
+  if (category) {
+    initializeForm(category);
+  }
+  dialogEditVisible.value = true;
+  console.log('dialogEditVisible:', dialogEditVisible.value);
+};
 
 </script>
 <template>
@@ -51,45 +61,102 @@ onMounted(async () => {
   <div v-if="loading">Loading...</div>
   <div v-if="error">{{ error }}</div>
   <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-    <CardCategory v-for="(category, index) in categories" :key="index" :category="category" />
+    <CardCategory 
+    v-for="(category, index) in categories" 
+    :key="index" 
+    :category="category" 
+    @edit="openEditDialog"
+    />
   </div>
   <!-- DIALOG (Model) -->
-  <!-- <DialogArea
-    v-model="dialogFormVisible" 
+  <DialogArea
+    :dialogVisible="dialogFormVisible" 
     class="rounded-[10px] dark:bg-dark-sidebar dark:text-white border p-6 z-30"
     title="Thêm danh mục mới"
-    :submitForm="formAddNewData.submitForm"
+    :submitForm="submitForm"
     >
     <template #default>
-      <InputGroup
+        <InputGroup
         label="Tên danh mục"
         inputId="title"
-        v-model="formAddNewData.formData.name"
+        v-model="formData.name"
+        @input="console.log('Tên danh mục:', formData.name)"
         />
         <IconGroup
         label="Icon danh mục"
         inputId="icon-picker"
         inputPlaceHoder="Nhập từ khoá"
-        v-model="formAddNewData.formData.icon"
+        v-model="formData.icon"
+        @input="console.log('Icon danh mục:', formData.icon)"
         />
         <InputGroup
         label="Từ khoá (không bắt buộc)"
         inputId="keyword"
-        v-model="formAddNewData.formData.keyword"
+        v-model="formData.keyword"
         inputPlaceHoder="Nhập từ khoá"
+        @input="console.log('Từ khoá (không bắt buộc):', formData.keyword)"
         />
         <DescriptionGroup
-        label="Từ khoá (không bắt buộc)"
+        label="Mô tả (không bắt buộc)"
         inputId="description"
         inputPlaceHoder="Nhập mô tả danh mục..."
-        v-model="AddCategory.formData.description"
+        v-model="formData.description"
+        @input="console.log('mô tả:', formData.description)"
         />
         <UploadGroup
         label="Tải lên hình ảnh thumbnail"
         inputId="upload"
-        :imageUrl = "AddCategory.imageUrl"
-        :handlePreviewImg="AddCategory.handlePreviewImg"
+        :imageUrl = "imageUrl"
+        :handlePreviewImg="handlePreviewImg"
         />
       </template>
-  </DialogArea> -->
+  </DialogArea>
+  <!-- DIALOG (Edit) -->
+  <DialogArea
+    :dialogVisible="dialogEditVisible" 
+    class="rounded-[10px] dark:bg-dark-sidebar dark:text-white border p-6 z-30"
+    title="Chỉnh sửa danh mục"
+    :submitForm="submitForm"
+    >
+    <template #default>
+      <SelectGroup
+          inputPlaceHoder="Danh mục gốc"
+          required="*"
+          label="Danh mục"
+          />
+      <InputGroup
+        label="Tên danh mục"
+        inputId="title"
+        v-model="formDataEdit.name"
+        @input="console.log('Tên danh mục:', formDataEdit.name)"
+        />
+        <IconGroup
+        label="Icon danh mục"
+        inputId="icon-picker"
+        inputPlaceHoder="Nhập từ khoá"
+        v-model="formDataEdit.icon"
+        @input="console.log('Icon danh mục:', formDataEdit.icon)"
+        />
+        <InputGroup
+        label="Từ khoá (không bắt buộc)"
+        inputId="keyword"
+        v-model="formDataEdit.keyword"
+        inputPlaceHoder="Nhập từ khoá"
+        @input="console.log('Từ khoá (không bắt buộc):', formDataEdit.keyword)"
+        />
+        <DescriptionGroup
+        label="Mô tả (không bắt buộc)"
+        inputId="description"
+        inputPlaceHoder="Nhập mô tả danh mục..."
+        v-model="formDataEdit.description"
+        @input="console.log('mô tả:', formDataEdit.description)"
+        />
+        <UploadGroup
+        label="Tải lên hình ảnh thumbnail"
+        inputId="upload"
+        :imageUrl = "imageUrl"
+        :handlePreviewImg="handlePreviewImg"
+        />
+      </template>
+  </DialogArea>
 </template>

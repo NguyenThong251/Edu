@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import type { InputGroupProps } from '@/interfaces';
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 const props = defineProps<InputGroupProps>();
+const emit = defineEmits(['update:modelValue']);
+// Hàm phát ra sự kiện thay đổi giá trị
+const handleInput = (event: Event) => {
+  emit('update:modelValue', (event.target as HTMLInputElement).value);
+};
 </script>
 <template>
     <div class="mt-3"
@@ -22,9 +27,8 @@ const props = defineProps<InputGroupProps>();
           :name="inputId" 
           :id="inputId"
           :placeholder="inputPlaceHoder"
-          :v-model="modelValue"
+          @input="handleInput"
           class="input-style" 
-        
           />
         </div>
       </div>

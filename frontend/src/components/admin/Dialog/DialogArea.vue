@@ -8,33 +8,8 @@ import { ElDialog } from 'element-plus'
 const props = defineProps<{
   dialogVisible: boolean;
   title: string;
-  submitForm: (data: opject) => Promise<void>;
+  submitForm: (data: object) => Promise<void>;
 }>();
-
-//Gửi dữ liệu đến sever
-// const submitForm = () => {
-//   console.log('Form submitted with data:', formAddNewData.value); // Kiểm tra dữ liệu
-
-//   // Bạn có thể gửi yêu cầu POST tới API ở đây, ví dụ sử dụng fetch:
-//   fetch('/api/your-endpoint', {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     }, 
-//     body: JSON.stringify(formAddNewData.value),
-//   })
-//     .then(response => response.json())
-//     .then(data => {
-//       console.log('Success:', data);
-//       dialogVisible.value = false; // Đóng dialog sau khi thành công
-//       // Reset form nếu cần
-//       formAddNewData.value = { img: '', icon: '', title: '', keyword: '', description: '', children: [] };
-//     })
-//     .catch((error) => {
-//       console.error('Error:', error);
-//     });
-// };
-
 </script>
 <template>
   <el-dialog 

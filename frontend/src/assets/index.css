@@ -51,7 +51,7 @@
         @apply block w-full rounded-md border-0 py-1.5 pl-3 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus-visible:ring-1 focus:ring-inset  focus-visible:ring-btn-darkmode sm:text-sm sm:leading-6
     }
     .label-input{
-        @apply block text-sm font-bold leading-6 text-gray-900 dark:text-white
+        @apply text-sm font-bold leading-6 text-gray-900 dark:text-white
     }
     .background-table{
         @apply bg-white dark:bg-dark-sidebar border w-full rounded-[5px] shadow-soft

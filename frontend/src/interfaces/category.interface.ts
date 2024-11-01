@@ -10,13 +10,20 @@ export interface TCategory {
 // ====== ADMIN CATEGORY ======
 
 export interface TListCategories {
+  id: number;
   image: string | undefined;
   icon: any;
   name: string;
   keyword?: string;
-  description?: string;
-  status?: 'active' | 'unactive';
+  description?: string ;
+  status?: string | undefined;
   children?: TListCategoriesChildren[];
 }
 export interface TListCategoriesChildren extends TListCategories { 
+}
+export interface CurrentCategoryType {
+  id: number | null;
+  name: string;
+  parentCategoryId: number | null;
+  parentCategoryName: string;
 }

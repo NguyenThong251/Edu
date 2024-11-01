@@ -13,6 +13,19 @@ export interface TCardCourse {
   title: string
   total_duration?: number
 }
+export interface TCourseAdmin {
+  id: number;
+  title: string;
+  description: string;
+  short_description: string;
+  thumbnail: string;
+  price: number;
+  type_sale: string;
+  sale_value: number;
+  status: 'active' | 'inactive';
+  created_at: string;
+  updated_at: string;
+}
 // export interface TCardCourse {
 //   id: number
 //   creator: string

@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import type { DescriptionGroupProps } from '@/interfaces';
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps<DescriptionGroupProps>();
-
+  const emit = defineEmits(['update:modelValue']);
+// Hàm phát ra sự kiện thay đổi giá trị
+const handleInput = (event: Event) => {
+  emit('update:modelValue', (event.target as HTMLTextAreaElement).value);
+};
 </script>
 
 <template>
@@ -17,13 +21,12 @@ const props = defineProps<DescriptionGroupProps>();
     :id="inputId" 
     :name="inputId"
     :placeholder="inputPlaceHoder"
-    :value="value"
-    :v-model="modelValue"
+    :v-model="props.value"
+    @input="handleInput"
     rows="4" 
     class="block p-2.5 input-style" 
     :class="customsClassChild2"
-    >
-    </textarea>
+    ></textarea>
   </div>
 </template>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue';
 const props = defineProps<{
-  link: string;
+  link: any;
   icon: any; 
   text: string; 
 }>();
@@ -9,7 +9,6 @@ const props = defineProps<{
 
 <template>
   <div>
-
     <router-link :to="link">
       <div class="flex gap-1 items-center">
         <component :is="icon" class="w-4"/> <p class="text-sm">{{ text }}</p>

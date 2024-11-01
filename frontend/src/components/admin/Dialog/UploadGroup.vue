@@ -3,7 +3,12 @@ import type { UploadGroupProps } from '@/interfaces/admin.interface';
 import {ref, defineProps } from 'vue';
 
 const props = defineProps<UploadGroupProps>();
-
+// Gọi hàm xử lý sự kiện từ component cha
+const handleChange = (event: Event) => {
+  if (typeof props.handlePreviewImg === 'function') {
+    props.handlePreviewImg(event);
+  }
+};
 </script>
 
 <template>
@@ -23,7 +28,7 @@ const props = defineProps<UploadGroupProps>();
       :name="inputId" 
       :id="inputId"
       class="input-style dark:bg-white"
-      @change="handlePreviewImg"
+      @change="handleChange"
     />
     </div>
   </div>

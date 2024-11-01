@@ -47,6 +47,9 @@
 }
 
 /* ==== CUSTOMIZE ELEMENT PLUS ==== */
+.el-table:not(.el-table--border) .el-table__cell{
+  text-align: center;
+}
 
 .el-table {
   --el-table-row-hover-bg-color: none !important;
