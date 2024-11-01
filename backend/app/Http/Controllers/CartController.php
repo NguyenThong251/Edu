@@ -88,7 +88,7 @@ class CartController extends Controller
             $cart = Cart::getOrCreateForUser($user);
             $cart->clearCart();
 
-            return $this->formatResponse('success', __('messages.cart_cleared'), null, code: 204);
+            return $this->formatResponse('success', __('messages.cart_cleared'), null, 204);
         } catch (\Exception $e) {
             return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
         }
@@ -100,15 +100,12 @@ class CartController extends Controller
             $user = Auth::user();
             $cart = Cart::getOrCreateForUser($user);
 
-            // Xác thực mã voucher
             $data = $request->validate([
                 'voucher_code' => 'required|string|exists:vouchers,code',
             ]);
 
-            // Lấy voucher và kiểm tra hợp lệ
-            $voucher = Voucher::where('code', $data['voucher_code'])->first();
+            $voucher = Voucher::where('code', $data['voucher_code'])->firstOrFail();
 
-            // Kiểm tra xem voucher đã được người dùng sử dụng chưa
             $hasUsedVoucher = Order::where('user_id', $user->id)
                 ->where('voucher_id', $voucher->id)
                 ->where('payment_status', 'paid')
@@ -118,11 +115,7 @@ class CartController extends Controller
                 return $this->formatResponse('error', __('messages.voucher_already_used'), null, 400);
             }
 
-            // Tính tổng giá từ các mục trong giỏ hàng
-            // $courses = ;
-            $totalPrice = $cart->getFormattedItems()->sum('current_price');
-
-            // Áp dụng voucher và lấy kết quả
+            $totalPrice = $cart->calculateTotalPrice();
             $result = $voucher->apply($totalPrice, $user->id);
 
             return $this->formatResponse('success', __('messages.voucher_applied_successfully'), [
