@@ -124,7 +124,7 @@ class CartController extends Controller
                 'total_price_after_discount' => $result['total_price_after_discount'],
             ]);
         } catch (\Exception $e) {
-            return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
+            return $this->formatResponse('error', 'Error: ' . $e->getMessage(), null, $e->getCode() ?: 500);
         }
     }
 
