@@ -10,6 +10,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CourseLevelController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\ManageController;
 use App\Http\Controllers\Api\GoogleController;
 use App\Http\Controllers\VoucherController;
 
@@ -57,12 +58,27 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::delete('delete-user/{id}', [AuthController::class, 'deleteUser']);
         Route::post('restore-user/{id}', [AuthController::class, 'restoreUser']);
         Route::post('force-delete-user/{id}', [AuthController::class, 'forceDeleteUser']);
+        //wishlist
+        Route::post('wishlist', [ManageController::class, 'addToWishlist']);
+        Route::get('wishlist', [ManageController::class, 'getWishlist']);
 
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
             Route::get('courses', [CourseController::class, 'getListAdmin'])->name('courses.getListAdmin');
 
             Route::get('categories', [CategoryController::class, 'getListAdmin'])->name('categories.getListAdmin');
+            Route::get('getAdmin', [ManageController::class, 'getAdmin'])->name('users.admins');
+            Route::get('getInstructor', [ManageController::class, 'getInstructor'])->name('users.instructors');
+            Route::get('getStudent', [ManageController::class, 'getStudent'])->name('users.students');
+            Route::put('updateUser/{id}', [ManageController::class, 'updateUserAccount']);
+//            Route::post('/users', [ManageController::class, 'updateFoundationAccount']);
+            Route::put('updateFoundation/{id}', [ManageController::class, 'updateFoundationAccount']);
+            Route::put('contact-info/{id}', [ManageController::class, 'updateContactInfo']);
+            Route::delete('delUserAdmin/{id}', [ManageController::class, 'delUser']);
+            Route::get('getAdminRp', [ManageController::class, 'getAdminRpPayment']);
+            Route::get('getInstructorRp', [ManageController::class, 'getInstructorRp']);
+            Route::get('order-history', [ManageController::class, 'getOrderHistory']);
+
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
             Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
@@ -80,10 +96,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
             // Voucher
             Route::prefix('vouchers')->group(function () {
+                Route::get('/', [VoucherController::class, 'index']);
+                Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
+                Route::get('/{idOrCode}', [VoucherController::class, 'show']);
                 Route::post('/create', [VoucherController::class, 'create']);
-                Route::post('/validate', [VoucherController::class, 'validateVoucher']);
-                Route::post('/apply', [VoucherController::class, 'applyVoucher']);
-                Route::post('/cancel', [VoucherController::class, 'cancelVoucher']);
+                Route::post('/delete', [VoucherController::class, 'destroy']);
+                Route::post('/restore', [VoucherController::class, 'restoreVoucher']);
+                Route::put('/{id}', [VoucherController::class, 'update']);
             });
         });
 
@@ -104,6 +123,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 Route::post('/', [CartController::class, 'store']);
                 Route::delete('/all', [CartController::class, 'destroyAll']);
                 Route::delete('/{course_id}', [CartController::class, 'destroy']);
+                Route::post('apply-voucher', [CartController::class, 'applyVoucher']);
             });
 
             // Order
@@ -117,6 +137,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         });
     });
 });
+
 // Order webhook
 Route::get('/orders/verify-payment', [OrderController::class, 'verifyPayment']);
 Route::post('/stripe/webhook', [OrderController::class, 'handleWebhook']);

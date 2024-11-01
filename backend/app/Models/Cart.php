@@ -60,4 +60,9 @@ class Cart extends Model
             })
             ->exists();
     }
+
+    public function calculateTotalPrice()
+    {
+        return $this->cartItems->sum('current_price');
+    }
 }

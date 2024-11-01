@@ -20,7 +20,6 @@ class CartItem extends Model
     public function getCurrentPriceAttribute()
     {
         $course = $this->course;
-
         return $course->type_sale === 'percent'
             ? round($course->price - ($course->price * $course->sale_value / 100))
             : round($course->price - $course->sale_value);

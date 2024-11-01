@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\Course;
+use App\Models\CartItem;
+use App\Models\Order;
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
 
 class CartController extends Controller
 {
@@ -113,7 +116,7 @@ class CartController extends Controller
 
             $cartItem->delete();
             $courses = $cart->getFormattedItems();
-            return $this->formatResponse('success', __('messages.course_removed_success'), $courses);
+            return $this->formatResponse('success', __('messages.course_removed_success'), $courses, 204);
         } catch (\Exception $e) {
             return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
         }
@@ -126,7 +129,41 @@ class CartController extends Controller
             $cart = Cart::getOrCreateForUser($user);
             $cart->clearCart();
 
-            return $this->formatResponse('success', __('messages.cart_cleared'));
+            return $this->formatResponse('success', __('messages.cart_cleared'), null, 204);
+        } catch (\Exception $e) {
+            return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
+        }
+    }
+
+    public function applyVoucher(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $cart = Cart::getOrCreateForUser($user);
+
+            $data = $request->validate([
+                'voucher_code' => 'required|string|exists:vouchers,code',
+            ]);
+
+            $voucher = Voucher::where('code', $data['voucher_code'])->firstOrFail();
+
+            $hasUsedVoucher = Order::where('user_id', $user->id)
+                ->where('voucher_id', $voucher->id)
+                ->where('payment_status', 'paid')
+                ->exists();
+
+            if ($hasUsedVoucher) {
+                return $this->formatResponse('error', __('messages.voucher_already_used'), null, 400);
+            }
+
+            $totalPrice = $cart->calculateTotalPrice();
+            $result = $voucher->apply($totalPrice, $user->id);
+
+            return $this->formatResponse('success', __('messages.voucher_applied_successfully'), [
+                'total_price' => $totalPrice,
+                'discount' => $result['discount'],
+                'total_price_after_discount' => $result['total_price_after_discount'],
+            ]);
         } catch (\Exception $e) {
             return $this->formatResponse('error', $e->getMessage(), null, $e->getCode() ?: 500);
         }
