@@ -11,11 +11,6 @@ class Voucher extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * Các thuộc tính có thể được gán hàng loạt.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'code',
         'description',
@@ -32,32 +27,16 @@ class Voucher extends Model
         'updated_by'
     ];
 
-    /**
-     * Các thuộc tính sẽ được coi là kiểu ngày tháng.
-     *
-     * @var array<string, string>
-     */
     protected $dates = ['expires_at', 'deleted_at'];
 
-    /**
-     * Định nghĩa mối quan hệ với người dùng (User) đã tạo.
-     */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-
-    /**
-     * Định nghĩa mối quan hệ với người dùng (User) đã cập nhật.
-     */
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
-
-    /**
-     * Định nghĩa mối quan hệ với người dùng (User) đã xóa.
-     */
     public function deleter()
     {
         return $this->belongsTo(User::class, 'deleted_by');
@@ -68,9 +47,14 @@ class Voucher extends Model
         return self::create($data);
     }
 
+    public function isExpired()
+    {
+        return $this->expires_at && $this->expires_at < now();
+    }
+
     public function apply($totalPrice, $userId)
     {
-        if ($this->status !== 'active' || ($this->expires_at && $this->expires_at < now())) {
+        if ($this->status !== 'active' || $this->isExpired()) {
             throw new \Exception(__('messages.invalid_or_expired_voucher'));
         }
 
@@ -83,7 +67,7 @@ class Voucher extends Model
             throw new \Exception(__('messages.voucher_already_used'));
         }
 
-        $discountAmount = $this->discount_type == 'percent'
+        $discountAmount = $this->discount_type === 'percent'
             ? ($totalPrice * $this->discount_value) / 100
             : $this->discount_value;
 
@@ -103,7 +87,6 @@ class Voucher extends Model
         $voucher->deleted_by = Auth::id();
         $voucher->save();
         $voucher->delete();
-        return $voucher;
     }
 
     public static function restoreByCode($code)
@@ -121,6 +104,5 @@ class Voucher extends Model
     public function updateVoucher($data)
     {
         $this->update(array_filter($data, fn($value) => !is_null($value)));
-        return $this;
     }
 }
