@@ -157,6 +157,15 @@ return [
 
     // VOUCHER
     'voucher_created_success' => 'Voucher đã được tạo thành công.',
+    'voucher_code_already_exists' => 'Mã voucher đã tồn tại.',
+    'voucher_creation_failed' => 'Tạo voucher thất bại.',
+    'voucher_not_found' => 'Không tìm thấy voucher.',
+    'voucher_updated_success' => 'Voucher đã được cập nhật thành công.',
+    'voucher_soft_deleted_success' => 'Voucher đã được xóa mềm thành công.',
+    'voucher_restore_success' => 'Voucher đã được khôi phục thành công.',
+    'voucher_has_expired' => 'Voucher đã hết hạn.',
+    'voucher_usage_limit_reached' => 'Đã đạt đến giới hạn sử dụng voucher.',
+    'voucher_apply_success' => 'Áp dụng voucher thành công.',
 
     // ORDER
     'order_created_success' => 'Đơn hàng đã được tạo thành công.',

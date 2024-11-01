@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Cart, CartItem, Order, OrderItem};
+use App\Models\{Cart, CartItem, Order, OrderItem, Voucher};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB, Log};
 use Illuminate\Support\Str;
-use Stripe;
 
 class OrderController extends Controller
 {
@@ -44,7 +43,14 @@ class OrderController extends Controller
         $currency = $request->currency ?? 'usd';
         $total = ($currency == 'usd') ? $total * 100 : $total;
 
-        $voucher = $request->voucher;
+        $voucher = Voucher::where('code', $request->voucher)->first();
+
+        if ($voucher) {
+            $discount = $voucher->discount_type === 'percent'
+                ? min($total * $voucher->discount_value / 100, $voucher->max_discount_value ?? PHP_INT_MAX)
+                : min($voucher->discount_value, $voucher->max_discount_value ?? PHP_INT_MAX);
+            $total = max($total - $discount, 0);
+        }
 
         try {
             DB::beginTransaction();
@@ -68,7 +74,7 @@ class OrderController extends Controller
 
             $order = Order::create([
                 'user_id' => $user->id,
-                'voucher_id' => $voucher ?? null,
+                'voucher_id' => $voucher ? $voucher->id : null,
                 'order_code' => 'Edunity#' . Str::random(10),
                 'total_price' => $total,
                 'currency' => $currency,
@@ -81,7 +87,9 @@ class OrderController extends Controller
                 OrderItem::create([
                     'order_id' => $order->id,
                     'course_id' => $item->course_id,
-                    'price' => $item->course->price,
+                    'price' => $item->course->type_sale === 'percent'
+                        ? $item->course->price - ($item->course->price * $item->course->sale_value / 100)
+                        : $item->course->price - $item->course->sale_value,
                 ]);
             }
 
@@ -128,9 +136,16 @@ class OrderController extends Controller
         if (!$order || $order->payment_status === 'paid') {
             return response()->json(['status' => 'error', 'message' => 'Cannot cancel this order'], 400);
         }
+        DB::transaction(function () use ($order) {
+            // Khôi phục voucher (tăng số lần sử dụng trở lại)
+            if ($order->voucher_id) {
+                $voucher = Voucher::find($order->voucher_id);
+                $voucher->decrement('usage_count');
+            }
 
-        $order->update(['payment_status' => 'cancelled']);
-
+            // Hủy đơn hàng
+            $order->update(['payment_status' => 'cancelled']);
+        });
         return response()->json(['status' => 'success', 'message' => 'Order cancelled successfully']);
     }
 
@@ -160,7 +175,7 @@ class OrderController extends Controller
                 'line_items' => [
                     [
                         'price_data' => [
-                            'currency' => $order->currency ?? 'usd',
+                            'currency' => $order->currency ?? 'vnd',
                             'product_data' => ['name' => "Edunity Courses"],
                             'unit_amount' => $order->total_price,
                         ],
