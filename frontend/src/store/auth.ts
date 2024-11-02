@@ -17,6 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await api.post('/auth/login', { email, password })
       state.value.token = response.data.access_token
       Cookies.set('token_user_edu', response.data.access_token, { expires: 7 }) // Lưu token vào localStorage
+      state.value.user = response.data.data
       return response.data
     } catch (err: any) {
       state.value.error = err.response?.data?.message || 'Đăng nhập thật bại'
@@ -24,10 +25,20 @@ export const useAuthStore = defineStore('auth', () => {
       state.value.loading = false
     }
   }
+  const fetchCurrentUser = async () => {
+    try {
+        const response = await api.get('/auth/me'); // Endpoint để lấy thông tin người dùng
+        state.value.user = response.data.data;
+    } catch (error) {
+        console.error('Error fetching current user:', error);
+        logout(); // Nếu không lấy được thông tin người dùng, thực hiện logout
+    }
+}
   const logout = () => {
     state.value.user = null
     state.value.token = null
     Cookies.remove('token_user_edu')
+    // window.location.href = '/login'
   }
   const register = async (userData: TUserAuth) => {
     state.value.loading = true
@@ -124,7 +135,8 @@ export const useAuthStore = defineStore('auth', () => {
     forgotPass,
     resetPass,
     getGoogleSignInUrl,
-    handleGoogleCallback
+    handleGoogleCallback,
+    fetchCurrentUser
     // fetchUserData
   }
 })
