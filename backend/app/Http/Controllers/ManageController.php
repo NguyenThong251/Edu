@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Order;
 use App\Models\Wishlist;
 use App\Models\Course;
+use Illuminate\Support\Facades\Validator;
+use const Grpc\STATUS_ABORTED;
 
 class ManageController extends Controller
 {
@@ -50,8 +52,10 @@ class ManageController extends Controller
     {
         //
     }
+
     // Lấy tất cả user có role là 'admin'
-    public function getAdmin(Request $request) {
+    public function getAdmin(Request $request)
+    {
         $perPage = $request->input('per_page', 10); // Số lượng admin trên mỗi trang, mặc định là 10
         $page = $request->input('page', 1); // Trang hiện tại, mặc định là trang 1
 
@@ -96,7 +100,8 @@ class ManageController extends Controller
     }
 
     //Sửa, thêm thông tin nền tảng user role "admin"
-    public function updateFoundationAccount(Request $request, $id){
+    public function updateFoundationAccount(Request $request, $id)
+    {
         $request->validate([
             'name' => 'required|string|max:511',
             'biography' => 'nullable|string',
@@ -230,7 +235,7 @@ class ManageController extends Controller
         $page = $request->input('page', 1);
 
         $instructors = User::where('role', 'instructor')
-        ->with(['orders.orderItems.course'])->paginate($perPage, ['*'], 'page', $page);
+            ->with(['orders.orderItems.course'])->paginate($perPage, ['*'], 'page', $page);
         $result = $instructors->map(function ($instructor) {
             return [
                 'instructor_name' => $instructor->name,
@@ -309,12 +314,12 @@ class ManageController extends Controller
         $orders = Order::with(['user', 'orderItems.course']) // Dùng Eager Loading để lấy dữ liệu người dùng và khóa học
         ->paginate($perPage, ['*'], 'page', $page);
 
-        $result = $orders->getCollection()->map(function($order) {
+        $result = $orders->getCollection()->map(function ($order) {
             return [
                 'id' => $order->id,
                 'user_name' => $order->user->name, // Lấy tên người dùng
                 'user_email' => $order->user->email, // Lấy email người dùng
-                'courses' => $order->orderItems->map(function($item) {
+                'courses' => $order->orderItems->map(function ($item) {
                     return $item->course->name; // Lấy tên của khóa học
                 }),
                 'total_price' => $order->total_price, // Lấy tổng số tiền
@@ -338,7 +343,8 @@ class ManageController extends Controller
     }
 
     //Lấy user role "instructor"
-    public function getInstructor(Request $request) {
+    public function getInstructor(Request $request)
+    {
         $perPage = $request->input('per_page', 10); // Số lượng admin trên mỗi trang, mặc định là 10
         $page = $request->input('page', 1); // Trang hiện tại, mặc định là trang 1
 
@@ -356,8 +362,10 @@ class ManageController extends Controller
 //        ]);
         return formatResponse(STATUS_OK, $instructors, '', __('messages.getUsers'));
     }
+
     //Lấy user role "student"
-    public function getStudent(Request $request) {
+    public function getStudent(Request $request)
+    {
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
@@ -381,41 +389,39 @@ class ManageController extends Controller
     public function addToWishlist(Request $request)
     {
         $userId = Auth::id();
-        $courseId = $request->course_id;
-
-        // Kiểm tra xem khóa học đã tồn tại trong wishlist chưa
-        $exists = Wishlist::where('user_id', $userId)
-            ->where('course_id', $courseId)
-            ->exists();
-
+        $validator = Validator::make(request()->all(), [
+            'course_id' => 'required|integer|exists:courses,id',
+        ],
+            [
+                'course_id.required' => 'Mã khóa học không được để trống',
+                'course_id.integer' => 'Mã khóa học phải là số',
+                'course_id.exists' => 'Mã khóa học không tồn tại',
+            ]);
+        if ($validator->fails()) {
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
+        }
+        $courseId = $request->input('course_id');
+        $exists = Wishlist::where('user_id', $userId)->where('course_id', $courseId)->exists();
         if ($exists) {
-            return response()->json(['message' => 'Khóa học đã có trong wishlist'], 400);
+            return formatResponse(STATUS_OK, '', '', 'Khóa học đã được yêu thích', CODE_FAIL);
         }
-        if (!Course::where('id', $courseId)->exists()) {
-            return response()->json(['message' => 'Khóa học không tồn tại'], 400);
-        }
-
         // Tạo mới wishlist
-        Wishlist::create([
+        $createWishlist = Wishlist::create([
             'user_id' => $userId,
             'course_id' => $courseId
         ]);
-
-//        return response()->json(['message' => 'Đã thêm khóa học vào wishlist'], 201);
-        return formatResponse(STATUS_OK, '', 201, __('messages.course_added_success'));
+        return formatResponse(STATUS_OK, $createWishlist, '', __('messages.course_added_success'));
     }
+
     public function getWishlist()
     {
         $userId = Auth::id();
         $wishlistItems = Wishlist::where('user_id', $userId)
             ->with(['course' => function ($query) {
                 $query->select('id', 'title', 'thumbnail', 'price', 'created_by');
-            }])
-            ->get();
-
-        return formatResponse()->json($wishlistItems);
+            }])->get();
+        return formatResponse(STATUS_OK, $wishlistItems, '', 'Lấy danh sách khóa học thành công');
     }
-
 
 
 }

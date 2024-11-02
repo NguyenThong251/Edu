@@ -337,6 +337,9 @@ class AuthController extends Controller
             'first_name' => 'string|max:50',
             'last_name' => 'string|max:50',
             'email' => 'string|email|max:100|unique:users,email,' . $user->id,
+            'phone_number' => 'regex:/^[0-9]+$/',
+            'address' => 'string',
+            'contact_info' => 'string',
             'gender' => 'nullable|string|in:male,female,unknown',
             'date_of_birth' => 'nullable|date',
             'password' => 'string|min:8',
@@ -347,6 +350,10 @@ class AuthController extends Controller
             'last_name.required' => __('messages.last_name_required'),
             'last_name.string' => __('messages.last_name_string'),
             'last_name.max' => __('messages.last_name_max'),
+
+            'phone_number.regex' => __('messages.phone_number_update'),
+            'address.string' => __('messages.address_update'),
+            'contact_info.string' => __('messages.contactInfo_update'),
 
             'email.required' => __('messages.email_required'),
             'email.string' => __('messages.email_string'),

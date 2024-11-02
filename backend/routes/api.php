@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
@@ -116,6 +117,11 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
         // Routes cho student
         Route::middleware(['role:student'])->group(function () {
+            //chat message
+            Route::get('/message/private/{receiverId}', [ChatController::class, 'index']);
+            Route::get('/chat/users', [ChatController::class, 'getUsers']);
+            Route::post('/messages/{receiverId}', [ChatController::class, 'store']);
+
             // Các route dành cho student có thể thêm tại đây
 
             // ...
