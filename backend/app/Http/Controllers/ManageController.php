@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Wishlist;
 use App\Models\Course;
 use Illuminate\Support\Facades\Validator;
+use Monolog\Formatter\WildfireFormatter;
 use const Grpc\STATUS_ABORTED;
 
 class ManageController extends Controller
@@ -421,6 +422,30 @@ class ManageController extends Controller
                 $query->select('id', 'title', 'thumbnail', 'price', 'created_by');
             }])->get();
         return formatResponse(STATUS_OK, $wishlistItems, '', 'Lấy danh sách khóa học thành công');
+    }
+
+    public function deletWishlist(Request $request)
+    {
+        $userId = Auth::id();
+        $validator = Validator::make(request()->all(), [
+            'course_id' => 'required|integer|exists:courses,id',
+        ],
+            [
+                'course_id.required' => 'Mã khóa học không được để trống',
+                'course_id.integer' => 'Mã khóa học phải là số',
+                'course_id.exists' => 'Mã khóa học không tồn tại',
+            ]);
+        if ($validator->fails()) {
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
+        }
+        $course_id = $request->input('course_id');
+        $delWishlist = Wishlist::where(['user_id' => $userId, 'course_id' => $course_id]);
+        if ($delWishlist) {
+            $delWishlist->delete();
+            return formatResponse(STATUS_OK, '', '', 'Bỏ yêu thích khóa học thành công');
+        }
+        return formatResponse(STATUS_FAIL, '', '', 'Bỏ yêu thích khóa học thất bại.', CODE_FAIL);
+
     }
 
 

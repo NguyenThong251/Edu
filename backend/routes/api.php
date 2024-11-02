@@ -62,6 +62,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         //wishlist
         Route::post('wishlist', [ManageController::class, 'addToWishlist']);
         Route::get('wishlist', [ManageController::class, 'getWishlist']);
+        Route::post('delete-wishlist', [ManageController::class, 'deletWishlist']);
 
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
