@@ -1,20 +1,40 @@
-import { useCourseStore } from '@/store/course'
-import { onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+// composables/useCourseDetail.js
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import api from '@/services/axiosConfig' // Đường dẫn đến file cấu hình axios
 
 export function useCourseDetail() {
-  const router = useRouter()
   const route = useRoute()
-  const navigateToDetail = (id: number) => {
-    router.push({ name: 'user.course.detail', params: { id } })
+  const id = route.params.id ? String(route.params.id) : null // Chuyển đổi `id` thành kiểu số
+  // State
+  const course = ref<any>(null)
+  const isLoading = ref<boolean>(false)
+  const error = ref<string | null>(null)
+
+  // Hàm để lấy dữ liệu chi tiết khóa học
+  const fetchCourseDetail = async () => {
+    isLoading.value = true
+
+    try {
+      const response = await api.get(`/courses/${id}`)
+      course.value = response.data.data
+      console.log(response)
+      error.value = null
+    } catch (err) {
+      // error.value = 'Đã có lỗi xảy ra khi lấy thông tin khóa học'
+    } finally {
+      isLoading.value = false
+    }
   }
-  const courseStore = useCourseStore()
+
+  // Gọi hàm khi component được gắn vào
   onMounted(() => {
-    const courseId = route.params.id as string
-    courseStore.fetchCourseDetail(courseId)
+    fetchCourseDetail()
   })
+
   return {
-    courseStore,
-    navigateToDetail
+    course,
+    isLoading,
+    error
   }
 }

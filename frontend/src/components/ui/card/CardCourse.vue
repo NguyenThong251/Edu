@@ -62,8 +62,13 @@ import { ClockIcon, BookOpenIcon, RocketLaunchIcon, HeartIcon, ShoppingCartIcon 
 import type { TCardCourse } from '@/interfaces/course.interface';
 import { useCart } from '@/composables/user/useCart';
 import { useCourseDetail } from '@/composables/user/useCourseDetail';
+import { useRouter } from 'vue-router';
 defineProps<TCardCourse>();
-const { navigateToDetail } = useCourseDetail()
+// const { navigateToDetail } = useCourseDetail()
+const router = useRouter();
+const navigateToDetail = (id: number) => {
+    router.push({ name: 'user.course.detail', params: { id: String(id) } });
+};
 const { handleAddToCart } = useCart();
 
 </script>
