@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('cart_id');
             $table->unsignedBigInteger('course_id');
-            $table->double('price');
             $table->timestamps();
+            // $table->double('price'); price nên lưu ở order, còn price của course thì lấy từ course
             // $table->softDeletes();
             // $table->boolean('is_deleted')->default(0);
 

@@ -19,17 +19,41 @@ class LanguageSeeder extends Seeder
 
         // Lấy tất cả user IDs hiện có
         $userIds = User::pluck('id')->toArray();
+        $randomUserId = function() use ($userIds) {
+            return $userIds[array_rand($userIds)];
+        };
 
-        // Tạo 10 bản ghi ngẫu nhiên cho bảng languages
-        for ($i = 0; $i < 3; $i++) {
-            Language::create([
-                'name' => $faker->unique()->word(), // Tên ngôn ngữ ngẫu nhiên và duy nhất
-                'description' => $faker->sentence(), // Mô tả ngôn ngữ ngẫu nhiên
-                'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
-                'deleted_by' => null, // Không có giá trị ban đầu
-                'created_by' => $faker->randomElement($userIds), // Lấy một user id ngẫu nhiên từ danh sách user IDs
-                'updated_by' => null, // Không có giá trị ban đầu
-            ]);
+        // Tạo các bản ghi cụ thể cho Tiếng Việt, Tiếng Anh, Tiếng Pháp
+        $languages = [
+            [
+                'name' => 'Tiếng Việt',
+                'description' => 'Ngôn ngữ chính thức của Việt Nam.',
+                'status' => 'active',
+                'created_by' => $randomUserId(),
+                'updated_by' => null,
+                'deleted_by' => null,
+            ],
+            [
+                'name' => 'Tiếng Anh',
+                'description' => 'Ngôn ngữ quốc tế được sử dụng rộng rãi.',
+                'status' => 'active',
+                'created_by' => $randomUserId(),
+                'updated_by' => null,
+                'deleted_by' => null,
+            ],
+            [
+                'name' => 'Tiếng Pháp',
+                'description' => 'Ngôn ngữ phổ biến tại nhiều quốc gia.',
+                'status' => 'active',
+                'created_by' => $randomUserId(),
+                'updated_by' => null,
+                'deleted_by' => null,
+            ]
+        ];
+
+        // Chèn các bản ghi vào bảng languages
+        foreach ($languages as $language) {
+            Language::create($language);
         }
     }
 }

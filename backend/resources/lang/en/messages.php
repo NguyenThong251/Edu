@@ -57,6 +57,8 @@ return [
     'email_not_verified' => 'Email not verified.',
 
     'description_string' => 'Description must be a string.',
+    'icon_string' => 'Icon must be a string.',
+    'keyword_string' => 'Keyword must be a string.',
     'status_required' => 'Status is required.',
     'status_invalid' => 'Status is invalid.',
     'parent_id_invalid' => 'Parent ID is invalid.',
@@ -142,16 +144,28 @@ return [
     'language_force_delete_success' => 'Language permanently deleted successfully.',
     'language_not_found' => 'Language not found.',
 
-    // CART: handle courses in cart
-    'cart_cleared' => 'All courses have been removed from the cart.',
-    'cart_empty' => 'Your cart is empty.',
-    'cart_item_not_found' => 'Cart item not found.',
-    'course_already_in_cart' => 'Course already in cart.',
-    'course_added_success' => 'Course added successfully.',
-    'course_removed_success' => 'Course removed successfully.',
+    // CART
+    'cart_items_fetched' => 'List of courses in cart retrieved successfully.',
     'course_not_found_in_cart' => 'Course not in cart.',
+    'course_added_success' => 'Course added successfully.',
+    'course_already_in_cart' => 'Course already in cart.',
+    'course_already_in_paid_order' => 'Course already in paid order.',
+    'course_removed_success' => 'Course removed successfully.',
+    'cart_cleared' => 'All courses have been removed from the cart.',
 
-    // ORDER: handle orders
-    'order_created_success' => 'Order created successfully.',
-    'order_create_failed' => 'Failed to create order',
+    // VOUCHER
+    'voucher_created_success' => 'Voucher created successfully.',
+    'voucher_code_already_exists' => 'Voucher code already exists.',
+    'voucher_creation_failed' => 'Voucher creation failed.',
+    'voucher_not_found' => 'Voucher not found.',
+    'voucher_updated_success' => 'Voucher updated successfully.',
+    'voucher_soft_deleted_success' => 'Voucher soft deleted successfully.',
+    'voucher_restore_success' => 'Voucher restored successfully.',
+    'voucher_has_expired' => 'Voucher has expired.',
+    'voucher_usage_limit_reached' => 'Voucher usage limit reached.',
+    'voucher_apply_success' => 'Voucher applied successfully.',
+
+    // ORDER
+    'order_created_success' => 'Order created successfully..',
+    'order_create_failed' => 'Failed to create order.',
 ];

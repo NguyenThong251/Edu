@@ -26,7 +26,49 @@ class CourseController extends Controller
     //             ]
     //         ]);
     // }
+    public function getListAdmin(Request $request)
+    {
+        // Query để lấy danh sách Course, không kiểm tra trạng thái
+        $coursesQuery = Course::with(['language', 'level', 'category']);
 
+        // Lấy số lượng limit và thông tin phân trang từ request
+        $limit = $request->get('limit', null);
+        $perPage = $request->get('per_page', 10);
+        $currentPage = $request->get('page', 1);
+
+        // Nếu có limit thì giới hạn kết quả trước khi phân trang thủ công
+        if ($limit) {
+            // Lấy các kết quả giới hạn
+            $courses = $coursesQuery->limit($limit)->get();
+
+            $courses->makeHidden(['category_id', 'level_id', 'language_id']);
+
+            // Lấy tổng số lượng kết quả
+            $total = $courses->count();
+
+            // Phân trang thủ công cho kết quả đã giới hạn
+            $courses = $courses->forPage($currentPage, $perPage)->values();
+
+            $paginatedCourses = new \Illuminate\Pagination\LengthAwarePaginator(
+                $courses,
+                $total,
+                $perPage,
+                $currentPage,
+                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+            );
+
+            // Chuyển đổi đối tượng phân trang sang mảng với tất cả các thuộc tính chi tiết
+            $paginationData = $paginatedCourses->toArray();
+
+            return formatResponse(STATUS_OK, $paginationData, '', __('messages.course_fetch_success'));
+        } else {
+            // Nếu không có limit, phân trang như bình thường
+            $courses = $coursesQuery->paginate($perPage, ['*'], 'page', $currentPage);
+            return formatResponse(STATUS_OK, $courses, '', __('messages.course_fetch_success'));
+        }
+    }
+
+    
     public function search(Request $request)
     {
         // Lấy các tham số lọc từ request
@@ -443,10 +485,11 @@ class CourseController extends Controller
         $course->updated_by = auth()->id();
         $course->save();
 
-        return formatResponse(STATUS_OK, $course, '', __('messages.course_update_success'));
+            return formatResponse(STATUS_OK, $course, '', __('messages.course_update_success'));
     }
 
     // Xóa mềm khóa học
+
     public function destroy($id)
     {
         $course = Course::find($id);
@@ -781,4 +824,81 @@ class CourseController extends Controller
 
         return formatResponse(STATUS_OK, $this->transform($courses, __('messages.tag_favorite')), '', __('messages.favorite_courses_found'));
     }
+
+
+
+//     public function filterCourses(Request $request)
+//     {
+//         $category_id = $request->input('category_id');
+//         $title = $request->input('title');
+//         $min_price = $request->input('min_price');
+//         $max_price = $request->input('max_price');
+//         $status = $request->input('status');
+//         $type_sale = $request->input('type_sale');
+//         $rating = $request->input('rating');
+//         $duration_range = $request->input('duration_range');
+//
+//
+//         $page = $request->input('page', 1);
+//         $perPage = $request->input('per_page', 10);
+//
+//         $sort_by = $request->input('sort_by', 'created_at');
+//         $sort_order = $request->input('sort_order', 'desc');
+//
+//         $query = Course::with('reviews');
+//         if ($category_id) {
+//             $categoryIds = explode(',', $category_id);
+//             $query->whereIn('category_id', $categoryIds);
+//         }
+//         if ($title) {
+//             $query->where('title', 'like', '%' . $title . '%');
+//         }
+//         if ($min_price) {
+//             $query->where('price', '>=', $min_price);
+//         }
+//         if ($max_price) {
+//             $query->where('price', '<=', $max_price);
+//         }
+//         if ($status) {
+//             $query->where('status', $status);
+//         }
+//
+//         if ($rating) {
+//             $query->whereHas('reviews', function ($q) use ($rating) {
+//                 $q->havingRaw('ROUND(AVG(rating),0) = ?', [$rating]);
+//             });
+//         }
+//
+//         if ($duration_range) {
+//             $query->whereHas('sections.lectures', function ($q) use ($duration_range) {
+//                 switch ($duration_range) {
+//                     case '0-2':
+//                         $q->havingRaw('SUM(duration) <= 120');
+//                         break;
+//                     case '3-5':
+//                         $q->havingRaw('SUM(duration) BETWEEN 180 AND 300');
+//                         break;
+//                     case '6-12':
+//                         $q->havingRaw('SUM(duration) BETWEEN 360 AND 720');
+//                         break;
+//                     case '12+':
+//                         $q->havingRaw('SUM(duration) > 720');
+//                         break;
+//                 }
+//             });
+//         }
+//
+//         $query->orderBy($sort_by, $sort_order);
+//         $courses = $query->paginate($perPage, ['*'], 'page', $page);
+//         return response()->json([
+//             'status' => 'success',
+//             'data' => $courses->items(),
+//             'pagination' => [
+//                 'total' => $courses->total(),
+//                 'current_page' => $courses->currentPage(),
+//                 'last_page' => $courses->lastPage(),
+//                 'per_page' => $courses->perPage(),
+//             ],
+//         ]);
+//     }
 }
