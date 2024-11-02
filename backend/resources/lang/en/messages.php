@@ -147,7 +147,7 @@ return [
     // CART
     'cart_items_fetched' => 'List of courses in cart retrieved successfully.',
     'course_not_found_in_cart' => 'Course not in cart.',
-    'course_added_success' => 'Course added successfully.',
+    'course_added_success' => 'Course added wishlist.',
     'course_already_in_cart' => 'Course already in cart.',
     'course_already_in_paid_order' => 'Course already in paid order.',
     'course_removed_success' => 'Course removed successfully.',
@@ -168,4 +168,12 @@ return [
     // ORDER
     'order_created_success' => 'Order created successfully..',
     'order_create_failed' => 'Failed to create order.',
+
+    // Admin user
+//    'getUsers' => 'Lấy dữ liệu thành công',
+//    'updateUser' => 'Cập nhật thành công',
+    'phone_number_update' => 'Phone number must be a number.',
+    'address_update' => 'Address must be a string',
+    'contactInfo_update' => 'Contact info must be string.',
+
 ];
