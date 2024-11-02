@@ -3,25 +3,69 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class User extends Authenticatable
+
+class User extends Authenticatable implements JWTSubject
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    const USER_ACTIVE = 'active';
+    const USER_INACTIVE = 'inactive';
+    const ROLE_STUDENT = 'student';
+
+    const STATUS_DEFAULT = 0;
+    const STATUS_DELETED = 1;
+
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
+    protected $dates = ['deleted_at'];
+
     protected $fillable = [
-        'name',
+        'username',
         'email',
         'password',
+        'first_name',
+        'last_name',
+        'avatar',
+        'gender',
+        'date_of_birth',
+        'phone_number',
+        'contact_info',
+        'address',
+        'email_verified',
+        'verification_token',
+        'role',
+        'status',
+        'email_verified',
+        'stripe_customer_id',
+        'reset_token',
+        'provider',
+        'provider_id'
     ];
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -31,6 +75,10 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'created_at',
+        'updated_at',
+        'verification_token',
+        'reset_token',
     ];
 
     /**
@@ -42,4 +90,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    // Setter cho contact_info
+    public function setAdminContactInfo($value)
+    {
+        $this->attributes['contact_info'] = json_encode($value);
+    }
+
+    // Getter cho contact_info
+    public function getAdminContacInfo($value)
+    {
+        return json_decode($value, true);
+    }
 }
