@@ -33,6 +33,7 @@ class OrderController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Cart is empty'], 400);
         }
 
+        // Tính tổng giá trị đơn hàng
         $total = round($cartItems->reduce(function ($carry, $item) {
             $price = $item->course->type_sale === 'percent'
                 ? $item->course->price - ($item->course->price * $item->course->sale_value / 100)
@@ -40,15 +41,27 @@ class OrderController extends Controller
             return $carry + $price;
         }, 0));
 
-        $currency = $request->currency ?? 'usd';
+        $currency = $request->currency ?? 'vnd';
         $total = ($currency == 'usd') ? $total * 100 : $total;
 
         $voucher = Voucher::where('code', $request->voucher)->first();
 
         if ($voucher) {
+            // Kiểm tra nếu voucher đã được người dùng sử dụng
+            $hasUsedVoucher = Order::where('user_id', $user->id)
+                ->where('voucher_id', $voucher->id)
+                ->where('payment_status', 'paid')
+                ->exists();
+
+            if ($hasUsedVoucher) {
+                return response()->json(['status' => 'error', 'message' => 'Voucher has already been used by the user.'], 400);
+            }
+
+            // Tính toán mức giảm giá
             $discount = $voucher->discount_type === 'percent'
                 ? min($total * $voucher->discount_value / 100, $voucher->max_discount_value ?? PHP_INT_MAX)
                 : min($voucher->discount_value, $voucher->max_discount_value ?? PHP_INT_MAX);
+
             $total = max($total - $discount, 0);
         }
 
@@ -72,6 +85,7 @@ class OrderController extends Controller
                 'cancel_url' => config('services.frontend_url') . '/checkout/cancel',
             ]);
 
+            // Tạo đơn hàng trong hệ thống
             $order = Order::create([
                 'user_id' => $user->id,
                 'voucher_id' => $voucher ? $voucher->id : null,
@@ -95,6 +109,11 @@ class OrderController extends Controller
 
             $cartItems->each->delete();
             $cart->delete();
+
+            // Tăng số lần sử dụng của voucher khi tạo đơn hàng thành công
+            if ($voucher) {
+                $voucher->increment('usage_count');
+            }
 
             DB::commit();
 
@@ -136,6 +155,7 @@ class OrderController extends Controller
         if (!$order || $order->payment_status === 'paid') {
             return response()->json(['status' => 'error', 'message' => 'Cannot cancel this order'], 400);
         }
+
         DB::transaction(function () use ($order) {
             // Khôi phục voucher (tăng số lần sử dụng trở lại)
             if ($order->voucher_id) {
@@ -143,9 +163,20 @@ class OrderController extends Controller
                 $voucher->decrement('usage_count');
             }
 
+            // Khôi phục số tiền chưa áp dụng mã giảm giá
+            if ($order->voucher_id) {
+                $originalTotalPrice = $order->total_price;
+                $voucher = Voucher::find($order->voucher_id);
+                $discount = $voucher->discount_type === 'percent'
+                    ? min($originalTotalPrice * $voucher->discount_value / 100, $voucher->max_discount_value ?? PHP_INT_MAX)
+                    : min($voucher->discount_value, $voucher->max_discount_value ?? PHP_INT_MAX);
+                $order->update(['total_price' => $originalTotalPrice + $discount]);
+            }
+
             // Hủy đơn hàng
             $order->update(['payment_status' => 'cancelled']);
         });
+
         return response()->json(['status' => 'success', 'message' => 'Order cancelled successfully']);
     }
 
