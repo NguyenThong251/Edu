@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->double('total_price');
             $table->string('currency')->default('vnd'); // Mặc định là VND
             $table->string('payment_method');
-            $table->string('payment_status');
+            $table->enum('payment_status', ['pending', 'paid', 'cancelled'])->default('pending');
             $table->string('payment_code')->nullable();
             $table->softDeletes();
             $table->enum('status', ['active', 'inactive'])->default('active');
