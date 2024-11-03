@@ -29,7 +29,7 @@ class OrderSeeder extends Seeder
                 'order_code' => $faker->unique()->numerify('ORD-#####'),
                 'total_price' => $faker->randomFloat(2, 50, 1000), // Giá trị ngẫu nhiên từ 50 đến 1000
                 'payment_method' => $faker->randomElement(['credit_card', 'paypal', 'cash']),
-                'payment_status' => $faker->randomElement(['paid', 'unpaid']),
+                'payment_status' => $faker->randomElement(['paid', 'pending', 'cancelled']),
                 'payment_code' => $faker->regexify('[A-Z0-9]{10}'), // Mã thanh toán ngẫu nhiên hoặc null
                 'status' => $faker->randomElement(['active', 'inactive']),
                 'deleted_by' => $faker->optional()->randomElement($userIds), // Ngẫu nhiên chọn người xóa hoặc null
