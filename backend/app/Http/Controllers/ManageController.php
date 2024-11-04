@@ -51,6 +51,7 @@ class ManageController extends Controller
     {
         //
     }
+    /*Admin site*/
     // Lấy tất cả user có role là 'admin'
     public function getAdmin(Request $request) {
         $perPage = $request->input('per_page', 10); // Số lượng admin trên mỗi trang, mặc định là 10
@@ -171,37 +172,45 @@ class ManageController extends Controller
         return formatResponse(STATUS_OK, '', '', __('messages.user_soft_delete_success'));
     }
 
-    //Report Payment (Đang sai, chưa hoàn thành)
+    //Report Payment
     public function getAdminRpPayment(Request $request)
     {
-        $userId = Auth::id();
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
-        $orders = Order::where('user_id', $userId)
-            ->with(['orderItems.course'])
+        $adminCount = User::where('role', 'admin')->count();
+
+        $orderItems = OrderItem::with(['course'])
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $result = $orders->map(function ($order) {
+        $result = $orderItems->getCollection()->map(function ($item) use ($adminCount){
+            $totalPrice = $item->price;
+            $adminRevenue = $adminCount > 0 ? ($totalPrice * 0.3) / $adminCount : 0;
             return [
-                'id' => $order->id,
-                'total_price' => $order->total_price, //Tổng tiền
-                'admin_revenue' => $order->total_price, // Doanh thu admin
-                'created_at' => $order->created_at, // Ngày có order
-                'courses' => $order->orderItems->map(function ($item) {
-                    return $item->course->name; // Tên khóa học
-                }),
+                'orderItem_id' => $item->id,
+                'course_name' => $item->course->title,
+                'instructor_name' => $item->course->creator->last_name.' ' . $item->course->creator->first_name ?? 'N/A',
+                'total_price' => number_format($totalPrice, 0, ',', '.'),
+                'admin_revenue' => number_format($adminRevenue, 0, ',', '.'),
+                'instructor_email' => $item->course->creator->email ?? 'N/A',
+                'created_date' => $item->created_at->format('d/m/Y'),
             ];
         });
+        $closing_price = number_format($orderItems->getCollection()->sum('price'), 0, ',', '.');
+        $totalAdminRevenue = number_format($orderItems->getCollection()->sum(function ($item) use ($adminCount){
+            return $adminCount > 0 ? ($item->price * 0.3) / $adminCount : $adminCount == 0;
+        }), 0, ',', '.');
         $pagination = [
-            'total' => $orders->total(),
-            'current_page' => $orders->currentPage(),
-            'last_page' => $orders->lastPage(),
-            'per_page' => $orders->perPage(),
+            'total' => $orderItems->total(),
+            'current_page' => $orderItems->currentPage(),
+            'last_page' => $orderItems->lastPage(),
+            'per_page' => $orderItems->perPage(),
         ];
-        return formatResponse(STATUS_OK,[
+        return formatResponse(STATUS_OK, [
             'data' => $result,
             'pagination' => $pagination,
+            'closing_price' => $closing_price,
+            'total_admin_price' => $totalAdminRevenue,
         ], '', __('messages.getUsers'));
     }
 
@@ -215,15 +224,19 @@ class ManageController extends Controller
 
         $result = $orderItems->getCollection()->map(function ($item) {
             return [
-                'order_id' => $item->id,
+                'orderItem_id' => $item->id,
                 'course_name' => $item->course->title,
                 'instructor_name' => $item->course->creator->last_name.' ' . $item->course->creator->first_name ?? 'N/A',
-                'total_price' => $item->price,
-                'admin_revenue' => $item->price * 0.3,
+                'total_price' => number_format($item->price, 0, ',', '.'),
+                'admin_revenue' => number_format($item->price * 0.3, 0, ',', '.'),
                 'instructor_email' => $item->course->creator->email ?? 'N/A',
                 'created_date' => $item->created_at->format('d/m/Y'),
             ];
         });
+        $closing_price = number_format($orderItems->getCollection()->sum('price'), 0, ',', '.');
+        $totalAdminRevenue = number_format($orderItems->getCollection()->sum(function ($item) {
+                return $item->price * 0.3;
+            }), 0, ',', '.');
         $pagination = [
             'total' => $orderItems->total(),
             'current_page' => $orderItems->currentPage(),
@@ -233,6 +246,8 @@ class ManageController extends Controller
         return formatResponse(STATUS_OK, [
             'data' => $result,
             'pagination' => $pagination,
+            'closing_price' => $closing_price,
+            'total_admin_price' => $totalAdminRevenue,
         ], '', __('messages.getUsers'));
     }
 
@@ -252,27 +267,18 @@ class ManageController extends Controller
     }*/
 
     //Xóa báo cáo doanh thu
-    public function delInstructorRp(Request $request, $orderId)
+    public function deleteReportPayment($id)
     {
-        $userId = Auth::id();
+        $orderItem = OrderItem::find($id);
 
-        // Kiểm tra xem order có tồn tại và thuộc về admin hiện tại không
-        $order = Order::where('id', $orderId)->first();
-
-        if (!$order) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Không tìm thấy đơn hàng.',
-            ], 404);
+        if (!$orderItem) {
+            return formatResponse(STATUS_FAIL, [], 'Order item not found', __('messages.course_not_found'));
         }
 
-        // Xóa order
-        $order->delete();
+        // Thực hiện xóa
+        $orderItem->delete();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Đã xóa báo cáo doanh thu thành công.',
-        ]);
+        return formatResponse(STATUS_OK, [], 'Order item deleted successfully', __('messages.course_soft_delete_success'));
     }
 
     //Order history, Order detail
@@ -281,15 +287,15 @@ class ManageController extends Controller
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
-        $orders = Order::with(['user', 'orderItems.course'])
+        $orders = Order::with(['student', 'orderItems.course'])
             ->paginate($perPage, ['*'], 'page', $page);
 
         $result = $orders->getCollection()->map(function ($item) {
             return [
                 'order_id' => $item->id,
-                'user_name' => $item->user->last_name.' '.$item->user->first_name ?? 'N/A',
-                'user_email' => $item->user->email ?? 'N/A',
-                'course_name' => $item->course->title,
+                'user_name' => $item->student->last_name.' '.$item->student->first_name ?? 'N/A',
+                'user_email' => $item->student->email ?? 'N/A',
+                'course_name' => $item->orderItems->first()->course->title ?? 'N/A',
                 'total_price' => $item->price,
                 'payment_method' => $item->payment_method,
                 'created_date' => $item->created_at->format('d/m/Y'),
@@ -306,24 +312,28 @@ class ManageController extends Controller
             'pagination' => $pagination,
         ], '', __('messages.getUsers'));
     }
-    public function getOrderDetail(Request $request){
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
+    public function getOrderDetail($orderId){
+        $order = Order::with(['student', 'orderItems.course'])->findOrFail($orderId);
 
-        $orderItems = OrderItem::with(['course.user'])
-            ->paginate($perPage, ['*'], 'page', $page);
+        $orderDetail = [
+            'order_id' => $order->id,
+            'user_name' => $order->student->last_name . ' ' . $order->student->first_name ?? 'N/A',
+            'user_email' => $order->student->email ?? 'N/A',
+            'courses' => $order->orderItems->map(function ($orderItem) {
+                return [
+                    'course_name' => $orderItem->course->title ?? 'N/A',
+                    'course_id' => $orderItem->course->id ?? null,
+                    'instructor_name' => $orderItem->course->creator->last_name. ' ' . $orderItem->course->creator->first_name ?? 'N/A',
+                ];
+            }),
+            'total_price' => $order->price,
+            'final_amount' => $order->price * 0.1 + $order->price,
+            'created_date' => $order->created_at->format('d/m/Y'),
+        ];
 
-        $result = $orderItems->getCollection()->map(function ($item) {
-            return [
-                'course_name' => $item->course->title,
-                'instructor_name' => $item->course->user->name ?? 'N/A',
-                'total_price' => $item->price,
-                'admin_revenue' => $item->price * 0.3,
-                'instructor_email' => $item->course->user->email ?? 'N/A',
-                'created_date' => $item->created_at->format('d/m/Y'),
-            ];
-        });
-        return formatResponse(STATUS_OK, $result, '', __('messages.getUsers'));
+        return formatResponse(STATUS_OK, [
+            'data' => $orderDetail,
+        ], '', __('messages.getOrderDetail'));
     }
 
     //Lấy user role "instructor"
@@ -396,6 +406,10 @@ class ManageController extends Controller
 
         return formatResponse(STATUS_OK, $wishlistItems, '', __('messages.course_update_success'));
     }
+
+
+
+    /*Teacher site*/
 
 
 }
