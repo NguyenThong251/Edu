@@ -224,7 +224,7 @@ import { formatPrice } from '@/utils/formatPrice';
 import { ClipboardDocumentListIcon, ClockIcon, ComputerDesktopIcon, GiftIcon, PlayCircleIcon, PlayIcon, ShareIcon, SpeakerWaveIcon, StarIcon } from '@heroicons/vue/20/solid';
 import { HeartIcon } from '@heroicons/vue/24/outline';
 import { ElNotification, type TabsPaneContext } from 'element-plus';
-import { useRoute } from 'vue-router';
+import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 const activeName = ref('first')
 const handleClick = (tab: TabsPaneContext, event: Event) => {
@@ -243,6 +243,12 @@ onMounted(() => {
     if (id) {
         courseStore.fetchCourseDetail(id);
 
+    }
+});
+onBeforeRouteUpdate((to) => {
+    const newId = to.params.id as string;
+    if (newId) {
+        courseStore.fetchCourseDetail(newId);
     }
 });
 // Hardcoded text that we want to copy

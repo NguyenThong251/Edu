@@ -106,22 +106,6 @@ export const useAuthStore = defineStore('auth', () => {
       state.value.error = err.response?.data?.message || 'Failed to get Google sign-in URL'
     }
   }
-
-  // const handleGoogleCallback = async (code: string) => {
-  //   state.value.loading = true
-  //   state.value.error = null
-  //   try {
-  //     const response = await api.get(`/auth/google/call-back?code=${code}`)
-  //     state.value.token = response.data.access_token
-  //     state.value.user = response.data.user
-  //     Cookies.set('token_user_edu', response.data.access_token, { expires: 7 }) // Save token
-  //     return response.data
-  //   } catch (err: any) {
-  //     state.value.error = err.response?.data?.message || 'Google login failed'
-  //   } finally {
-  //     state.value.loading = false
-  //   }
-  // }
   const handleGoogleCallback = async (jwtToken: string) => {
     state.value.loading = true
     try {
@@ -135,6 +119,27 @@ export const useAuthStore = defineStore('auth', () => {
       state.value.loading = false
     }
   }
+  // Tải ảnh lên
+  const uploadProfileImage = async (formData: FormData) => {
+    try {
+      const response = await api.post('/auth/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${state.value.token}`
+        }
+      })
+      if (response.data.status === 'OK') {
+        state.value.user = response.data.data // Cập nhật thông tin người dùng
+        console.log(response.data.data)
+        return response.data
+      } else {
+        throw new Error(response.data.message || 'Upload failed')
+      }
+    } catch (err: any) {
+      state.value.error = err.response?.data?.message || 'Upload failed'
+      return null
+    }
+  }
   return {
     state,
     login,
@@ -144,7 +149,8 @@ export const useAuthStore = defineStore('auth', () => {
     forgotPass,
     resetPass,
     getGoogleSignInUrl,
-    handleGoogleCallback
+    handleGoogleCallback,
+    uploadProfileImage
     // fetchUserData
   }
 })

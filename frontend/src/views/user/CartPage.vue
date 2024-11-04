@@ -33,7 +33,13 @@
                         <div class="flex flex-col gap-5">
                             <div class="flex flex-col">
                                 <span class="text-2xl font-medium">Tổng</span>
-                                <div class="text-4xl font-bold">{{ formattedTotalPrice }}</div>
+                                <div class="flex items-end gap-3">
+
+                                    <div class="text-4xl font-bold">{{ formatPrice(formattedTotalPrice) }}</div>
+                                    <del class="text-2xl font-medium text-gray-600">{{
+                                        formatPrice(formattedTotalPriceOld) }}</del>
+                                </div>
+
                             </div>
                             <form @submit.prevent="handlePayment">
                                 <div id="card-element" class="my-4"></div>
@@ -42,17 +48,7 @@
                                     Thanh toán
                                 </Button>
                             </form>
-                            <div class="flex flex-col gap-3">
-                                <h3 class="text-lg">Áp dụng mã giảm giá</h3>
-                                <div class="border-2 border-gray-900 flex justify-between">
-                                    <input type="text" v-model="voucher"
-                                        class="px-5 w-[12rem] py-2 focus-visible:outline-none"
-                                        placeholder="Nhập phiếu giảm giá" />
-                                    <button class="h-full bg-gray-900 px-5 py-2 text-white">
-                                        Áp dụng
-                                    </button>
-                                </div>
-                            </div>
+                            <UserVoucher />
                         </div>
                     </div>
                 </div>
@@ -73,14 +69,15 @@ import api from '@/services/axiosConfig';
 import { useAuthStore } from '@/store/auth';
 import { ElNotification } from 'element-plus';
 import { useRouter } from 'vue-router';
+import { formatPrice } from '@/utils/formatPrice';
+import UserVoucher from '@/components/user/UserVoucher.vue';
 const cartStore = useCartStore()
 
-const { cart, formattedTotalPrice, clearCart } = useCart();
+const { cart, formattedTotalPrice, formattedTotalPriceOld, clearCart } = useCart();
 
 
 const router = useRouter()
 
-const voucher = ref('');
 const paymentLoading = ref(false);
 const cardError = ref('');
 

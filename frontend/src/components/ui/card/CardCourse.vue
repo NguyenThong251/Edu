@@ -11,9 +11,9 @@
             </div>
             <!-- BODY  -->
             <div @click="navigateToDetail(id)" class="mt-2 flex flex-col gap-2">
-                <div class="flex justify-between items-center">
+                <div v-if="tag" class="flex justify-between items-center">
                     <span class="text-sm w-32">{{ creator }}</span>
-                    <button v-if="tag !== 'none'" :class="tag === 'Mới' ? 'bg-green-400' : 'bg-pink-400'"
+                    <button v-if="tag !== 'none'" :class="tag === 'Mới nhất' ? 'bg-green-400' : 'bg-pink-400'"
                         class="text-sm border rounded-md px-2 py-0.5 text-white">{{ tag }}</button>
                 </div>
                 <h3 class="text-[16px] font-medium leading-6">{{ title }}</h3>
@@ -44,9 +44,12 @@
                         class="bg-indigo-500 hover:bg-indigo-600 hover:transition-all transition-all hover:duration-300 duration-300 p-2 rounded-full">
                         <ShoppingCartIcon class="h-5 w-5  text-white" />
                     </button>
-                    <button
+                    <button @click="toggleWishlist(id)"
                         class="bg-indigo-500 hover:bg-indigo-600 hover:transition-all transition-all hover:duration-300 duration-300 p-2 rounded-full">
-                        <HeartIcon class="h-5 w-5  text-white" />
+
+                        <HeartIconSolid v-if="isInWishlist(id)" class="h-5 w-5  text-white" />
+                        <HeartIcon v-else class="h-5 w-5  text-white" />
+
                     </button>
                 </div>
             </div>
@@ -56,13 +59,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps } from 'vue';
+import { computed, defineProps, ref } from 'vue';
 import { formatPrice } from '@/utils/formatPrice';
 import { ClockIcon, BookOpenIcon, RocketLaunchIcon, HeartIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
+import { HeartIcon as HeartIconSolid } from "@heroicons/vue/20/solid";
+
 import type { TCardCourse } from '@/interfaces/course.interface';
 import { useCart } from '@/composables/user/useCart';
-import { useCourseDetail } from '@/composables/user/useCourseDetail';
 import { useRouter } from 'vue-router';
+import { useWishlistStore } from '@/store/wishlist';
+import { storeToRefs } from 'pinia';
+import { ElNotification } from 'element-plus';
 defineProps<TCardCourse>();
 // const { navigateToDetail } = useCourseDetail()
 const router = useRouter();
@@ -71,4 +78,35 @@ const navigateToDetail = (id: number) => {
 };
 const { handleAddToCart } = useCart();
 
+
+// wishlist 
+const wishlistStore = useWishlistStore();
+const { addToWishlist, removeFromWishlist } = wishlistStore
+const { wishlist } = storeToRefs(wishlistStore)
+
+// Hàm kiểm tra nếu khóa học có trong wishlist
+const isInWishlist = (id: number) => {
+    return wishlist.value.some((item) => item.id === id);
+};
+
+// Hàm thêm/xóa khóa học khỏi wishlist
+const toggleWishlist = (id: number) => {
+    if (isInWishlist(id)) {
+        removeFromWishlist(id);
+        ElNotification({
+            title: 'Thông báo',
+            message: 'Đã xóa vào mục yêu thích',
+            type: 'error',
+            duration: 1000
+        })
+    } else {
+        addToWishlist(id);
+        ElNotification({
+            title: 'Thông báo',
+            message: 'Đã thêm vào mục yêu thích',
+            type: 'success',
+            duration: 1000
+        })
+    }
+};
 </script>
