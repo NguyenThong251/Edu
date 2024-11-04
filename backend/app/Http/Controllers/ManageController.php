@@ -420,18 +420,22 @@ class ManageController extends Controller
 
     public function getWishlist()
     {
-
-        $user = Auth::user();
-        $wishlistItems = Wishlist::getOrCreateForUser($user);
-        $courses = $wishlistItems->getFormattedItems();
-        // $userId = Auth::id();
-        // $wishlistItems = Wishlist::where('user_id', $userId)
-        //     ->with(['course' => function ($query) {
-        //             $query->select('id', 'title', 'thumbnail', 'price', 'created_by');
-        //         }])->get();
-        // $user = Auth::user();
-        // $wishlistItems = Wishlist::getOrCreateForUser($user);
-        return formatResponse(STATUS_OK, $courses, '', 'Lấy danh sách khóa học thành công');
+        try {
+            $user = Auth::user();
+            $wishlistItems = Wishlist::getOrCreateForUser($user);
+            $courses = $wishlistItems->getFormattedItems();
+            // $userId = Auth::id();
+            // $wishlistItems = Wishlist::where('user_id', $userId)
+            //     ->with(['course' => function ($query) {
+            //             $query->select('id', 'title', 'thumbnail', 'price', 'created_by');
+            //         }])->get();
+            // $user = Auth::user();
+            // $wishlistItems = Wishlist::getOrCreateForUser($user);
+            return formatResponse(STATUS_OK, $courses, '', 'Lấy danh sách khóa học thành công');
+        } catch (\Exception $e) {
+            \Log::error('Lỗi khi lấy danh sách wishlist: ' . $e->getMessage());
+            return formatResponse(STATUS_OK, [], '', 'Không có dữ liệu yêu thích');
+        }
     }
 
     public function deletWishlist(Request $request)
