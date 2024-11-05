@@ -296,11 +296,12 @@ class ManageController extends Controller
                 'user_name' => $item->student->last_name.' '.$item->student->first_name ?? 'N/A',
                 'user_email' => $item->student->email ?? 'N/A',
                 'course_name' => $item->orderItems->first()->course->title ?? 'N/A',
-                'total_price' => $item->price,
+                'total_price' => number_format($item->total_price, 0, ',', '.'),
                 'payment_method' => $item->payment_method,
                 'created_date' => $item->created_at->format('d/m/Y'),
             ];
         });
+        $closing_price = number_format($orders->getCollection()->sum('total_price'), 0, ',', '.');
         $pagination = [
             'total' => $orders->total(),
             'current_page' => $orders->currentPage(),
@@ -310,6 +311,7 @@ class ManageController extends Controller
         return formatResponse(STATUS_OK, [
             'data' => $result,
             'pagination' => $pagination,
+            'closing_price' => $closing_price,
         ], '', __('messages.getUsers'));
     }
     public function getOrderDetail($orderId){
@@ -326,8 +328,8 @@ class ManageController extends Controller
                     'instructor_name' => $orderItem->course->creator->last_name. ' ' . $orderItem->course->creator->first_name ?? 'N/A',
                 ];
             }),
-            'total_price' => $order->price,
-            'final_amount' => $order->price * 0.1 + $order->price,
+            'total_price' => number_format($order->total_price, 0, ',', '.'),
+            'final_amount' => number_format($order->total_price * 0.1 + $order->total_price, 0, ',', '.'),
             'created_date' => $order->created_at->format('d/m/Y'),
         ];
 
@@ -410,6 +412,8 @@ class ManageController extends Controller
 
 
     /*Teacher site*/
+
+    /*Categories*/
 
 
 }
