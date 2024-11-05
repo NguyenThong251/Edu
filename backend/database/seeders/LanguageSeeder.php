@@ -4,11 +4,11 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\CourseLevel;
+use App\Models\Language;
 use App\Models\User;
 use Faker\Factory as Faker;
 
-class CourseLevelSeeder extends Seeder
+class LanguageSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -17,36 +17,33 @@ class CourseLevelSeeder extends Seeder
     {
         $faker = Faker::create();
 
-        // Lấy tất cả user IDs hiện có từ bảng users
+        // Lấy tất cả user IDs hiện có
         $userIds = User::pluck('id')->toArray();
         $randomUserId = function() use ($userIds) {
             return $userIds[array_rand($userIds)];
         };
 
-        // Nếu không có user ID nào, dừng việc seed
-        if (empty($userIds)) {
-            $this->command->info('No users found in the users table. Please seed the users table first.');
-            return;
-        }
-
-        // Tạo các bản ghi cụ thể cho các cấp độ khóa học
-        $courseLevels = [
+        // Tạo các bản ghi cụ thể cho Tiếng Việt, Tiếng Anh, Tiếng Pháp
+        $languages = [
             [
-                'name' => 'Mới bắt đầu',
+                'name' => 'Tiếng Việt',
+                'description' => 'Ngôn ngữ chính thức của Việt Nam.',
                 'status' => 'active',
                 'created_by' => $randomUserId(),
                 'updated_by' => null,
                 'deleted_by' => null,
             ],
             [
-                'name' => 'Trung cấp',
+                'name' => 'Tiếng Anh',
+                'description' => 'Ngôn ngữ quốc tế được sử dụng rộng rãi.',
                 'status' => 'active',
                 'created_by' => $randomUserId(),
                 'updated_by' => null,
                 'deleted_by' => null,
             ],
             [
-                'name' => 'Nâng cao',
+                'name' => 'Tiếng Pháp',
+                'description' => 'Ngôn ngữ phổ biến tại nhiều quốc gia.',
                 'status' => 'active',
                 'created_by' => $randomUserId(),
                 'updated_by' => null,
@@ -54,9 +51,9 @@ class CourseLevelSeeder extends Seeder
             ]
         ];
 
-        // Chèn các bản ghi vào bảng course_levels
-        foreach ($courseLevels as $level) {
-            CourseLevel::create($level);
+        // Chèn các bản ghi vào bảng languages
+        foreach ($languages as $language) {
+            Language::create($language);
         }
     }
 }

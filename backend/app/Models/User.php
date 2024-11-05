@@ -38,11 +38,15 @@ class User extends Authenticatable implements JWTSubject
         'avatar',
         'gender',
         'date_of_birth',
+        'phone_number',
+        'contact_info',
+        'address',
         'email_verified',
         'verification_token',
         'role',
         'status',
         'email_verified',
+        'stripe_customer_id',
         'reset_token',
         'provider',
         'provider_id'
@@ -86,6 +90,7 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
     // Setter cho contact_info
     public function setAdminContactInfo($value)
     {

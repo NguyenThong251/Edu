@@ -9,6 +9,9 @@ use App\Models\Order;
 use App\Models\Wishlist;
 use App\Models\Course;
 use App\Models\OrderItem;
+use Illuminate\Support\Facades\Validator;
+use Monolog\Formatter\WildfireFormatter;
+use const Grpc\STATUS_ABORTED;
 
 class ManageController extends Controller
 {
@@ -52,8 +55,10 @@ class ManageController extends Controller
         //
     }
     /*Admin site*/
+
     // Lấy tất cả user có role là 'admin'
-    public function getAdmin(Request $request) {
+    public function getAdmin(Request $request)
+    {
         $perPage = $request->input('per_page', 10); // Số lượng admin trên mỗi trang, mặc định là 10
         $page = $request->input('page', 1); // Trang hiện tại, mặc định là trang 1
 
@@ -65,7 +70,7 @@ class ManageController extends Controller
             'last_page' => $admins->lastPage(),
             'per_page' => $admins->perPage(),
         ];
-        return formatResponse(STATUS_OK,[
+        return formatResponse(STATUS_OK, [
             'data' => $admins,
             'pagination' => $pagination,
         ], '', __('messages.getUsers'));
@@ -86,7 +91,8 @@ class ManageController extends Controller
             ], 404);
         }
         $user->email = $request->input('email');
-        $user->password = bcrypt($request->input('password'
+        $user->password = bcrypt($request->input(
+            'password'
 
         ));
         $user->save();
@@ -94,7 +100,8 @@ class ManageController extends Controller
     }
 
     //Sửa, thêm thông tin nền tảng user role "admin"
-    public function updateFoundationAccount(Request $request, $id){
+    public function updateFoundationAccount(Request $request, $id)
+    {
         $request->validate([
             'name' => 'required|string|max:511',
             'biography' => 'nullable|string',
@@ -183,13 +190,13 @@ class ManageController extends Controller
         $orderItems = OrderItem::with(['course'])
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $result = $orderItems->getCollection()->map(function ($item) use ($adminCount){
+        $result = $orderItems->getCollection()->map(function ($item) use ($adminCount) {
             $totalPrice = $item->price;
             $adminRevenue = $adminCount > 0 ? ($totalPrice * 0.3) / $adminCount : 0;
             return [
                 'orderItem_id' => $item->id,
                 'course_name' => $item->course->title,
-                'instructor_name' => $item->course->creator->last_name.' ' . $item->course->creator->first_name ?? 'N/A',
+                'instructor_name' => $item->course->creator->last_name . ' ' . $item->course->creator->first_name ?? 'N/A',
                 'total_price' => number_format($totalPrice, 0, ',', '.'),
                 'admin_revenue' => number_format($adminRevenue, 0, ',', '.'),
                 'instructor_email' => $item->course->creator->email ?? 'N/A',
@@ -197,7 +204,7 @@ class ManageController extends Controller
             ];
         });
         $closing_price = number_format($orderItems->getCollection()->sum('price'), 0, ',', '.');
-        $totalAdminRevenue = number_format($orderItems->getCollection()->sum(function ($item) use ($adminCount){
+        $totalAdminRevenue = number_format($orderItems->getCollection()->sum(function ($item) use ($adminCount) {
             return $adminCount > 0 ? ($item->price * 0.3) / $adminCount : $adminCount == 0;
         }), 0, ',', '.');
         $pagination = [
@@ -226,7 +233,7 @@ class ManageController extends Controller
             return [
                 'orderItem_id' => $item->id,
                 'course_name' => $item->course->title,
-                'instructor_name' => $item->course->creator->last_name.' ' . $item->course->creator->first_name ?? 'N/A',
+                'instructor_name' => $item->course->creator->last_name . ' ' . $item->course->creator->first_name ?? 'N/A',
                 'total_price' => number_format($item->price, 0, ',', '.'),
                 'admin_revenue' => number_format($item->price * 0.3, 0, ',', '.'),
                 'instructor_email' => $item->course->creator->email ?? 'N/A',
@@ -235,8 +242,8 @@ class ManageController extends Controller
         });
         $closing_price = number_format($orderItems->getCollection()->sum('price'), 0, ',', '.');
         $totalAdminRevenue = number_format($orderItems->getCollection()->sum(function ($item) {
-                return $item->price * 0.3;
-            }), 0, ',', '.');
+            return $item->price * 0.3;
+        }), 0, ',', '.');
         $pagination = [
             'total' => $orderItems->total(),
             'current_page' => $orderItems->currentPage(),
@@ -293,7 +300,7 @@ class ManageController extends Controller
         $result = $orders->getCollection()->map(function ($item) {
             return [
                 'order_id' => $item->id,
-                'user_name' => $item->student->last_name.' '.$item->student->first_name ?? 'N/A',
+                'user_name' => $item->student->last_name . ' ' . $item->student->first_name ?? 'N/A',
                 'user_email' => $item->student->email ?? 'N/A',
                 'course_name' => $item->orderItems->first()->course->title ?? 'N/A',
                 'total_price' => number_format($item->total_price, 0, ',', '.'),
@@ -314,7 +321,8 @@ class ManageController extends Controller
             'closing_price' => $closing_price,
         ], '', __('messages.getUsers'));
     }
-    public function getOrderDetail($orderId){
+    public function getOrderDetail($orderId)
+    {
         $order = Order::with(['student', 'orderItems.course'])->findOrFail($orderId);
 
         $orderDetail = [
@@ -325,7 +333,7 @@ class ManageController extends Controller
                 return [
                     'course_name' => $orderItem->course->title ?? 'N/A',
                     'course_id' => $orderItem->course->id ?? null,
-                    'instructor_name' => $orderItem->course->creator->last_name. ' ' . $orderItem->course->creator->first_name ?? 'N/A',
+                    'instructor_name' => $orderItem->course->creator->last_name . ' ' . $orderItem->course->creator->first_name ?? 'N/A',
                 ];
             }),
             'total_price' => number_format($order->total_price, 0, ',', '.'),
@@ -339,7 +347,8 @@ class ManageController extends Controller
     }
 
     //Lấy user role "instructor"
-    public function getInstructor(Request $request) {
+    public function getInstructor(Request $request)
+    {
         $perPage = $request->input('per_page', 10); // Số lượng admin trên mỗi trang, mặc định là 10
         $page = $request->input('page', 1); // Trang hiện tại, mặc định là trang 1
 
@@ -350,13 +359,15 @@ class ManageController extends Controller
             'last_page' => $instructors->lastPage(),
             'per_page' => $instructors->perPage(),
         ];
-        return formatResponse(STATUS_OK,[
-            'data'=> $instructors,
+        return formatResponse(STATUS_OK, [
+            'data' => $instructors,
             'pagination' => $pagination,
         ], '', __('messages.getUsers'));
     }
+
     //Lấy user role "student"
-    public function getStudent(Request $request) {
+    public function getStudent(Request $request)
+    {
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
@@ -367,51 +378,73 @@ class ManageController extends Controller
             'last_page' => $studens->lastPage(),
             'per_page' => $studens->perPage(),
         ];
-        return formatResponse(STATUS_OK,['data' => $studens, 'pagination' => $pagination], '', __('messages.getUsers'));
+        return formatResponse(STATUS_OK, ['data' => $studens, 'pagination' => $pagination], '', __('messages.getUsers'));
     }
 
     // Wishlist
     public function addToWishlist(Request $request)
     {
         $userId = Auth::id();
-        $courseId = $request->course_id;
-
-        // Kiểm tra xem khóa học đã tồn tại trong wishlist chưa
-        $exists = Wishlist::where('user_id', $userId)
-            ->where('course_id', $courseId)
-            ->exists();
-
+        $validator = Validator::make(
+            request()->all(),
+            [
+                'course_id' => 'required|integer|exists:courses,id',
+            ],
+            [
+                'course_id.required' => 'Mã khóa học không được để trống',
+                'course_id.integer' => 'Mã khóa học phải là số',
+                'course_id.exists' => 'Mã khóa học không tồn tại',
+            ]
+        );
+        if ($validator->fails()) {
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
+        }
+        $courseId = $request->input('course_id');
+        $exists = Wishlist::where('user_id', $userId)->where('course_id', $courseId)->exists();
         if ($exists) {
-            return formatResponse(STATUS_FAIL, '', 400, 'Khóa học đã có trong yêu thích');
+            return formatResponse(STATUS_OK, '', '', 'Khóa học đã được yêu thích', CODE_FAIL);
         }
-        if (!Course::where('id', $courseId)->exists()) {
-            return formatResponse(STATUS_FAIL, '', 400, __('messages.course_not_found'));
-        }
-
         // Tạo mới wishlist
-        Wishlist::create([
+        $createWishlist = Wishlist::create([
             'user_id' => $userId,
             'course_id' => $courseId
         ]);
-        return formatResponse(STATUS_OK, '', 201, __('messages.course_added_success'));
+        return formatResponse(STATUS_OK, $createWishlist, '', __('messages.course_added_success'));
     }
+
     public function getWishlist()
     {
         $userId = Auth::id();
         $wishlistItems = Wishlist::where('user_id', $userId)
             ->with(['course' => function ($query) {
                 $query->select('id', 'title', 'thumbnail', 'price', 'created_by');
-            }])
-            ->get();
-
-        return formatResponse(STATUS_OK, $wishlistItems, '', __('messages.course_update_success'));
+            }])->get();
+        return formatResponse(STATUS_OK, $wishlistItems, '', 'Lấy danh sách khóa học thành công');
     }
 
-
-
-    /*Teacher site*/
-
-    /*Categories*/
-
-
+    public function deletWishlist(Request $request)
+    {
+        $userId = Auth::id();
+        $validator = Validator::make(
+            request()->all(),
+            [
+                'course_id' => 'required|integer|exists:courses,id',
+            ],
+            [
+                'course_id.required' => 'Mã khóa học không được để trống',
+                'course_id.integer' => 'Mã khóa học phải là số',
+                'course_id.exists' => 'Mã khóa học không tồn tại',
+            ]
+        );
+        if ($validator->fails()) {
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
+        }
+        $course_id = $request->input('course_id');
+        $delWishlist = Wishlist::where(['user_id' => $userId, 'course_id' => $course_id]);
+        if ($delWishlist) {
+            $delWishlist->delete();
+            return formatResponse(STATUS_OK, '', '', 'Bỏ yêu thích khóa học thành công');
+        }
+        return formatResponse(STATUS_FAIL, '', '', 'Bỏ yêu thích khóa học thất bại.', CODE_FAIL);
+    }
 }

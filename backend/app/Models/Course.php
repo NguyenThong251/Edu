@@ -21,6 +21,7 @@ class Course extends Model
         'price',
         'type_sale',
         'sale_value',
+        'language_id',
         'status',
     ];
 
@@ -30,13 +31,17 @@ class Course extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function level(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function level()
     {
         return $this->belongsTo(CourseLevel::class);
     }
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by'); // Sử dụng created_by làm khóa ngoại
+    }
+    public function language()
+    {
+        return $this->belongsTo(Language::class, 'language_id');
     }
 
     public function averageRating()

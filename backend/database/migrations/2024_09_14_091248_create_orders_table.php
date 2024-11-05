@@ -13,17 +13,23 @@ return new class extends Migration {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->double('total_price');
+            $table->unsignedBigInteger('voucher_id')->nullable();
             $table->string('order_code')->unique();
+            $table->double('total_price');
+            $table->string('currency')->default('vnd'); // Mặc định là VND
             $table->string('payment_method');
+            $table->enum('payment_status', ['pending', 'paid', 'cancelled'])->default('pending');
+            $table->string('payment_code')->nullable();
             $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
-
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
+            $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
 
             // Foreign key
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('voucher_id')->references('id')->on('vouchers')->onDelete('cascade');
         });
     }
 

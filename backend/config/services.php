@@ -37,4 +37,11 @@ return [
         'redirect' => env('GOOGLE_REDIRECT')
     ],
 
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'public' => env('STRIPE_PUBLIC'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET')
+    ],
+
+    'frontend_url' => env('FRONTEND_URL'),
 ];
