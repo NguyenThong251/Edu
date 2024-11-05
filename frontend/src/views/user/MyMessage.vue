@@ -24,7 +24,7 @@
                             </div>
                             <div class="flex items-center gap-3">
                                 <p class="text-sm truncate w-24 text-gray-600">
-                                    {{ user.latest_message || 'No messages yet' }}
+                                    {{  (selectedUser?.id == user?.id && latest_message ? latest_message : user.latest_message) || 'No messages yet' }}
                                 </p>
                             </div>
                         </div>
@@ -35,8 +35,8 @@
 
         <!-- Chat Window -->
         <div class="w-full md:w-[70%] bg-white rounded-lg p-4">
-            <header v-if="selectedUser" class="flex gap-3 items-center mb-4">
-                <img :src="selectedUser.avatar || defaultAvatar" class="w-12 h-12 rounded-full" alt="" />
+            <header v-if="selectedUser" class="flex gap-3 items-center mb-4 ">
+                <img :src="selectedUser.avatar || defaultAvatar" class="w-12 h-12 rounded-full object-contain" alt="" />
                 <div>
                     <h3 class="text-2xl leading-5 font-semibold text-gray-900">
                         {{ selectedUser.first_name }} {{ selectedUser.last_name }}
@@ -46,7 +46,7 @@
             </header>
 
             <div v-if="selectedUser" class="bg-indigo-50 h-[60vh] md:h-[70vh] p-2 rounded-lg relative overflow-hidden">
-                <div class="h-full overflow-y-auto flex flex-col p-4 space-y-4 pb-[80px]">
+                <div class="h-full overflow-y-auto flex flex-col p-4 space-y-4 pb-[80px]" id="message-box">
                     <div v-for="message in messages" :key="message.id" :class="messageClass(message.sender_id)">
                         <div v-if="message.sender_id === user?.id"
                             class="bg-blue-500 text-white rounded-lg p-3 max-w-xs self-end">
@@ -65,9 +65,10 @@
                     <button @click="triggerFileUpload" class="bg-transparent hover:bg-gray-200 p-2 rounded-full">
                         <DocumentIcon class="h-6 w-6 text-gray-500" />
                     </button>
-                    <textarea v-model="newMessage"
+                    <input v-model="newMessage"
+                    @keyup.enter="sendMessage"
                         class="flex-1 border-none outline-none bg-transparent resize-none p-2 max-h-32 overflow-y-auto"
-                        rows="1" placeholder="Type a message..." @input="autoResize"></textarea>
+                        rows="1" placeholder="Type a message..." @input="autoResize"></input>
                     <button @click="sendMessage" class="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 ml-2">
                         <PaperAirplaneIcon class="w-5 h-5 transform rotate-45" />
                     </button>
@@ -85,14 +86,14 @@
 import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { useAuthStore } from '@/store/auth'; // Đường dẫn đúng đến store
 import api from '@/services/axiosConfig'; // Đường dẫn đến file cấu hình axios
-import echo from '@/plugins/echo'; // Đường dẫn đến file cấu hình echo
+import echo from '@/composables/user/userChatEcho'; // Đường dẫn đến file cấu hình echo
 import { PaperAirplaneIcon, DocumentIcon } from '@heroicons/vue/20/solid';
 
 // Sử dụng composable auth
 const authStore = useAuthStore();
 
 // Biến avatar mặc định
-const defaultAvatar = 'https://th.bing.com/th/id/OIP.caOW02fThowCRbiUUxiQbwHaEN?rs=1&pid=ImgDetMain';
+const defaultAvatar = 'https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?semt=ais_hybrid';
 
 // Danh sách người dùng
 const users = ref<any[]>([]);
@@ -111,6 +112,8 @@ const newMessage = ref('');
 
 // File input ref
 const fileInput = ref<HTMLInputElement | null>(null);
+
+const latest_message = ref(''); 
 
 // Lấy danh sách người dùng
 const fetchUsers = async () => {
@@ -145,26 +148,34 @@ const selectUser = async (userItem: any) => {
 };
 
 
-// Hàm xử lý nhận sự kiện broadcast
 const setupBroadcasting = () => {
+    
     if (!selectedUser.value || !authStore.state.user) return;
+
     console.log('current user ' + authStore.state.user.id);
+    
     const channelName = `chat.${authStore.state.user.id}`;
     const channel = echo.private(channelName);
+
     console.log(`Subscribed to channel: ${channelName}`);
-    channel.listen('MessageSent', (e: any) => { // Sử dụng tên sự kiện đúng với backend
-        console.log('Received MessageSent event:', e.message);
-        if (e.message.sender_id === selectedUser.value.id) {
-            messages.value.push(e.message);
-            scrollToBottom();
-        }
-    });
+
+
+        channel.listen('.MessageSent', (e: any) => { // Sử dụng tên sự kiện đúng với backend
+            console.log('Received MessageSent event:', e.message);
+            latest_message.value = e.message?.message
+            if (e.message.sender_id === selectedUser.value.id) {
+                messages.value.push(e.message);
+                scrollToBottom();
+            }
+        });
+
+        console.log(`Đã chạy qua listen`);
+
     // Cleanup khi component bị hủy hoặc khi người dùng đổi cuộc trò chuyện
     return () => {
         echo.leave(channelName);
     };
 };
-
 
 // Lấy tin nhắn giữa người dùng hiện tại và người dùng được chọn
 const fetchMessages = async (receiverId: number) => {
@@ -183,14 +194,54 @@ const sendMessage = async () => {
 
     try {
         const payload = { message: newMessage.value };
+        latest_message.value = newMessage.value
+        // const exMessage = { id: 'ex', message: newMessage.value, sender_id: currentUser.value?.id  };
+        // messages.value.push(exMessage)
         const response = await api.post(`/auth/messages/${selectedUser.value.id}`, payload);
+        // const index = messages.value.findIndex((ite: any) => ite.id == 'ex')
+        // messages.value[index] = response.data.data
         messages.value.push(response.data.data);
+
+        // console.log(response.data.data);
+        
         newMessage.value = '';
         scrollToBottom();
     } catch (error) {
         console.error('Error sending message:', error);
     }
 };
+
+
+// Khởi tạo
+onMounted(async () => {
+    if (authStore.state.token) {
+        // await authStore.fetchCurrentUser();
+        latest_message.value = '';
+        console.log('refresh last_message');
+        await fetchUsers();
+    } else {
+        // Nếu không có token, redirect đến trang login
+        window.location.href = '/login';
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Gửi hình ảnh
 const sendImage = async (imageData: string) => {
@@ -210,7 +261,7 @@ const sendImage = async (imageData: string) => {
 // Cuộn xuống cuối cùng của khung tin nhắn
 const scrollToBottom = () => {
     nextTick(() => {
-        const container = document.querySelector('.overflow-y-auto');
+        const container = document.querySelector('#message-box');
         if (container) {
             container.scrollTop = container.scrollHeight;
         }
@@ -253,16 +304,6 @@ const formatDate = (date: string) => {
 // Gán người dùng hiện tại từ store
 const user = computed(() => authStore.state.user);
 
-// Khởi tạo
-onMounted(async () => {
-    if (authStore.state.token) {
-        // await authStore.fetchCurrentUser();
-        await fetchUsers();
-    } else {
-        // Nếu không có token, redirect đến trang login
-        window.location.href = '/login';
-    }
-});
 
 // Watch selectedUser để setup broadcasting khi người dùng chọn thay đổi
 watch(selectedUser, () => {
