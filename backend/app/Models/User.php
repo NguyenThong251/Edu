@@ -40,6 +40,7 @@ class User extends Authenticatable implements JWTSubject
         'date_of_birth',
         'phone_number',
         'contact_info',
+        'biography',
         'address',
         'email_verified',
         'verification_token',
@@ -89,6 +90,7 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'contact_info' => 'array',
     ];
 
     // Setter cho contact_info

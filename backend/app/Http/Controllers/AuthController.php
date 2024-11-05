@@ -339,7 +339,7 @@ class AuthController extends Controller
             'email' => 'string|email|max:100|unique:users,email,' . $user->id,
             'phone_number' => 'regex:/^[0-9]+$/',
             'address' => 'string',
-            'contact_info' => 'string',
+            'contact_info' => 'array',
             'gender' => 'nullable|string|in:male,female,unknown',
             'date_of_birth' => 'nullable|date',
             'password' => 'string|min:8',
@@ -353,7 +353,7 @@ class AuthController extends Controller
 
             'phone_number.regex' => __('messages.phone_number_update'),
             'address.string' => __('messages.address_update'),
-            'contact_info.string' => __('messages.contactInfo_update'),
+            'contact_info.array' => __('messages.contactInfo_update'),
 
             'email.required' => __('messages.email_required'),
             'email.string' => __('messages.email_string'),
