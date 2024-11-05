@@ -26,7 +26,7 @@ return new class extends Migration {
             $table->string('code')->unique();
             $table->string('description')->nullable();
             $table->enum('discount_type', ['fixed', 'percent']); // loại giảm giá: cố định hoặc theo %
-            $table->decimal('discount_value', 8, 2); // giá trị giảm giá
+            $table->double('discount_value'); // giá trị giảm giá
             $table->integer('usage_limit')->nullable(); // số lần có thể sử dụng
             $table->integer('usage_count')->default(0); // số lần đã sử dụng
             $table->date('expires_at')->nullable(); // ngày hết hạn
