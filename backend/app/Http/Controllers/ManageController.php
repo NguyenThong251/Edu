@@ -385,7 +385,7 @@ class ManageController extends Controller
             return response()->json(['message' => 'Khóa học đã có trong wishlist'], 400);
         }
         if (!Course::where('id', $courseId)->exists()) {
-            return response()->json(['message' => 'Khóa học không tồn tại'], 400);
+            return formatResponse(STATUS_FAIL, '', 400, __('messages.course_not_found'));
         }
 
         // Tạo mới wishlist
@@ -393,8 +393,6 @@ class ManageController extends Controller
             'user_id' => $userId,
             'course_id' => $courseId
         ]);
-
-//        return response()->json(['message' => 'Đã thêm khóa học vào wishlist'], 201);
         return formatResponse(STATUS_OK, '', 201, __('messages.course_added_success'));
     }
     public function getWishlist()
