@@ -4,7 +4,11 @@
             <h3 class="text-4xl font-bold">Giỏ hàng</h3>
             <div class="flex md:flex-row flex-col gap-5">
                 <!-- COURSE ITEM -->
-                <div class="flex flex-col md:w-4/6 w-full gap-5">
+
+
+
+
+                <div v-if="cart?.length > 0" class="flex flex-col md:w-4/6 w-full gap-5">
                     <div class="flex justify-between items-center">
                         <span class="text-lg"> <span class="font-semibold">{{ cart.length }} </span> khóa học trong giỏ
                             hàng</span>
@@ -18,13 +22,24 @@
                         :lectures_count="course.lectures_count" :creator="course?.creator" />
 
                 </div>
+                <div v-else class=" items-center flex flex-col md:w-4/6 w-full gap-5 justify-center">
+                    <img class="w-48" src="https://ovanlink.com/images/icon-empty-cart.png" alt="">
+                    <h3 class="text-2xl font-bold mt-3 text-indigo-900 ">Giỏ hàng trống</h3>
+                    <RouterLink to="/course"><Button variant="primary">Quay lại chọn khóa học</Button></RouterLink>
+                </div>
                 <!-- TOTAL -->
                 <div class="md:w-2/6 w-full">
                     <div class="p-5 sticky top-0 shadow-lg rounded-lg">
                         <div class="flex flex-col gap-5">
                             <div class="flex flex-col">
                                 <span class="text-2xl font-medium">Tổng</span>
-                                <div class="text-4xl font-bold">{{ formattedTotalPrice }}</div>
+                                <div class="flex items-end gap-3">
+
+                                    <div class="text-4xl font-bold">{{ formatPrice(formattedTotalPrice) }}</div>
+                                    <del class="text-2xl font-medium text-gray-600">{{
+                                        formatPrice(formattedTotalPriceOld) }}</del>
+                                </div>
+
                             </div>
                             <form @submit.prevent="handlePayment">
                                 <div id="card-element" class="my-4"></div>
@@ -33,17 +48,7 @@
                                     Thanh toán
                                 </Button>
                             </form>
-                            <div class="flex flex-col gap-3">
-                                <h3 class="text-lg">Áp dụng mã giảm giá</h3>
-                                <div class="border-2 border-gray-900 flex justify-between">
-                                    <input type="text" v-model="voucher"
-                                        class="px-5 w-[12rem] py-2 focus-visible:outline-none"
-                                        placeholder="Nhập phiếu giảm giá" />
-                                    <button class="h-full bg-gray-900 px-5 py-2 text-white">
-                                        Áp dụng
-                                    </button>
-                                </div>
-                            </div>
+                            <UserVoucher />
                         </div>
                     </div>
                 </div>
@@ -64,14 +69,15 @@ import api from '@/services/axiosConfig';
 import { useAuthStore } from '@/store/auth';
 import { ElNotification } from 'element-plus';
 import { useRouter } from 'vue-router';
+import { formatPrice } from '@/utils/formatPrice';
+import UserVoucher from '@/components/user/UserVoucher.vue';
 const cartStore = useCartStore()
 
-const { cart, formattedTotalPrice, clearCart } = useCart();
+const { cart, formattedTotalPrice, formattedTotalPriceOld, clearCart } = useCart();
 
 
 const router = useRouter()
 
-const voucher = ref('');
 const paymentLoading = ref(false);
 const cardError = ref('');
 

@@ -21,7 +21,7 @@
         </div>
         <div class="">
             <div class="py-3 font-bold text-xl">
-                Tổng cộng : {{ formattedTotalPrice }}
+                Tổng cộng : {{ formatPrice(formattedTotalPrice) }}
             </div>
             <RouterLink to="/cart"> <Button variant="primary" class="w-full">Xem giỏ hàng</Button>
             </RouterLink>
@@ -34,6 +34,7 @@ import { onMounted } from 'vue';
 import CardCourseViewCart from '../card/CardCourseViewCart.vue';
 import Button from '../button/Button.vue';
 import { useCart } from '@/composables/user/useCart';
+import { formatPrice } from '@/utils/formatPrice';
 
 const { cart, loading, fetchCartCourses, clearCart, formattedTotalPrice } = useCart();
 

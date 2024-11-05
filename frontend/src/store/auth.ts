@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import api from '@/services/axiosConfig'
 import type { AuthState, TUserAuth } from '@/interfaces'
 import Cookies from 'js-cookie'
+import { useRouter } from 'vue-router'
+import { ElNotification } from 'element-plus'
 export const useAuthStore = defineStore('auth', () => {
   const state = ref<AuthState>({
     user: null,
@@ -16,8 +18,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await api.post('/auth/login', { email, password })
       state.value.token = response.data.access_token
+      state.value.user = await response.data.data
       Cookies.set('token_user_edu', response.data.access_token, { expires: 7 }) // Lưu token vào localStorage
-      state.value.user = response.data.data
       return response.data
     } catch (err: any) {
       state.value.error = err.response?.data?.message || 'Đăng nhập thật bại'
@@ -25,20 +27,13 @@ export const useAuthStore = defineStore('auth', () => {
       state.value.loading = false
     }
   }
-  const fetchCurrentUser = async () => {
-    try {
-        const response = await api.get('/auth/me'); // Endpoint để lấy thông tin người dùng
-        state.value.user = response.data.data;
-    } catch (error) {
-        console.error('Error fetching current user:', error);
-        logout(); // Nếu không lấy được thông tin người dùng, thực hiện logout
-    }
-}
   const logout = () => {
+    const router = useRouter()
+
     state.value.user = null
     state.value.token = null
     Cookies.remove('token_user_edu')
-    // window.location.href = '/login'
+    router.push('/')
   }
   const register = async (userData: TUserAuth) => {
     state.value.loading = true
@@ -53,10 +48,25 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   const userData = async () => {
+    if (!state.value.token) return
+    state.value.loading = true
+    const router = useRouter()
     try {
       const response = await api.get('/auth/profile')
-      state.value.user = response.data.data
-      return response.data.data
+      const isToken = await response.data
+      if (isToken.status === 'FAIL') {
+        logout()
+        router.push('/')
+        ElNotification({
+          title: 'Thất bại',
+          message: isToken.message || 'Bạn không có quyền truy cập',
+          type: 'error'
+        })
+        return null
+      }
+      state.value.user = await response.data.data
+      // console.log(state.value.user)
+      // return response.data.data
     } catch (err: any) {
       state.value.error = err.response?.data?.message || 'Registration failed'
     } finally {
@@ -91,28 +101,11 @@ export const useAuthStore = defineStore('auth', () => {
   const getGoogleSignInUrl = async (role: string) => {
     try {
       const response = await api.post('/auth/get-google-sign-in-url', { role })
-      console.log(response)
       return response.data.data.url
     } catch (err: any) {
       state.value.error = err.response?.data?.message || 'Failed to get Google sign-in URL'
     }
   }
-
-  // const handleGoogleCallback = async (code: string) => {
-  //   state.value.loading = true
-  //   state.value.error = null
-  //   try {
-  //     const response = await api.get(`/auth/google/call-back?code=${code}`)
-  //     state.value.token = response.data.access_token
-  //     state.value.user = response.data.user
-  //     Cookies.set('token_user_edu', response.data.access_token, { expires: 7 }) // Save token
-  //     return response.data
-  //   } catch (err: any) {
-  //     state.value.error = err.response?.data?.message || 'Google login failed'
-  //   } finally {
-  //     state.value.loading = false
-  //   }
-  // }
   const handleGoogleCallback = async (jwtToken: string) => {
     state.value.loading = true
     try {
@@ -126,6 +119,27 @@ export const useAuthStore = defineStore('auth', () => {
       state.value.loading = false
     }
   }
+  // Tải ảnh lên
+  const uploadProfileImage = async (formData: FormData) => {
+    try {
+      const response = await api.post('/auth/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${state.value.token}`
+        }
+      })
+      if (response.data.status === 'OK') {
+        state.value.user = response.data.data // Cập nhật thông tin người dùng
+        console.log(response.data.data)
+        return response.data
+      } else {
+        throw new Error(response.data.message || 'Upload failed')
+      }
+    } catch (err: any) {
+      state.value.error = err.response?.data?.message || 'Upload failed'
+      return null
+    }
+  }
   return {
     state,
     login,
@@ -136,7 +150,7 @@ export const useAuthStore = defineStore('auth', () => {
     resetPass,
     getGoogleSignInUrl,
     handleGoogleCallback,
-    fetchCurrentUser
+    uploadProfileImage
     // fetchUserData
   }
 })

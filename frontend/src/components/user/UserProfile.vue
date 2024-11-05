@@ -16,12 +16,12 @@
 
                     </el-dropdown-item>
                     <el-dropdown-item divided>
-                        <RouterLink to="">
+                        <RouterLink to="/mycourses">
                             Khóa học của tôi
                         </RouterLink>
                     </el-dropdown-item>
                     <el-dropdown-item>
-                        <RouterLink to="">
+                        <RouterLink to="/wishlist">
                             Khóa học yêu thích
                         </RouterLink>
                     </el-dropdown-item>
@@ -31,7 +31,7 @@
                         </RouterLink>
                     </el-dropdown-item>
                     <el-dropdown-item>
-                        <RouterLink to="">
+                        <RouterLink to="/myprofile">
                             Cá nhân
                         </RouterLink>
                     </el-dropdown-item>
@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import type { TUserAuth } from '@/interfaces';
 import { useAuthStore } from '@/store/auth'
-import { onServerPrefetch } from 'vue';
+import { onServerPrefetch, ref, watch } from 'vue';
 import { RouterLink, useRouter } from 'vue-router'
 const router = useRouter()
 const props = defineProps<{
@@ -58,5 +58,15 @@ const handleLogout = () => {
 const authStore = useAuthStore()
 const { logout } = authStore
 
-const userAvatar = props.dataUser?.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+const userAvatar = ref(
+    authStore.state.user?.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+);
+watch(
+    () => authStore.state.user?.avatar,
+    (newAvatar) => {
+        if (newAvatar) {
+            userAvatar.value = newAvatar;
+        }
+    }
+);
 </script>

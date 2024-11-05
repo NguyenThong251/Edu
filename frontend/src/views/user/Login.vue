@@ -62,6 +62,7 @@ const loginWithGoogle = async () => {
     if (googleUrl) {
         window.location.href = googleUrl; // Redirect to Google
     }
+
 };
 
 // Handle Google callback when user is redirected back to your app

@@ -59,6 +59,11 @@ const user = [
         component: () => import('@/views/GoogleCallback.vue')
       },
       {
+        path: '/checkout/success',
+        name: 'success-payment',
+        component: () => import('@/views/SuccessPayment.vue')
+      },
+      {
         path: '/forgot-pass',
         name: 'forgot-pass',
         component: () => import('@/views/user/ForgotPass.vue')

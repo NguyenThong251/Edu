@@ -8,32 +8,11 @@ export interface TCardCourse {
   average_rating?: number
   reviews_count?: number
   status?: 'active' | 'inactive'
-  tag?: 'Bán chạy' | 'Mới' | 'none'
+  tag?: string
   thumbnail?: string
   title: string
   total_duration?: number
 }
-// export interface TCardCourse {
-//   id: number
-//   creator: string
-//   current_price: number
-//   thumbnail: string
-//   lecture: string
-//   title: string
-//   lessons?: number
-//   rating_avg: 0
-//   // level: 'Mới bắt đầu' | 'Nâng cao' | 'Đánh giá cao nhất'
-//   level: string
-
-//   price: number
-//   oldPrice: number | null
-//   // review?: string | number
-//   // rate?: number
-//   sale_value?: number
-//   tag: 'Bán chạy' | 'Mới'
-//   type_sale?: 'percent' | 'price'
-//   status?: 'active' | 'inactive'
-// }
 
 export interface CardMyCourse {
   image: string
@@ -60,5 +39,4 @@ export interface TCourseFilters {
   sort_by?: string
   sort_order?: string
   language_ids?: number[]
-  // Add more properties as needed based on the filters you are using.
 }

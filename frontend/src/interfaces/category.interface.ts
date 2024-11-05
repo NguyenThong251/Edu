@@ -3,5 +3,5 @@ export interface TCategory {
   children?: TCategory[]
   image?: string
   name: string
-  countCourse?: number
+  courses_count?: number
 }
