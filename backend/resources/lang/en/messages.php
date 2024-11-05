@@ -147,7 +147,7 @@ return [
     // CART
     'cart_items_fetched' => 'List of courses in cart retrieved successfully.',
     'course_not_found_in_cart' => 'Course not in cart.',
-    'course_added_success' => 'Course added successfully.',
+    'course_added_success' => 'Course added wishlist.',
     'course_already_in_cart' => 'Course already in cart.',
     'course_already_in_paid_order' => 'Course already in paid order.',
     'course_removed_success' => 'Course removed successfully.',
@@ -155,8 +155,25 @@ return [
 
     // VOUCHER
     'voucher_created_success' => 'Voucher created successfully.',
+    'voucher_code_already_exists' => 'Voucher code already exists.',
+    'voucher_creation_failed' => 'Voucher creation failed.',
+    'voucher_not_found' => 'Voucher not found.',
+    'voucher_updated_success' => 'Voucher updated successfully.',
+    'voucher_soft_deleted_success' => 'Voucher soft deleted successfully.',
+    'voucher_restore_success' => 'Voucher restored successfully.',
+    'voucher_has_expired' => 'Voucher has expired.',
+    'voucher_usage_limit_reached' => 'Voucher usage limit reached.',
+    'voucher_apply_success' => 'Voucher applied successfully.',
 
     // ORDER
-    'order_created_success' => 'Order created successfully.',
-    'order_create_failed' => 'Failed to create order',
+    'order_created_success' => 'Order created successfully..',
+    'order_create_failed' => 'Failed to create order.',
+
+    // Admin user
+//    'getUsers' => 'Lấy dữ liệu thành công',
+//    'updateUser' => 'Cập nhật thành công',
+    'phone_number_update' => 'Phone number must be a number.',
+    'address_update' => 'Address must be a string',
+    'contactInfo_update' => 'Contact info must be string.',
+
 ];

@@ -106,9 +106,9 @@ class CourseSeeder extends Seeder
                 'description' => $faker->paragraph(),                // Mô tả ngẫu nhiên
                 'short_description' => $faker->sentence(6),          // Mô tả ngắn ngẫu nhiên
                 'thumbnail' => $faker->randomElement($this->thumbnailUrls), // URL hình ảnh ngẫu nhiên
-                'price' => $faker->randomFloat(2, 100, 1000),        // Giá ngẫu nhiên từ 100 đến 1000
+                'price' => round($faker->numberBetween(1000000, 10000000) / 100000) * 100000,        // Giá ngẫu nhiên từ 100 đến 1000
                 'type_sale' => $faker->randomElement(['percent', 'price']), // Loại giảm giá ngẫu nhiên
-                'sale_value' => $faker->randomFloat(2, 0, 100),      // Giá trị giảm giá ngẫu nhiên
+                'sale_value' => $faker->randomFloat(0, 0, 89),      // Giá trị giảm giá ngẫu nhiên
                 'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
                 'deleted_by' => null,                                // Giá trị mặc định là null
                 'created_by' => $faker->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user

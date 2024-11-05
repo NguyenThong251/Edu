@@ -5,18 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class Voucher extends Model
 {
     use HasFactory, SoftDeletes;
-
-    /**
-     * Các thuộc tính có thể được gán hàng loạt.
-     *
-     * @var array<int, string>
-     */
-    use HasFactory;
 
     protected $fillable = [
         'code',
@@ -34,54 +27,82 @@ class Voucher extends Model
         'updated_by'
     ];
 
-    // Kiểm tra voucher có hợp lệ không
-    public function isValid($orderTotal)
-    {
-        return $this->status === 'active' &&
-            $this->expires_at >= Carbon::now() &&
-            ($this->usage_limit === null || $this->usage_count < $this->usage_limit) &&
-            ($this->min_order_value === null || $orderTotal >= $this->min_order_value);
-    }
+    protected $dates = ['expires_at', 'deleted_at'];
 
-
-    // Áp dụng giảm giá và trả về số tiền giảm giá (giới hạn trong max_discount_value nếu có)
-    public function applyDiscount($orderTotal)
-    {
-        $discount = $this->discount_type === 'percent'
-            ? $orderTotal * $this->discount_value / 100
-            : $this->discount_value;
-
-        return min($discount, $this->max_discount_value ?? $discount);
-    }
-
-    /**
-     * Các thuộc tính sẽ được coi là kiểu ngày tháng.
-     *
-     * @var array<string, string>
-     */
-    protected $dates = ['start_date', 'end_date', 'deleted_at'];
-
-    /**
-     * Định nghĩa mối quan hệ với người dùng (User) đã tạo.
-     */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-
-    /**
-     * Định nghĩa mối quan hệ với người dùng (User) đã cập nhật.
-     */
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
-
-    /**
-     * Định nghĩa mối quan hệ với người dùng (User) đã xóa.
-     */
     public function deleter()
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    public static function createNewVoucher($data)
+    {
+        return self::create($data);
+    }
+
+    public function isExpired()
+    {
+        return $this->expires_at && $this->expires_at < now();
+    }
+
+    public function apply($totalPrice, $userId)
+    {
+        if ($this->status !== 'active' || $this->isExpired()) {
+            throw new \Exception(__('messages.invalid_or_expired_voucher'));
+        }
+
+        $hasUsedVoucher = Order::where('user_id', $userId)
+            ->where('voucher_id', $this->id)
+            ->where('payment_status', 'paid')
+            ->exists();
+
+        if ($hasUsedVoucher) {
+            throw new \Exception(__('messages.voucher_already_used'));
+        }
+
+        $discountAmount = $this->discount_type === 'percent'
+            ? ($totalPrice * $this->discount_value) / 100
+            : $this->discount_value;
+
+        $discountAmount = $this->max_discount_value
+            ? min($discountAmount, $this->max_discount_value)
+            : $discountAmount;
+
+        return [
+            'discount' => $discountAmount,
+            'total_price_after_discount' => max(0, $totalPrice - $discountAmount),
+        ];
+    }
+
+    public static function softDeleteByCode($code)
+    {
+        $voucher = self::where('code', $code)->firstOrFail();
+        $voucher->deleted_by = Auth::id();
+        $voucher->save();
+        $voucher->delete();
+    }
+
+    public static function restoreByCode($code)
+    {
+        $voucher = self::withTrashed()->where('code', $code)->firstOrFail();
+        $voucher->restore();
+        return $voucher;
+    }
+
+    public static function getAllDeleted()
+    {
+        return self::onlyTrashed()->get();
+    }
+
+    public function updateVoucher($data)
+    {
+        $this->update(array_filter($data, fn($value) => !is_null($value)));
     }
 }
