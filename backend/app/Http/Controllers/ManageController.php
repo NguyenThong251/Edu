@@ -382,7 +382,7 @@ class ManageController extends Controller
             ->exists();
 
         if ($exists) {
-            return response()->json(['message' => 'Khóa học đã có trong wishlist'], 400);
+            return formatResponse(STATUS_FAIL, '', 400, 'Khóa học đã có trong yêu thích');
         }
         if (!Course::where('id', $courseId)->exists()) {
             return formatResponse(STATUS_FAIL, '', 400, __('messages.course_not_found'));
