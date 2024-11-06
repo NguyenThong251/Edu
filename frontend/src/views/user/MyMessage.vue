@@ -143,8 +143,10 @@ const filteredUsers = computed(() => {
 const selectUser = async (userItem: any) => {
     selectedUser.value = userItem;
     // console.log(`Selected user: ${userItem.id}`); // Kiểm tra ID người nhận
+    await fetchUsers();
     await fetchMessages(userItem.id);
     setupBroadcasting();
+    latest_message.value = '';
 };
 
 
