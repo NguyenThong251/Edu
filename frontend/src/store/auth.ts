@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/services/axiosConfig'
-import type { AuthState, TUserAuth } from '@/interfaces'
+import type { TAuthState, TUpdateUser, TUserAuth } from '@/interfaces/user.interface'
 import Cookies from 'js-cookie'
 import { useRouter } from 'vue-router'
 import { ElNotification } from 'element-plus'
 export const useAuthStore = defineStore('auth', () => {
-  const state = ref<AuthState>({
+  const router = useRouter()
+  const state = ref<TAuthState>({
     user: null,
     token: Cookies.get('token_user_edu') || null,
     loading: false,
@@ -50,7 +51,6 @@ export const useAuthStore = defineStore('auth', () => {
   const userData = async () => {
     if (!state.value.token) return
     state.value.loading = true
-    const router = useRouter()
     try {
       const response = await api.get('/auth/profile')
       const isToken = await response.data
@@ -140,6 +140,20 @@ export const useAuthStore = defineStore('auth', () => {
       return null
     }
   }
+  const updateProfile = async (data: TUpdateUser) => {
+    state.value.loading = true
+    state.value.error = null
+
+    try {
+      const response = await api.post('auth/update-profile', data)
+      return response.data
+    } catch (err: any) {
+      state.value.error = err.response?.data?.message || 'Cập nhật thất bại'
+      throw err
+    } finally {
+      state.value.loading = false
+    }
+  }
   return {
     state,
     login,
@@ -150,7 +164,8 @@ export const useAuthStore = defineStore('auth', () => {
     resetPass,
     getGoogleSignInUrl,
     handleGoogleCallback,
-    uploadProfileImage
+    uploadProfileImage,
+    updateProfile
     // fetchUserData
   }
 })

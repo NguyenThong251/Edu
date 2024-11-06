@@ -38,11 +38,13 @@ export interface CourseComment {
   content: string
 }
 export interface Input {
-  modelValue: string
-  label: string
-  type: string
-  errorMessages: string | null
-  placeholder: string
+  modelValue?: string
+  label?: string
+  type?: string
+  errorMessages?: string | null
+  placeholder?: string
+  readonly?: boolean
+  disabled?: boolean
 }
 export interface MenuItem {
   path: string

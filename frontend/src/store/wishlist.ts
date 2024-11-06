@@ -22,7 +22,6 @@ export const useWishlistStore = defineStore('wishlist', () => {
     if (isAuthenticated.value) {
       try {
         const response = await api.post('/auth/wishlist', { course_id: courseId })
-        console.log(response.data.status)
         if (response.data.status === 'OK') {
           await fetchWishlist() // Tải lại danh sách wishlist
         } else {
