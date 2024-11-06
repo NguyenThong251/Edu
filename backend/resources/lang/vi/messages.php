@@ -176,7 +176,7 @@ return [
     'updateUser' => 'Cập nhật thành công',
     'phone_number_update' => 'Số điện thoại phải là số.',
     'address_update' => 'Địa chỉ phải là chuỗi.',
-    'contactInfo_update' => 'Thông tin liên lạc phải là chuỗi.',
+    'contactInfo_update' => 'Thông tin liên lạc phải là mảng.',
 
 
 ];

@@ -174,6 +174,6 @@ return [
 //    'updateUser' => 'Cập nhật thành công',
     'phone_number_update' => 'Phone number must be a number.',
     'address_update' => 'Address must be a string',
-    'contactInfo_update' => 'Contact info must be string.',
+    'contactInfo_update' => 'Contact info must be array.',
 
 ];

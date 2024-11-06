@@ -66,6 +66,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
+            // Quản lý, ManageController
             Route::get('courses', [CourseController::class, 'getListAdmin'])->name('courses.getListAdmin');
 
             Route::get('categories', [CategoryController::class, 'getListAdmin'])->name('categories.getListAdmin');
@@ -73,13 +74,14 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('getInstructor', [ManageController::class, 'getInstructor'])->name('users.instructors');
             Route::get('getStudent', [ManageController::class, 'getStudent'])->name('users.students');
             Route::put('updateUser/{id}', [ManageController::class, 'updateUserAccount']);
-//            Route::post('/users', [ManageController::class, 'updateFoundationAccount']);
             Route::put('updateFoundation/{id}', [ManageController::class, 'updateFoundationAccount']);
             Route::put('contact-info/{id}', [ManageController::class, 'updateContactInfo']);
             Route::delete('delUserAdmin/{id}', [ManageController::class, 'delUser']);
             Route::get('getAdminRp', [ManageController::class, 'getAdminRpPayment']);
             Route::get('getInstructorRp', [ManageController::class, 'getInstructorRp']);
+            Route::delete('delReport/{id}', [ManageController::class, 'deleteReportPayment']);
             Route::get('order-history', [ManageController::class, 'getOrderHistory']);
+            Route::get('order-detail/{orderId}', [ManageController::class, 'getOrderDetail']);
 
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');

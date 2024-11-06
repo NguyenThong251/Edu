@@ -34,6 +34,10 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+    public function student ()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     /**
      * Các thuộc tính sẽ được coi là kiểu ngày tháng.
