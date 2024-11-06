@@ -38,5 +38,4 @@ import { storeToRefs } from 'pinia';
 
 const wishlistStore = useWishlistStore();
 const { wishlist } = storeToRefs(wishlistStore)
-console.log(wishlist)
 </script>

@@ -2,7 +2,7 @@
     <div class="flex flex-col">
         <CardProfile :dataUser="dataUser" />
         <div class="flex flex-col mt-5 gap-2">
-            <router-link v-for="item in menuItems" :key="item.path" :to="item.path"
+            <RouterLink v-for="item in menuItems" :key="item.path" :to="item.path"
                 class="nav-item flex hover:bg-indigo-600 hover:text-white rounded-lg animation font-bold items-center space-x-2 p-2"
                 :class="{
                     'text-white bg-indigo-600': isActive(item.path),
@@ -10,7 +10,7 @@
                 }">
                 <component :is="item.icon" class="w-6 h-6" />
                 <span>{{ item.label }}</span>
-            </router-link>
+            </RouterLink>
             <button @click="handleLogout"
                 class="flex text-gray-600 hover:bg-indigo-600 hover:text-white rounded-lg animation font-bold items-center space-x-2 p-2">
                 <ArrowLeftStartOnRectangleIcon class="w-6 h-6" />
