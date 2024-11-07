@@ -9,15 +9,34 @@
             </button>
         </div>
     </div>
+
+    <div class="" v-if="discount && total_price_after_discount">
+        <div class="">
+            <div class="flex flex-col items-start gap-3">
+                <div class="text-xl font-medium text-gray-600">
+                    Giảm giá voucher: {{ formatPrice(discount) }}
+                </div>
+                <div class="text-2xl font-bold">
+                    Tổng {{ formatPrice(total_price_after_discount) }}
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
 import { useVoucherStore } from '@/store/voucher';
+import { formatPrice } from '@/utils/formatPrice';
+import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 const voucherStore = useVoucherStore();
+const { state, discount, total_price_after_discount } = storeToRefs(voucherStore)
 const voucher = ref('');
-const applyVoucherCode = () => {
-    const dd = voucherStore.applyVoucher(voucher.value);
-    console.log(dd)
-}
+
+const applyVoucherCode = async () => {
+
+    await voucherStore.applyVoucher(voucher.value);
+
+
+};
 </script>

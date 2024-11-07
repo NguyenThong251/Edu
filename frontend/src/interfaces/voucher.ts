@@ -15,4 +15,7 @@ export interface TVoucherStoreState {
   voucherDetails: TVoucher | null
   appliedVoucher: string
   error: string | null
+  total_price?: number
+  discount?: number
+  total_price_after_discount?: number
 }

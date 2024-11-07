@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import api from '@/services/axiosConfig'
-import type { AuthState, TUserAuth } from '@/interfaces'
+import type { TAuthState, TUserAuth } from '@/interfaces/user.interface'
 import Cookies from 'js-cookie'
 import { useRouter } from 'vue-router'
 import { ElNotification } from 'element-plus'
@@ -12,13 +12,16 @@ export const useVoucherStore = defineStore('voucher', () => {
     deletedVouchers: [],
     voucherDetails: null,
     appliedVoucher: '',
-    error: null
+    error: null,
+    total_price: undefined,
+    discount: undefined,
+    total_price_after_discount: undefined
   })
   //  Get toàn bộ Voucher
   const fetchVouchers = async () => {
     try {
-      const response = await api.get('/auth/vouchers/')
-      state.value.vouchers = response.data
+      const response = await api.get('/auth/vouchers')
+      state.value.vouchers = response.data.data
     } catch (error) {
       state.value.error = 'Không thể tải danh sách vouchers'
     }
@@ -61,40 +64,58 @@ export const useVoucherStore = defineStore('voucher', () => {
   }
   //   Khôi phục Voucher đã xóa
   const restoreVoucher = async (code: string) => {
-      try {
-        await api.post('/auth/vouchers/restore', { code })
-        await fetchDeletedVouchers()
-      } catch (error) {
-        state.value.error = 'Không thể khôi phục voucher'
+    try {
+      await api.post('/auth/vouchers/restore', { code })
+      await fetchDeletedVouchers()
+    } catch (error) {
+      state.value.error = 'Không thể khôi phục voucher'
+    }
+  }
+  const applyVoucher = async (voucherCode: string) => {
+    try {
+      const response = await api.post('/auth/cart/apply-voucher', { voucher_code: voucherCode })
+      state.value.appliedVoucher = voucherCode
+      state.value.total_price = response.data.data.total_price
+      state.value.discount = response.data.data.discount
+      state.value.total_price_after_discount = response.data.data.total_price_after_discount
+
+      if (response.data.status === 'FAIL') {
+        ElNotification({
+          title: 'Thất bại',
+          message: 'Đăng nhập để sử dụng voucher',
+          type: 'error'
+        })
       }
-    },
-    applyVoucher = async (voucherCode: string) => {
-      const voucher = state.value.vouchers.find((v) => v.code === voucherCode)
-      //   state.value.appliedVoucher = voucherCode
-      if (voucher) {
-        state.value.appliedVoucher = voucherCode
+      if (response.data.status === 'success') {
         ElNotification({
           title: 'Thành công',
           message: `Voucher "${voucherCode}" đã được áp dụng.`,
           type: 'success'
         })
-      } else {
-        state.value.error = 'Voucher không hợp lệ'
-        ElNotification({
-          title: 'Lỗi',
-          message: 'Voucher không hợp lệ hoặc không tồn tại.',
-          type: 'error'
-        })
       }
+
+      return response.data // Trả về dữ liệu nếu cần sử dụng
+    } catch (error) {
+      state.value.error = 'Không thể áp dụng voucher'
+
+      ElNotification({
+        title: 'Thất bại',
+        message: 'Voucher không hợp lệ hoặc không tồn tại.',
+        type: 'error'
+      })
     }
-  //   const fetchAllVoucher
+  }
 
   return {
+    state,
     fetchVouchers,
     fetchVoucherDetails,
     createVoucher,
     deleteVoucher,
     restoreVoucher,
-    applyVoucher
+    applyVoucher,
+    voucher: state.value.appliedVoucher,
+    discount: computed(() => state.value.discount),
+    total_price_after_discount: computed(() => state.value.total_price_after_discount)
   }
 })

@@ -32,15 +32,16 @@
                     <div class="p-5 sticky top-0 shadow-lg rounded-lg">
                         <div class="flex flex-col gap-5">
                             <div class="flex flex-col">
-                                <span class="text-2xl font-medium">Tổng</span>
+                                <span class="text-2xl font-medium">Tạm tính</span>
                                 <div class="flex items-end gap-3">
 
-                                    <div class="text-4xl font-bold">{{ formatPrice(formattedTotalPrice) }}</div>
-                                    <del class="text-2xl font-medium text-gray-600">{{
+                                    <div class="text-2xl font-bold">{{ formatPrice(formattedTotalPrice) }}</div>
+                                    <del class="text-xl font-medium text-gray-600">{{
                                         formatPrice(formattedTotalPriceOld) }}</del>
                                 </div>
 
                             </div>
+                            <UserVoucher />
                             <form @submit.prevent="handlePayment">
                                 <div id="card-element" class="my-4"></div>
                                 <div id="card-errors" role="alert" class="text-red-500 mt-2">{{ cardError }}</div>
@@ -48,7 +49,6 @@
                                     Thanh toán
                                 </Button>
                             </form>
-                            <UserVoucher />
                         </div>
                     </div>
                 </div>
@@ -71,6 +71,8 @@ import { ElNotification } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { formatPrice } from '@/utils/formatPrice';
 import UserVoucher from '@/components/user/UserVoucher.vue';
+import { useVoucherStore } from '@/store/voucher';
+import { storeToRefs } from 'pinia';
 const cartStore = useCartStore()
 
 const { cart, formattedTotalPrice, formattedTotalPriceOld, clearCart } = useCart();
@@ -85,6 +87,8 @@ const token = ref<string | null>(null)
 
 const authStore = useAuthStore()
 const { state, userData } = authStore
+const voucherStore = useVoucherStore()
+const { voucher } = storeToRefs(voucherStore)
 onMounted(async () => {
     await cartStore.fetchCartCourses();
     await userData()
@@ -92,7 +96,7 @@ onMounted(async () => {
 });
 const handlePayment = async () => {
 
-    const response = await api.post('auth/orders', { param: { token: token.value } })
+    const response = await api.post('auth/orders', { param: { token: token.value, voucher: voucher } })
     if (response.data.status === 'success') {
         const checkUrl = response.data.checkout_url;
         if (checkUrl) {

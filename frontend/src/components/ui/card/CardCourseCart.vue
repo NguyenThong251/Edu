@@ -7,7 +7,7 @@
                     <h3 class="text-lg font-medium">{{ title }}</h3>
                     <span class="text-gray-600">by {{ creator }}</span>
                     <div class="flex items-end gap-3">
-                        <span class="text-xl font-semibold">{{ current_price }}đ</span>
+                        <span class="text-xl font-semibold">{{ formatPrice(current_price) }}</span>
                         <del v-if="old_price" class="text-gray-600">{{ formatPrice(old_price) }}</del>
                     </div>
                     <div class="flex items-center gap-5">
