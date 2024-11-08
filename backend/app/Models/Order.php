@@ -20,7 +20,7 @@ class Order extends Model
         'voucher_id',
         'order_code',
         'total_price',
-        // 'currency',
+        'currency',
         'payment_method',
         'payment_status',
         'payment_code',
@@ -34,7 +34,7 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-    public function student ()
+    public function student()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
