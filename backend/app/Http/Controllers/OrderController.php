@@ -126,7 +126,7 @@ class OrderController extends Controller
             DB::rollBack();
             Log::error('Order creation failed: ' . $e->getMessage());
 
-            return response()->json(['status' => 'error', 'message' => 'Order creation failed'], 500);
+            return response()->json(['status' => 'error', 'message' => 'Order creation failed:' . $e->getMessage()], 500);
         }
     }
 
