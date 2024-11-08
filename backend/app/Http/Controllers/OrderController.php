@@ -63,8 +63,7 @@ class OrderController extends Controller
                 : min($voucher->discount_value, $voucher->max_discount_value ?? PHP_INT_MAX);
 
             $total = max($total - $discount, 0);
-
-            $total = $currency === 'vnd' ? round($total) : round($total, 2);
+            $total = round($total);
         }
 
         try {
@@ -128,7 +127,7 @@ class OrderController extends Controller
             DB::rollBack();
             Log::error('Order creation failed: ' . $e->getMessage());
 
-            return response()->json(['status' => 'error', 'message' => 'Order creation failed: ' . $e], 500);
+            return response()->json(['status' => 'error', 'message' => 'Order creation failed: ' . $e->getMessage()], 500);
         }
     }
 
