@@ -64,19 +64,6 @@ class ManageController extends Controller
 
         $admins = User::where('role', 'admin')->paginate($perPage, ['*'], 'page', $page);
 
-<<<<<<< HEAD
-        //        return response()->json([
-        //            'status' => 'success',
-        //            'data' => $admins->items(),
-        //            'pagination' => [
-        //                'total' => $admins->total(), // Tổng số user
-        //                'current_page' => $admins->currentPage(), // Trang hiện tại
-        //                'last_page' => $admins->lastPage(), // Trang cuối cùng
-        //                'per_page' => $admins->perPage(), // Số lượng user trên mỗi trang
-        //            ],
-        //        ]);
-        return formatResponse(STATUS_OK, $admins, '', __('messages.getUsers'));
-=======
         $pagination = [
             'total' => $admins->total(),
             'current_page' => $admins->currentPage(),
@@ -87,7 +74,6 @@ class ManageController extends Controller
             'data' => $admins,
             'pagination' => $pagination,
         ], '', __('messages.getUsers'));
->>>>>>> ba9491177babe5672472607c7e89f9aa1a899f9e
     }
 
     //Sửa tài khoản và mật khẩu
@@ -130,13 +116,6 @@ class ManageController extends Controller
         $user = User::find($id);
 
         if (!$user) {
-<<<<<<< HEAD
-            //            return response()->json([
-            //               "status" => "fail",
-            //               "message" =>"Tài khoản không tồn tại",
-            //            ],404);
-=======
->>>>>>> ba9491177babe5672472607c7e89f9aa1a899f9e
             return formatResponse(STATUS_FAIL, null, '', __('messages.user_not_found'));
         }
 
@@ -152,15 +131,6 @@ class ManageController extends Controller
             $user->background_image = $fileName;
         }
         $user->save();
-<<<<<<< HEAD
-        //        return response()->json([
-        //            'status' => 'success',
-        //            'message' => $id ? 'Thông tin user đã được cập nhật thành công' : 'Tài khoản này không tồn tại',
-        //            'data' => $user,
-        //        ]);
-=======
-
->>>>>>> ba9491177babe5672472607c7e89f9aa1a899f9e
         return formatResponse(STATUS_OK, $user, '', __('messages.updateUser'));
     }
 
@@ -189,19 +159,8 @@ class ManageController extends Controller
 
             $user->save();
 
-<<<<<<< HEAD
-            //            return response()->json([
-            //                'status' => 'success',
-            //                'message' => 'Thông tin liên lạc đã được cập nhật',
-            //                'data' => $user->contact_info,
-            //            ]);
             return formatResponse(STATUS_OK, $user->contact_info, '', __('messages.update_success'));
         }
-        //        return response()->json(['status' => 'error', 'message' => 'User không tồn tại'], 404);
-=======
-            return formatResponse(STATUS_OK, $user->contact_info, '', __('messages.update_success'));
-        }
->>>>>>> ba9491177babe5672472607c7e89f9aa1a899f9e
         return formatResponse(CODE_NOT_FOUND, null, 404, __('messages.user_not_found'));
     }
 
@@ -243,19 +202,6 @@ class ManageController extends Controller
                 'created_date' => $item->created_at->format('d/m/Y'),
             ];
         });
-<<<<<<< HEAD
-        //        return response()->json([
-        //            'status' => 'success',
-        //            'data' => $result,
-        //            'pagination' => [
-        //                'total' => $orders->total(), // Tổng số đơn hàng
-        //                'current_page' => $orders->currentPage(), // Trang hiện tại
-        //                'last_page' => $orders->lastPage(), // Trang cuối cùng
-        //                'per_page' => $orders->perPage(), // Số lượng đơn hàng trên mỗi trang
-        //            ],
-        //        ]);
-        return formatResponse(STATUS_OK, $result, '', __('messages.getUsers'));
-=======
         $closing_price = number_format($orderItems->getCollection()->sum('price'), 0, ',', '.');
         $totalAdminRevenue = number_format($orderItems->getCollection()->sum(function ($item) use ($adminCount) {
             return $adminCount > 0 ? ($item->price * 0.3) / $adminCount : $adminCount == 0;
@@ -272,7 +218,6 @@ class ManageController extends Controller
             'closing_price' => $closing_price,
             'total_admin_price' => $totalAdminRevenue,
         ], '', __('messages.getUsers'));
->>>>>>> ba9491177babe5672472607c7e89f9aa1a899f9e
     }
 
     public function getInstructorRp(Request $request)
@@ -294,20 +239,6 @@ class ManageController extends Controller
                 'created_date' => $item->created_at->format('d/m/Y'),
             ];
         });
-<<<<<<< HEAD
-
-        //        return response()->json([
-        //            'status' => 'success',
-        //            'data' => $result,
-        //            'pagination' => [
-        //                'total' => $instructors->total(), // Tổng số instructor
-        //                'current_page' => $instructors->currentPage(), // Trang hiện tại
-        //                'last_page' => $instructors->lastPage(), // Trang cuối cùng
-        //                'per_page' => $instructors->perPage(), // Số lượng instructor trên mỗi trang
-        //            ],
-        //        ]);
-        return formatResponse(STATUS_OK, $result, '', __('messages.getUsers'));
-=======
         $closing_price = number_format($orderItems->getCollection()->sum('price'), 0, ',', '.');
         $totalAdminRevenue = number_format($orderItems->getCollection()->sum(function ($item) {
             return $item->price * 0.3;
@@ -324,7 +255,6 @@ class ManageController extends Controller
             'closing_price' => $closing_price,
             'total_admin_price' => $totalAdminRevenue,
         ], '', __('messages.getUsers'));
->>>>>>> ba9491177babe5672472607c7e89f9aa1a899f9e
     }
 
     //Filter cho Report Admin (Đang sai, chưa hoàn thành)
@@ -363,11 +293,7 @@ class ManageController extends Controller
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
-<<<<<<< HEAD
-        $orders = Order::with(['user', 'orderItems.course']) // Dùng Eager Loading để lấy dữ liệu người dùng và khóa học
-=======
         $orders = Order::with(['student', 'orderItems.course'])
->>>>>>> ba9491177babe5672472607c7e89f9aa1a899f9e
             ->paginate($perPage, ['*'], 'page', $page);
 
         $result = $orders->getCollection()->map(function ($item) {
@@ -398,20 +324,6 @@ class ManageController extends Controller
     {
         $order = Order::with(['student', 'orderItems.course'])->findOrFail($orderId);
 
-<<<<<<< HEAD
-        // Trả về phản hồi JSON
-        //        return response()->json([
-        //            'status' => 'success',
-        //            'data' => $result,
-        //            'pagination' => [
-        //                'total' => $orders->total(), // Tổng số đơn hàng
-        //                'current_page' => $orders->currentPage(), // Trang hiện tại
-        //                'last_page' => $orders->lastPage(), // Trang cuối cùng
-        //                'per_page' => $orders->perPage(), // Số lượng đơn hàng trên mỗi trang
-        //            ],
-        //        ]);
-        return formatResponse(STATUS_OK, $result, '', __('messages.getUsers'));
-=======
         $orderDetail = [
             'order_id' => $order->id,
             'user_name' => $order->student->last_name . ' ' . $order->student->first_name ?? 'N/A',
@@ -431,7 +343,6 @@ class ManageController extends Controller
         return formatResponse(STATUS_OK, [
             'data' => $orderDetail,
         ], '', __('messages.getOrderDetail'));
->>>>>>> ba9491177babe5672472607c7e89f9aa1a899f9e
     }
 
     //Lấy user role "instructor"
@@ -441,20 +352,6 @@ class ManageController extends Controller
         $page = $request->input('page', 1); // Trang hiện tại, mặc định là trang 1
 
         $instructors = User::where('role', 'instructor')->paginate($perPage, ['*'], 'page', $page);
-<<<<<<< HEAD
-
-        //        return response()->json([
-        //            'status' => 'success',
-        //            'data' => $instructors->items(),
-        //            'pagination' => [
-        //                'total' => $instructors->total(), // Tổng số user
-        //                'current_page' => $instructors->currentPage(), // Trang hiện tại
-        //                'last_page' => $instructors->lastPage(), // Trang cuối cùng
-        //                'per_page' => $instructors->perPage(), // Số lượng user trên mỗi trang
-        //            ],
-        //        ]);
-        return formatResponse(STATUS_OK, $instructors, '', __('messages.getUsers'));
-=======
         $pagination = [
             'total' => $instructors->total(),
             'current_page' => $instructors->currentPage(),
@@ -465,7 +362,6 @@ class ManageController extends Controller
             'data' => $instructors,
             'pagination' => $pagination,
         ], '', __('messages.getUsers'));
->>>>>>> ba9491177babe5672472607c7e89f9aa1a899f9e
     }
 
     //Lấy user role "student"
@@ -475,20 +371,6 @@ class ManageController extends Controller
         $page = $request->input('page', 1);
 
         $studens = User::where('role', 'student')->paginate($perPage, ['*'], 'page', $page);
-<<<<<<< HEAD
-
-        //        return response()->json([
-        //            'status' => 'success',
-        //            'data' => $studens->items(),
-        //            'pagination' => [
-        //                'total' => $studens->total(),
-        //                'current_page' => $studens->currentPage(),
-        //                'last_page' => $studens->lastPage(),
-        //                'per_page' => $studens->perPage(),
-        //            ],
-        //        ]);
-        return formatResponse(STATUS_OK, $studens, '', __('messages.getUsers'));
-=======
         $pagination = [
             'total' => $studens->total(),
             'current_page' => $studens->currentPage(),
@@ -496,7 +378,6 @@ class ManageController extends Controller
             'per_page' => $studens->perPage(),
         ];
         return formatResponse(STATUS_OK, ['data' => $studens, 'pagination' => $pagination], '', __('messages.getUsers'));
->>>>>>> ba9491177babe5672472607c7e89f9aa1a899f9e
     }
 
     // Wishlist
