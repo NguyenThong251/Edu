@@ -121,6 +121,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         // Routes cho student
         Route::middleware(['role:student'])->group(function () {
             //chat message
+            Route::get('/me', [ChatController::class, 'me']);
+            Route::get('/get-user-id/{id}', [ChatController::class, 'getUserId']);
             Route::get('/message/private/{receiverId}', [ChatController::class, 'index']);
             Route::get('/chat/users', [ChatController::class, 'getUsers']);
             Route::post('/messages/{receiverId}', [ChatController::class, 'store']);
