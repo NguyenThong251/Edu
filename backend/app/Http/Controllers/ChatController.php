@@ -99,7 +99,7 @@ class ChatController extends Controller
             $otherUser->latest_message = $latestMessage ? $latestMessage->message : null;
             $otherUser->latest_message_time = $latestMessage ? $latestMessage->created_at->diffForHumans() : null;
         });
-
+        $sortedUsers = $users->sortByDesc('latest_message_time')->values();
         return formatResponse(STATUS_OK, $users, '', 'Get users successfully');
     }
 
@@ -116,6 +116,43 @@ class ChatController extends Controller
             return formatResponse(STATUS_OK, $user, '', 'Get user successfully');
         }
         return formatResponse(STATUS_FAIL, '', 'User not found');
+    }
+
+    public function sendImageMessage($receiverId, Request $request)
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        if (!$receiverId) {
+            return formatResponse(STATUS_FAIL, '', '', 'Missing parameter receiverId', CODE_NOT_FOUND);
+        }
+        $validator = Validator::make($request->all(), [
+            'message' => 'nullable|string|max:1000',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+        if ($validator->fails()) {
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Validation failed');
+        }
+
+        $receiver = User::find($receiverId);
+        if (!$receiver) {
+            return formatResponse(STATUS_FAIL, '', '', 'Receiver not found', CODE_NOT_FOUND);
+        }
+
+        $messageData = [
+            'sender_id' => $user->id,
+            'receiver_id' => $receiverId,
+            'message' => $request->input('message'),
+        ];
+
+        // Process image upload if present
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->storePublicly('chat-images', 's3');
+            if ($path) {
+                $messageData['image_url'] = env('URL_IMAGE_S3') . $path;
+            }
+        }
+        $message = ChatMessages::create($messageData);
+        broadcast(new MessageSent($message))->toOthers();
+        return formatResponse(STATUS_OK, $message, '', 'Message sent successfully');
     }
 
 }
