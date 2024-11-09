@@ -83,11 +83,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, nextTick } from 'vue';
+import { ref, onMounted, computed, watch, nextTick, onUnmounted } from 'vue';
 import { useAuthStore } from '@/store/auth'; // Đường dẫn đúng đến store
 import api from '@/services/axiosConfig'; // Đường dẫn đến file cấu hình axios
 import echo from '@/composables/user/userChatEcho'; // Đường dẫn đến file cấu hình echo
 import { PaperAirplaneIcon, DocumentIcon } from '@heroicons/vue/20/solid';
+import { useMessageStore } from '@/store/message';
+import { InfoFilled } from '@element-plus/icons-vue';
+
+const messageStore = useMessageStore()
 
 // Sử dụng composable auth
 const authStore = useAuthStore();
@@ -114,12 +118,19 @@ const newMessage = ref('');
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const latest_message = ref(''); 
+const channel = ref<any>(null);
+const waitingUser = ref<any>(null);
 
 // Lấy danh sách người dùng
 const fetchUsers = async () => {
     try {
         const response = await api.get('/auth/chat/users');
         users.value = response.data.data;
+
+
+        if(waitingUser.value && users.value.find((user: any) => user.id == waitingUser.value?.id) == undefined ) {
+            users.value.push(waitingUser.value);
+        }
     } catch (error) {
         console.error('Error fetching users:', error);
     }
@@ -145,29 +156,31 @@ const selectUser = async (userItem: any) => {
     // console.log(`Selected user: ${userItem.id}`); // Kiểm tra ID người nhận
     await fetchUsers();
     await fetchMessages(userItem.id);
-    setupBroadcasting();
     latest_message.value = '';
 };
 
 
 const setupBroadcasting = () => {
     
-    if (!selectedUser.value || !authStore.state.user) return;
+    // if (!selectedUser.value || !authStore.state.user) return;
+    if (!authStore.state.user) return;
 
     console.log('current user ' + authStore.state.user.id);
     
     const channelName = `chat.${authStore.state.user.id}`;
-    const channel = echo.private(channelName);
+    channel.value = echo.private(channelName);
 
     console.log(`Subscribed to channel: ${channelName}`);
 
 
-        channel.listen('.MessageSent', (e: any) => { // Sử dụng tên sự kiện đúng với backend
+        channel.value?.listen('.MessageSent', (e: any) => { // Sử dụng tên sự kiện đúng với backend
             console.log('Received MessageSent event:', e.message);
-            latest_message.value = e.message?.message
-            if (e.message.sender_id === selectedUser.value.id) {
+            if (e.message.sender_id === selectedUser.value?.id) {
                 messages.value.push(e.message);
+                latest_message.value = e.message?.message
                 scrollToBottom();
+            } else {
+                fetchUsers();
             }
         });
 
@@ -213,19 +226,53 @@ const sendMessage = async () => {
     }
 };
 
+const getWaitingUser = async () => {
+    try{
+        const hasWaitingUser = users.value.find((user: any) => user.id == messageStore.waitingUserChat)
+
+        //CHECK HAS USER
+        if(hasWaitingUser) {
+            selectUser(hasWaitingUser)
+            messageStore.waitingUserChat = null;
+            return
+        }
+
+        const response = await api.get(`/auth/get-user-id/${messageStore.waitingUserChat}`);
+        waitingUser.value = response.data.data;
+        // users.value.push(waitingUser.value);
+        selectUser(waitingUser.value)
+        messageStore.waitingUserChat = null;
+    } catch (e) {
+        console.error('Error:', e);
+    }
+}
+
 
 // Khởi tạo
 onMounted(async () => {
+    console.log('start listen');
+    
+    setupBroadcasting();
+    
     if (authStore.state.token) {
         // await authStore.fetchCurrentUser();
         latest_message.value = '';
         console.log('refresh last_message');
         await fetchUsers();
+
+        //CHECK HAS WAITING USER CHAT
+        if(messageStore.waitingUserChat != null) {
+            getWaitingUser()
+        }
     } else {
         // Nếu không có token, redirect đến trang login
         window.location.href = '/login';
     }
 });
+
+onUnmounted(() => {
+    channel.value.unLIO
+})
 
 
 

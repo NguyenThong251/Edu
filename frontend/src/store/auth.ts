@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/services/axiosConfig'
-import type { AuthState, TUserAuth } from '@/interfaces'
+import type { TAuthState, TUpdateUser, TUserAuth } from '@/interfaces/user.interface'
 import Cookies from 'js-cookie'
 import { useRouter } from 'vue-router'
 import { ElNotification } from 'element-plus'
+
 export const useAuthStore = defineStore('auth', () => {
-  const state = ref<AuthState>({
+  const state = ref<TAuthState>({
     user: null,
     token: Cookies.get('token_user_edu') || null,
     loading: false,
@@ -140,6 +141,15 @@ export const useAuthStore = defineStore('auth', () => {
       return null
     }
   }
+  const fetchCurrentUser = async () => {
+    try {
+        const response = await api.get('/auth/me'); // Endpoint để lấy thông tin người dùng
+        state.value.user = response.data.data;
+    } catch (error) {
+        console.error('Error fetching current user:', error);
+        logout(); // Nếu không lấy được thông tin người dùng, thực hiện logout
+    }
+}
   return {
     state,
     login,
@@ -150,7 +160,8 @@ export const useAuthStore = defineStore('auth', () => {
     resetPass,
     getGoogleSignInUrl,
     handleGoogleCallback,
-    uploadProfileImage
+    uploadProfileImage,
+    fetchCurrentUser
     // fetchUserData
   }
 })
