@@ -38,6 +38,9 @@ class User extends Authenticatable implements JWTSubject
         'avatar',
         'gender',
         'date_of_birth',
+        'phone_number',
+        'contact_info',
+        'address',
         'email_verified',
         'verification_token',
         'role',
@@ -49,6 +52,10 @@ class User extends Authenticatable implements JWTSubject
         'provider_id'
     ];
 
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 
     public function getJWTIdentifier()
     {
@@ -83,4 +90,16 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    // Setter cho contact_info
+    public function setAdminContactInfo($value)
+    {
+        $this->attributes['contact_info'] = json_encode($value);
+    }
+
+    // Getter cho contact_info
+    public function getAdminContacInfo($value)
+    {
+        return json_decode($value, true);
+    }
 }
