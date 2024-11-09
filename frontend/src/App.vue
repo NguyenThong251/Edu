@@ -1,6 +1,6 @@
 
 <template>
- <router-view /> 
+ <router-view  /> 
 </template>
 
 <script setup lang="ts">
@@ -9,8 +9,11 @@ import { useAuthStore } from '@/store/auth';
 
 const authStore = useAuthStore();
 
+
 const initData = async () => {
   await authStore.fetchCurrentUser();
+  console.log('has user');
+  
 };
 
 // Khởi tạo dữ liệu khi ứng dụng được mounted
