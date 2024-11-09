@@ -79,7 +79,7 @@
             <ViewCart />
         </div>
         <div v-else class="flex items-center flex-col justify-center">
-            <img class="w-48" src="https://ovanlink.com/images/icon-empty-cart.png" alt="">
+            <img class="w-48" src="https://cdn-icons-png.flaticon.com/512/11329/11329060.png" alt="">
             <h3 class="text-2xl font-bold mt-3 text-indigo-900 ">Giỏ hàng trống</h3>
         </div>
     </el-drawer>

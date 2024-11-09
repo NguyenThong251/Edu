@@ -75,6 +75,7 @@ export const useVoucherStore = defineStore('voucher', () => {
     try {
       const response = await api.post('/auth/cart/apply-voucher', { voucher_code: voucherCode })
       state.value.appliedVoucher = voucherCode
+      console.log(state.value.appliedVoucher)
       state.value.total_price = response.data.data.total_price
       state.value.discount = response.data.data.discount
       state.value.total_price_after_discount = response.data.data.total_price_after_discount
@@ -105,7 +106,6 @@ export const useVoucherStore = defineStore('voucher', () => {
       })
     }
   }
-
   return {
     state,
     fetchVouchers,
@@ -114,7 +114,7 @@ export const useVoucherStore = defineStore('voucher', () => {
     deleteVoucher,
     restoreVoucher,
     applyVoucher,
-    voucher: state.value.appliedVoucher,
+    voucher: computed(() => state.value.appliedVoucher),
     discount: computed(() => state.value.discount),
     total_price_after_discount: computed(() => state.value.total_price_after_discount)
   }

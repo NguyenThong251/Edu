@@ -23,7 +23,7 @@
 
                 </div>
                 <div v-else class=" items-center flex flex-col md:w-4/6 w-full gap-5 justify-center">
-                    <img class="w-48" src="https://ovanlink.com/images/icon-empty-cart.png" alt="">
+                    <img class="w-48" src="https://cdn-icons-png.flaticon.com/512/11329/11329060.png" alt="">
                     <h3 class="text-2xl font-bold mt-3 text-indigo-900 ">Giỏ hàng trống</h3>
                     <RouterLink to="/course"><Button variant="primary">Quay lại chọn khóa học</Button></RouterLink>
                 </div>
@@ -95,8 +95,12 @@ onMounted(async () => {
     token.value = state.token
 });
 const handlePayment = async () => {
-
-    const response = await api.post('auth/orders', { param: { token: token.value, voucher: voucher } })
+    console.log(voucher.value)
+    const data = {
+        token: token.value, currency: 'vnd', voucher: voucher.value
+    }
+    console.log(data)
+    const response = await api.post('auth/orders', data)
     if (response.data.status === 'success') {
         const checkUrl = response.data.checkout_url;
         if (checkUrl) {
