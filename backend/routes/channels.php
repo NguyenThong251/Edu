@@ -22,6 +22,6 @@ use Illuminate\Support\Facades\Log;
 //    return (int)$user->id === (int)$receiverId || (int)$user->id === (int)auth()->id();
 //});
 Broadcast::channel('chat.{receiverId}', function ($user, $receiverId) {
-        Log::info("User $user->id attempting to connect to channel chat.$receiverId");
-    return $user->id === (int) $receiverId || (int) $user->id === (int) auth()->id();
+    Log::info("User {$user->id} attempting to connect to channel chat.{$receiverId}");
+    return (int) $user->id === (int) $receiverId;
 });
