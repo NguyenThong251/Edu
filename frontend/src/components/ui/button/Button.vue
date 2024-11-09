@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Button } from '@/interfaces';
+import type { Button } from '@/interfaces/ui.interface';
 import { computed, defineProps } from 'vue';
 
 const props = defineProps<Button>()
