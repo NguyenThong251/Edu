@@ -141,15 +141,15 @@ export const useAuthStore = defineStore('auth', () => {
       return null
     }
   }
-  const fetchCurrentUser = async () => {
-    try {
-        const response = await api.get('/auth/me'); // Endpoint để lấy thông tin người dùng
-        state.value.user = response.data.data;
-    } catch (error) {
-        console.error('Error fetching current user:', error);
-        logout(); // Nếu không lấy được thông tin người dùng, thực hiện logout
-    }
-}
+  //   const fetchCurrentUser = async () => {
+  //     try {
+  //         const response = await api.get('/auth/me'); // Endpoint để lấy thông tin người dùng
+  //         state.value.user = response.data.data;
+  //     } catch (error) {
+  //         console.error('Error fetching current user:', error);
+  //         logout(); // Nếu không lấy được thông tin người dùng, thực hiện logout
+  //     }
+  // }
   return {
     state,
     login,
@@ -160,8 +160,8 @@ export const useAuthStore = defineStore('auth', () => {
     resetPass,
     getGoogleSignInUrl,
     handleGoogleCallback,
-    uploadProfileImage,
-    fetchCurrentUser
+    uploadProfileImage
+    // fetchCurrentUser
     // fetchUserData
   }
 })

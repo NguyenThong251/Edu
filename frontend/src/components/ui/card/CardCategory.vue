@@ -1,6 +1,6 @@
 <template>
     <div class="border-1 cursor-pointer p-3 flex flex-row items-center gap-5 shadow-md rounded-lg ">
-        <img class="w-20" :src="image" alt="">
+        <img class="w-20 rounded-sm" :src="image" alt="">
         <div class="">
             <h3 class="text-xl font-medium">{{ name }}</h3>
             <span class="text-gray-500"> {{ courses_count }} Khóa học</span>

@@ -24,7 +24,8 @@
                             </div>
                             <div class="flex items-center gap-3">
                                 <p class="text-sm truncate w-24 text-gray-600">
-                                    {{  (selectedUser?.id == user?.id && latest_message ? latest_message : user.latest_message) || 'No messages yet' }}
+                                    {{ (selectedUser?.id == user?.id && latest_message ? latest_message :
+                                        user.latest_message) || 'No messages yet' }}
                                 </p>
                             </div>
                         </div>
@@ -65,8 +66,7 @@
                     <button @click="triggerFileUpload" class="bg-transparent hover:bg-gray-200 p-2 rounded-full">
                         <DocumentIcon class="h-6 w-6 text-gray-500" />
                     </button>
-                    <input v-model="newMessage"
-                    @keyup.enter="sendMessage"
+                    <input v-model="newMessage" @keyup.enter="sendMessage"
                         class="flex-1 border-none outline-none bg-transparent resize-none p-2 max-h-32 overflow-y-auto"
                         rows="1" placeholder="Type a message..." @input="autoResize"></input>
                     <button @click="sendMessage" class="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 ml-2">
@@ -117,7 +117,7 @@ const newMessage = ref('');
 // File input ref
 const fileInput = ref<HTMLInputElement | null>(null);
 
-const latest_message = ref(''); 
+const latest_message = ref('');
 const channel = ref<any>(null);
 const waitingUser = ref<any>(null);
 
@@ -128,7 +128,7 @@ const fetchUsers = async () => {
         users.value = response.data.data;
 
 
-        if(waitingUser.value && users.value.find((user: any) => user.id == waitingUser.value?.id) == undefined ) {
+        if (waitingUser.value && users.value.find((user: any) => user.id == waitingUser.value?.id) == undefined) {
             users.value.push(waitingUser.value);
         }
     } catch (error) {
@@ -161,30 +161,30 @@ const selectUser = async (userItem: any) => {
 
 
 const setupBroadcasting = () => {
-    
+
     // if (!selectedUser.value || !authStore.state.user) return;
     if (!authStore.state.user) return;
 
     console.log('current user ' + authStore.state.user.id);
-    
+
     const channelName = `chat.${authStore.state.user.id}`;
     channel.value = echo.private(channelName);
 
     console.log(`Subscribed to channel: ${channelName}`);
 
 
-        channel.value?.listen('.MessageSent', (e: any) => { // Sử dụng tên sự kiện đúng với backend
-            console.log('Received MessageSent event:', e.message);
-            if (e.message.sender_id === selectedUser.value?.id) {
-                messages.value.push(e.message);
-                latest_message.value = e.message?.message
-                scrollToBottom();
-            } else {
-                fetchUsers();
-            }
-        });
+    channel.value?.listen('.MessageSent', (e: any) => { // Sử dụng tên sự kiện đúng với backend
+        console.log('Received MessageSent event:', e.message);
+        if (e.message.sender_id === selectedUser.value?.id) {
+            messages.value.push(e.message);
+            latest_message.value = e.message?.message
+            scrollToBottom();
+        } else {
+            fetchUsers();
+        }
+    });
 
-        console.log(`Đã chạy qua listen`);
+    console.log(`Đã chạy qua listen`);
 
     // Cleanup khi component bị hủy hoặc khi người dùng đổi cuộc trò chuyện
     return () => {
@@ -218,7 +218,7 @@ const sendMessage = async () => {
         messages.value.push(response.data.data);
 
         // console.log(response.data.data);
-        
+
         newMessage.value = '';
         scrollToBottom();
     } catch (error) {
@@ -227,11 +227,11 @@ const sendMessage = async () => {
 };
 
 const getWaitingUser = async () => {
-    try{
+    try {
         const hasWaitingUser = users.value.find((user: any) => user.id == messageStore.waitingUserChat)
 
         //CHECK HAS USER
-        if(hasWaitingUser) {
+        if (hasWaitingUser) {
             selectUser(hasWaitingUser)
             messageStore.waitingUserChat = null;
             return
@@ -251,9 +251,9 @@ const getWaitingUser = async () => {
 // Khởi tạo
 onMounted(async () => {
     console.log('start listen');
-    
+
     setupBroadcasting();
-    
+
     if (authStore.state.token) {
         // await authStore.fetchCurrentUser();
         latest_message.value = '';
@@ -261,7 +261,7 @@ onMounted(async () => {
         await fetchUsers();
 
         //CHECK HAS WAITING USER CHAT
-        if(messageStore.waitingUserChat != null) {
+        if (messageStore.waitingUserChat != null) {
             getWaitingUser()
         }
     } else {

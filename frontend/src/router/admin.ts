@@ -13,6 +13,7 @@ import AddNewTeacher from '@/views/admin/Users/AddNewTeacher.vue'
 import PayoutTeacher from '@/views/admin/Users/PayoutTeacher.vue'
 import SettingsTeacher from '@/views/admin/Users/SettingsTeacher.vue'
 import AcceptTeacher from '@/views/admin/Users/AcceptTeacher.vue'
+import Voucher from '@/views/admin/Voucher.vue'
 const admin = [
   {
     path: '/admin',
@@ -127,6 +128,12 @@ const admin = [
         name: 'admin.accept-teacher',
         component: AcceptTeacher,
         meta: { requiresAuth: true, role: 'admin', title: 'Phê duyệt giáo viên  | Edunity' }
+      },
+      {
+        path: '/admin/voucher',
+        name: 'admin.voucher',
+        component: Voucher,
+        meta: { requiresAuth: true, role: 'admin', title: 'Giảm giá  | Edunity' }
       }
     ]
   }

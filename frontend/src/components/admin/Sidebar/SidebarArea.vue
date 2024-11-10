@@ -3,7 +3,7 @@ import logo from '@/assets/images/logo2.svg'
 import logoMinimal from '@/assets/images/minimal-logo.svg'
 import SidebarItems from './SidebarItems.vue';
 import { computed, ref } from 'vue';
-import {WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon} from '@heroicons/vue/24/outline';
+import { WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon, TicketIcon } from '@heroicons/vue/24/outline';
 import { Cog8ToothIcon, UserCircleIcon } from '@heroicons/vue/20/solid';
 import type { MenuGroup } from '@/interfaces/admin.interface';
 
@@ -18,7 +18,7 @@ const sidebarClass = computed(() => {
 });
 
 const menuGroups = ref<MenuGroup[]>([
-  {   
+  {
     name: 'MENU',
     menuItems: [
       {
@@ -126,6 +126,11 @@ const menuGroups = ref<MenuGroup[]>([
         label: 'Tin tức',
         route: '/admin/newletter',
       },
+      {
+        icon: TicketIcon,
+        label: 'Mã giảm giá',
+        route: '/admin/voucher',
+      },
       // {
       //   icon: DocumentTextIcon,
       //   label: 'Bài viết',
@@ -197,57 +202,42 @@ const menuGroups = ref<MenuGroup[]>([
 </script>
 
 <template>
-  <aside class="shadow-xl z-20"
-  :class="{
+  <aside class="shadow-xl z-20" :class="{
     'ssm:hidden': !sidebarStore.isSidebarOpen,
-  }"
-  >
-    <div class="w-[290px] h-full relative dark:bg-dark-sidebar bg-primary-sidebar rounded-[16px] shadow-sidebar transform duration-100"
-    :class="sidebarClass "
-    >
+  }">
+    <div
+      class="w-[290px] h-full relative dark:bg-dark-sidebar bg-primary-sidebar rounded-[16px] shadow-sidebar transform duration-100"
+      :class="sidebarClass">
       <!-- SIDEBAR HEADER -->
-      <router-link to="/admin"> 
-        <img 
-        class="pl-5 pt-4 " 
-        :class="{'p-4':currentLogo ==logoMinimal}" 
-        :src="currentLogo" 
-        alt="">
+      <router-link to="/admin">
+        <img class="pl-5 pt-4 " :class="{ 'p-4': currentLogo == logoMinimal }" :src="currentLogo" alt="">
         <!-- <WindowIcon 
             class="hidden sm:block w-6 h-6 dark:hover:text-gray-200 text-gray-400"
         /> -->
       </router-link>
       <!-- note 1: Phím show hide sidebar -->
       <!-- END SIDEBAR HEADER -->
-       
-      <div 
-      class="text-white gap-1.5"
-      :class="{'p-4':sidebarStore.isSidebarOpen, 'p-6':!sidebarStore.isSidebarOpen}"
-      >
+
+      <div class="text-white gap-1.5"
+        :class="{ 'p-4': sidebarStore.isSidebarOpen, 'p-6': !sidebarStore.isSidebarOpen }">
         <!-- Sidebar Menu -->
-         <nav>
-           <template v-for="menuGroup in menuGroups" :key="menuGroup.name">
+        <nav>
+          <template v-for="menuGroup in menuGroups" :key="menuGroup.name">
             <div>
-              <h3 
-              class="title text-base pl-4 pb-3 uppercase pt-6"
-              :class="{'opacity-0':sidebarStore.isSidebarOpen}"
-              >{{menuGroup.name}}</h3>
+              <h3 class="title text-base pl-4 pb-3 uppercase pt-6" :class="{ 'opacity-0': sidebarStore.isSidebarOpen }">
+                {{ menuGroup.name }}</h3>
               <ul class="gap-1 flex flex-col">
-                <SidebarItems
-                 v-for="(menuItem, index) in menuGroup.menuItems"
-                 :item="menuItem"
-                 :key="index"
-                 :index="index"
-                />
+                <SidebarItems v-for="(menuItem, index) in menuGroup.menuItems" :item="menuItem" :key="index"
+                  :index="index" />
               </ul>
             </div>
-           </template>
-         </nav>
-         <!-- End Sidebar Menu -->
-          <div class="pt-7 pb-5 text-center text-sm text-zinc-400">
-            Create by Edunity 2024
-          </div>
+          </template>
+        </nav>
+        <!-- End Sidebar Menu -->
+        <div class="pt-7 pb-5 text-center text-sm text-zinc-400">
+          Create by Edunity 2024
+        </div>
       </div>
     </div>
   </aside>
 </template>
-

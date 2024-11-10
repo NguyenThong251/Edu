@@ -1,5 +1,6 @@
 export interface TVoucher {
-  code: string
+  id?: number
+  code: string | number
   description?: string
   discount_type?: string
   discount_value?: number
@@ -13,7 +14,7 @@ export interface TVoucherStoreState {
   vouchers: TVoucher[]
   deletedVouchers: TVoucher[]
   voucherDetails: TVoucher | null
-  appliedVoucher: string
+  appliedVoucher: string | number
   error: string | null
   total_price?: number
   discount?: number

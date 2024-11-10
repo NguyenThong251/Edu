@@ -53,8 +53,9 @@ export const useVoucherStore = defineStore('voucher', () => {
       state.value.error = 'Không thể tạo voucher mới'
     }
   }
+
   //   Xóa mềm Voucher
-  const deleteVoucher = async (code: string) => {
+  const deleteVoucher = async (code: string | number) => {
     try {
       await api.post('/auth/vouchers/delete', { code })
       await fetchVouchers()
@@ -63,7 +64,7 @@ export const useVoucherStore = defineStore('voucher', () => {
     }
   }
   //   Khôi phục Voucher đã xóa
-  const restoreVoucher = async (code: string) => {
+  const restoreVoucher = async (code: string | number) => {
     try {
       await api.post('/auth/vouchers/restore', { code })
       await fetchDeletedVouchers()
@@ -71,7 +72,7 @@ export const useVoucherStore = defineStore('voucher', () => {
       state.value.error = 'Không thể khôi phục voucher'
     }
   }
-  const applyVoucher = async (voucherCode: string) => {
+  const applyVoucher = async (voucherCode: string | number) => {
     try {
       const response = await api.post('/auth/cart/apply-voucher', { voucher_code: voucherCode })
       state.value.appliedVoucher = voucherCode
