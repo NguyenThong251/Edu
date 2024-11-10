@@ -69,11 +69,25 @@
                     </div>
                 </div>
 
+
+
                 <div class="flex items-center mt-4 rounded-xl bg-gray-50 p-2 shadow-inner sticky bottom-0">
                     <input type="file" ref="fileInput" class="hidden" @change="handleImageUpload" />
                     <button @click="triggerFileUpload" class="bg-transparent hover:bg-gray-200 p-2 rounded-full">
                         <DocumentIcon class="h-6 w-6 text-gray-500" />
                     </button>
+                    <!-- Thêm hình ảnh đã chọn bên trong khu vực nhập tin nhắn -->
+                    <div class="flex items-center gap-2 mr-2" v-if="selectedImageUrl">
+                        <img :src="selectedImageUrl" alt="Selected Image" class="w-10 h-10 object-cover rounded" />
+                        <button @click="removeSelectedImage" class="text-red-500 hover:text-red-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
                     <input v-model="newMessage" @keyup.enter="sendMessage"
                         class="flex-1 border-none outline-none bg-transparent resize-none p-2 max-h-32 overflow-y-auto"
                         rows="1" placeholder="Type a message..." @input="autoResize"></input>
@@ -129,6 +143,11 @@ const latest_message = ref('');
 const channel = ref<any>(null);
 const waitingUser = ref<any>(null);
 
+const selectedImageUrl = ref<string | null>(null);
+const uploadedImageUrl = ref<string | null>(null);
+const uploadPromise = ref<Promise<void> | null>(null);
+
+
 // Lấy danh sách người dùng
 const fetchUsers = async () => {
     try {
@@ -147,7 +166,7 @@ const fetchUsers = async () => {
 const currentUser = computed(() => authStore.state.user)
 
 const messageClass = (senderId: number) => {
-    return senderId === user.value?.id ? 'flex justify-end' : 'flex';
+    return senderId === currentUser.value?.id ? 'flex justify-end' : 'flex';
 };
 
 // Lọc danh sách người dùng theo tìm kiếm
@@ -212,23 +231,59 @@ const fetchMessages = async (receiverId: number) => {
 };
 
 // Gửi tin nhắn
+// const sendMessage = async () => {
+//     if (newMessage.value.trim() === '' || !selectedUser.value) return;
+
+//     try {
+//         const payload = { message: newMessage.value };
+//         latest_message.value = newMessage.value
+//         // const exMessage = { id: 'ex', message: newMessage.value, sender_id: currentUser.value?.id  };
+//         // messages.value.push(exMessage)
+//         const response = await api.post(`/auth/messages/${selectedUser.value.id}`, payload);
+//         // const index = messages.value.findIndex((ite: any) => ite.id == 'ex')
+//         // messages.value[index] = response.data.data
+//         messages.value.push(response.data.data);
+
+//         // console.log(response.data.data);
+
+//         newMessage.value = '';
+//         scrollToBottom();
+//     } catch (error) {
+//         console.error('Error sending message:', error);
+//     }
+// };
+
+// Gửi tin nhắn văn bản và hình ảnh
 const sendMessage = async () => {
-    if (newMessage.value.trim() === '' || !selectedUser.value) return;
+    // Kiểm tra nếu không có văn bản và không có hình ảnh thì không gửi
+    if (newMessage.value.trim() === '' && !uploadedImageUrl.value) return;
+    if (!selectedUser.value) return;
 
     try {
-        const payload = { message: newMessage.value };
-        latest_message.value = newMessage.value
-        // const exMessage = { id: 'ex', message: newMessage.value, sender_id: currentUser.value?.id  };
-        // messages.value.push(exMessage)
+        // Đợi quá trình upload hình ảnh hoàn tất nếu đang upload
+        if (uploadPromise.value) {
+            await uploadPromise.value;
+            uploadPromise.value = null; // Reset sau khi hoàn tất
+        }
+
+        const payload: any = {};
+        if (newMessage.value.trim() !== '') {
+            payload.message = newMessage.value.trim();
+        } else {
+            payload.message = ''; // Đảm bảo không để trống
+        }
+        if (uploadedImageUrl.value) {
+            payload.image_url = uploadedImageUrl.value;
+        }
+
         const response = await api.post(`/auth/messages/${selectedUser.value.id}`, payload);
-        // const index = messages.value.findIndex((ite: any) => ite.id == 'ex')
-        // messages.value[index] = response.data.data
         messages.value.push(response.data.data);
-
-        // console.log(response.data.data);
-
-        newMessage.value = '';
         scrollToBottom();
+
+        // Reset các trường sau khi gửi
+        newMessage.value = '';
+        selectedImageUrl.value = null;
+        uploadedImageUrl.value = null;
     } catch (error) {
         console.error('Error sending message:', error);
     }
@@ -278,40 +333,85 @@ onMounted(async () => {
     }
 });
 
+// onUnmounted(() => {
+//     channel.value.unLIO
+// })
 onUnmounted(() => {
-    channel.value.unLIO
-})
-
-
-
-const handleImageUpload = () => {
+    if (channel.value) {
+        channel.value.unListen('.MessageSent');
+        echo.leave(`chat.${authStore.state.user.id}`);
+    }
+});
+// Xử lý upload hình ảnh ngay khi chọn
+const handleImageUpload = async () => {
     if (fileInput.value && fileInput.value.files && fileInput.value.files[0]) {
         const file = fileInput.value.files[0];
-        sendImage(file); // Gửi tệp hình ảnh trực tiếp
+        selectedImageUrl.value = URL.createObjectURL(file); // Hiển thị preview
+        uploadPromise.value = uploadImage(file); // Gán Promise của uploadImage
         fileInput.value.value = ''; // Reset input
     }
 };
-// Gửi hình ảnh
-const sendImage = async (file: File) => {
-    if (!selectedUser.value) return;
 
+// Upload hình ảnh lên S3
+const uploadImage = async (file: File) => {
     try {
         const formData = new FormData();
-        formData.append('image', file); // Thêm tệp hình ảnh vào FormData
-        formData.append('message', ''); // Có thể thêm tin nhắn văn bản nếu cần
+        formData.append('image', file); // Gửi tệp hình ảnh lên API upload
 
-        const response = await api.post(`/auth/send-image-message/${selectedUser.value.id}`, formData, {
+        const response = await api.post(`/auth/upload-chat-image`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
         });
 
-        messages.value.push(response.data.data); // Thêm tin nhắn mới vào danh sách tin nhắn
-        scrollToBottom();
+        if (response.data.status === "OK") {
+            uploadedImageUrl.value = response.data.data.image_url;
+            selectedImageUrl.value = response.data.data.image_url; // Hiển thị hình ảnh đã upload
+        }
     } catch (error) {
-        console.error('Error sending image:', error);
+        console.error('Error uploading image:', error);
     }
-}
+};
+
+// Xóa hình ảnh đã chọn
+const removeSelectedImage = async () => {
+    if (!uploadedImageUrl.value) {
+        selectedImageUrl.value = null;
+        return;
+    }
+
+    try {
+        await api.delete(`/auth/delete-chat-image`, {
+            data: { image_url: uploadedImageUrl.value },
+        });
+        uploadedImageUrl.value = null;
+        selectedImageUrl.value = null;
+    } catch (error) {
+        console.error('Error deleting image:', error);
+    }
+};
+
+// Gửi hình ảnh
+const sendImage = async (file: File) => {
+    if (!selectedUser.value) return;
+    try {
+        const formData = new FormData();
+        formData.append('image', file); // Gửi tệp hình ảnh lên API upload
+
+        const response = await api.post(`/auth/upload-chat-image`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        if (response.data.status === "OK") {
+            uploadedImageUrl.value = response.data.data.image_url;
+            selectedImageUrl.value = response.data.data.image_url; // Hiển thị hình ảnh đã upload
+        }
+    } catch (error) {
+        console.error('Error uploading image:', error);
+    }
+};
 
 
 
