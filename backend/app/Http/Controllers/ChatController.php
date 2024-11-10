@@ -7,6 +7,7 @@ use App\Models\ChatMessages;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -40,8 +41,10 @@ class ChatController extends Controller
             return formatResponse(STATUS_FAIL, '', '', 'Missing parameter receiverId', CODE_NOT_FOUND);
         }
         $validator = Validator::make($request->all(), [
-            'message' => 'required|string|max:1000',
+            'message' => 'nullable|string|max:1000',
+            'image_url' => 'nullable|url',
         ]);
+
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
@@ -50,11 +53,13 @@ class ChatController extends Controller
             return formatResponse(STATUS_FAIL, '', '', 'Receiver not found', CODE_NOT_FOUND);
         }
 
-        $message = ChatMessages::create([
+        $messageData = [
             'sender_id' => $user->id,
             'receiver_id' => $receiverId,
-            'message' => $request->input('message'),
-        ]);
+            'message' => $request->input('message') ?: '',
+            'image_url' => $request->input('image_url') ?: null,
+        ];
+        $message = ChatMessages::create($messageData);
 
         Log::info("Broadcasting MessageSent event from User {$user->id} to User {$receiverId}");
         // Sự kiện broadcast sẽ tự động đính kèm người gửi và người nhận nếu đã được định nghĩa trong broadcastWith()
@@ -118,41 +123,51 @@ class ChatController extends Controller
         return formatResponse(STATUS_FAIL, '', 'User not found');
     }
 
-    public function sendImageMessage($receiverId, Request $request)
+
+    public function uploadChatImage(Request $request)
     {
-        $user = JWTAuth::parseToken()->authenticate();
-        if (!$receiverId) {
-            return formatResponse(STATUS_FAIL, '', '', 'Missing parameter receiverId', CODE_NOT_FOUND);
-        }
         $validator = Validator::make($request->all(), [
-            'message' => 'nullable|string|max:1000',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Validation failed');
         }
 
-        $receiver = User::find($receiverId);
-        if (!$receiver) {
-            return formatResponse(STATUS_FAIL, '', '', 'Receiver not found', CODE_NOT_FOUND);
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $path = $request->file('image')->storePublicly('chat-images', 's3');
+
+        if ($path) {
+            $imageUrl = env('URL_IMAGE_S3') . $path;
+            return formatResponse(STATUS_OK, ['image_url' => $imageUrl], '', 'Image uploaded successfully');
         }
 
-        $messageData = [
-            'sender_id' => $user->id,
-            'receiver_id' => $receiverId,
-            'message' => $request->input('message'),
-        ];
+        return formatResponse(STATUS_FAIL, '', '', 'Image upload failed', CODE_BAD);
+    }
 
-        // Process image upload if present
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->storePublicly('chat-images', 's3');
-            if ($path) {
-                $messageData['image_url'] = env('URL_IMAGE_S3') . $path;
-            }
+    public function deleteChatImage(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'image_url' => 'required|url',
+        ]);
+
+        if ($validator->fails()) {
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Validation failed');
         }
-        $message = ChatMessages::create($messageData);
-        broadcast(new MessageSent($message))->toOthers();
-        return formatResponse(STATUS_OK, $message, '', 'Message sent successfully');
+
+        $imageUrl = $request->input('image_url');
+        $user = JWTAuth::parseToken()->authenticate();
+
+        // Chuyển đổi URL thành đường dẫn trong S3
+        $filePath = str_replace(env('URL_IMAGE_S3'), '', $imageUrl);
+
+        if (Storage::disk('s3')->exists($filePath)) {
+            Storage::disk('s3')->delete($filePath);
+            return formatResponse(STATUS_OK, '', '', 'Image deleted successfully');
+        }
+
+        return formatResponse(STATUS_FAIL, '', '', 'Image not found', CODE_NOT_FOUND);
     }
 
 }

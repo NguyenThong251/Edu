@@ -126,7 +126,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('/message/private/{receiverId}', [ChatController::class, 'index']);
             Route::get('/chat/users', [ChatController::class, 'getUsers']);
             Route::post('/messages/{receiverId}', [ChatController::class, 'store']);
-            Route::post('/send-image-message/{receiverId}', [ChatController::class, 'sendImageMessage']);
+//            Route::post('/send-image-message/{receiverId}', [ChatController::class, 'sendImageMessage']);
+            Route::post('/auth/upload-chat-image', [ChatController::class, 'uploadChatImage']);
+            Route::delete('/auth/delete-chat-image', [ChatController::class, 'deleteChatImage']);
 
             // Các route dành cho student có thể thêm tại đây
 
