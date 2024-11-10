@@ -143,7 +143,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
   const fetchCurrentUser = async () => {
     try {
-        const response = await api.get('/auth/me'); // Endpoint để lấy thông tin người dùng
+        const response = await api.get('/auth/profile'); // Endpoint để lấy thông tin người dùng
         state.value.user = response.data.data;
     } catch (error) {
         console.error('Error fetching current user:', error);
