@@ -121,12 +121,10 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         // Routes cho student
         Route::middleware(['role:student'])->group(function () {
             //chat message
-            Route::get('/me', [ChatController::class, 'me']);
             Route::get('/get-user-id/{id}', [ChatController::class, 'getUserId']);
             Route::get('/message/private/{receiverId}', [ChatController::class, 'index']);
             Route::get('/chat/users', [ChatController::class, 'getUsers']);
             Route::post('/messages/{receiverId}', [ChatController::class, 'store']);
-//            Route::post('/send-image-message/{receiverId}', [ChatController::class, 'sendImageMessage']);
             Route::post('/auth/upload-chat-image', [ChatController::class, 'uploadChatImage']);
             Route::delete('/auth/delete-chat-image', [ChatController::class, 'deleteChatImage']);
 

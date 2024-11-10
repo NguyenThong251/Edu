@@ -108,11 +108,6 @@ class ChatController extends Controller
         return formatResponse(STATUS_OK, $users, '', 'Get users successfully');
     }
 
-    public function me()
-    {
-        $user = JWTAuth::parseToken()->authenticate();
-        return formatResponse(STATUS_OK, $user, '', 'Get current user successfully');
-    }
 
     public function getUserId($id)
     {
