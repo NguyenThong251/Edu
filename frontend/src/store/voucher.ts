@@ -30,7 +30,7 @@ export const useVoucherStore = defineStore('voucher', () => {
   const fetchVoucherDetails = async (code: string) => {
     try {
       const response = await api.get(`/auth/vouchers/${code}`)
-      state.value.voucherDetails = response.data
+      state.value.voucherDetails = response.data.data
     } catch (error) {
       state.value.error = 'Không thể tải thông tin voucher'
     }
@@ -39,7 +39,7 @@ export const useVoucherStore = defineStore('voucher', () => {
   const fetchDeletedVouchers = async () => {
     try {
       const response = await api.get('/auth/vouchers/deleted')
-      state.value.deletedVouchers = response.data
+      state.value.deletedVouchers = response.data.data
     } catch (error) {
       state.value.error = 'Không thể tải danh sách vouchers đã xóa'
     }
@@ -68,6 +68,7 @@ export const useVoucherStore = defineStore('voucher', () => {
     try {
       await api.post('/auth/vouchers/restore', { code })
       await fetchDeletedVouchers()
+      await fetchVouchers()
     } catch (error) {
       state.value.error = 'Không thể khôi phục voucher'
     }
@@ -111,6 +112,7 @@ export const useVoucherStore = defineStore('voucher', () => {
     state,
     fetchVouchers,
     fetchVoucherDetails,
+    fetchDeletedVouchers,
     createVoucher,
     deleteVoucher,
     restoreVoucher,

@@ -2,33 +2,50 @@
     <div class="p-4">
         <h1 class="text-xl font-bold mb-4">Quản lý Voucher</h1>
         <!-- Nút thêm voucher mới -->
-        <el-button type="primary" icon="heroicon-o-plus" @click="openDrawer">
-            Thêm Voucher
-        </el-button>
+        <div class="flex items-center gap-1">
+
+            <el-button type="primary" class="flex items-center gap-1" click="openDrawer">
+                <PlusIcon class="h-5 w-5 text-white cursor-pointer" />
+                Thêm Voucher
+            </el-button>
+
+            <el-button type="success" class="flex items-center gap-1 ml-2" @click="openDeletedVouchersDialog">
+                <ArrowPathIcon class="h-5 w-5 text-white cursor-pointer" />
+                Xem Voucher Đã Xóa
+            </el-button>
+        </div>
+
 
         <!-- Bảng hiển thị danh sách voucher -->
-        <el-table :data="voucherStore.state.vouchers" class="mt-4">
-            <el-table-column prop="code" label="Mã" width="180" />
+        <el-table :data="voucherStore.state.vouchers" class="mt-4 rounded-md">
+            <el-table-column prop="code" label="Mã" />
             <el-table-column prop="description" label="Mô tả" />
-            <el-table-column prop="discount_value" label="Giá trị giảm" width="120" />
-            <el-table-column prop="expires_at" label="Ngày hết hạn" width="180" />
-            <el-table-column label="Hành động" width="200">
+            <el-table-column prop="discount_value" label="Giá trị giảm" />
+            <el-table-column prop="discount_type" label="Loại giảm" />
+            <el-table-column prop="usage_limit" label="Số lượng" />
+            <el-table-column prop="min_order_value" label="Giá trị tối thiếu" />
+            <el-table-column prop="max_discount_value" label="Giá trị tối đa" />
+            <el-table-column prop="status" label="Trạng thái" />
+            <el-table-column prop="expires_at" label="Ngày hết hạn" />
+            <el-table-column label="Hành động">
                 <template #default="{ row }">
-                    <el-button type="primary" icon="heroicon-o-pencil-alt" @click="editVoucher(row)">
-                        Sửa
-                    </el-button>
-                    <el-button type="danger" icon="heroicon-o-trash" @click="deleteVoucher(row.code)">
-                        Xóa
-                    </el-button>
-                    <el-button type="warning" icon="heroicon-o-refresh" @click="restoreVoucher(row.code)">
-                        Khôi phục
-                    </el-button>
+                    <div class="flex justify-center gap-1">
+
+                        <PencilSquareIcon class="h-5 w-5 text-indigo-500 cursor-pointer" @click="editVoucher(row)" />
+
+
+                        <TrashIcon class="h-5 w-5 text-red-500 cursor-pointer" @click="deleteVoucher(row.code)" />
+                        <!-- <ArrowPathIcon class="h-5 w-5 text-green-500 cursor-pointer"
+                            @click="restoreVoucher(row.code)" /> -->
+                    </div>
+
+
                 </template>
             </el-table-column>
         </el-table>
 
         <!-- Drawer tạo và chỉnh sửa voucher -->
-        <el-drawer title="Tạo Voucher" v-model:visible="drawerVisible" size="30%">
+        <el-dialog align-center title="Tạo Voucher" class="z-20" v-model="drawerVisible" width="80%">
             <form @submit.prevent="handleSubmit">
                 <div class="mb-4">
                     <label class="block text-sm font-medium">Mã Voucher</label>
@@ -78,7 +95,26 @@
                     <el-button type="primary" native-type="submit">Lưu</el-button>
                 </div>
             </form>
-        </el-drawer>
+        </el-dialog>
+        <!-- Dialog hiển thị danh sách voucher đã xóa mềm -->
+        <el-dialog align-center class="z-20" title="Danh sách Voucher Đã Xóa" v-model="deletedVouchersDialogVisible"
+            width="50%">
+            <el-table :data="voucherStore.state.deletedVouchers" class="rounded-md">
+                <el-table-column prop="code" label="Mã" />
+                <el-table-column prop="description" label="Mô tả" />
+                <el-table-column prop="discount_value" label="Giá trị giảm" />
+                <el-table-column prop="status" label="Trạng thái" />
+                <el-table-column label="Hành động">
+                    <template #default="{ row }">
+                        <div class="flex justify-center gap-1">
+                            <ArrowPathIcon class="h-5 w-5 text-green-500 cursor-pointer"
+                                @click="restoreVoucher(row.code)" />
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+        </el-dialog>
     </div>
 </template>
 
@@ -86,8 +122,10 @@
 import { onMounted, ref } from 'vue'
 import { useVoucherStore } from '@/store/voucher'
 import type { TVoucher } from '@/interfaces/voucher';
+import { PencilSquareIcon, TrashIcon, ArrowPathIcon, PlusIcon } from "@heroicons/vue/24/outline";
 
 const drawerVisible = ref(false)
+const deletedVouchersDialogVisible = ref(false)
 const voucherForm = ref<TVoucher>({
     code: '',
     description: '',
@@ -106,8 +144,23 @@ const voucherStore = useVoucherStore()
 onMounted(async () => {
     await voucherStore.fetchVouchers()
 })
-
+const openDeletedVouchersDialog = async () => {
+    await voucherStore.fetchDeletedVouchers()
+    deletedVouchersDialogVisible.value = true
+}
+// console.log(voucherStore.state.vouchers)
 const openDrawer = () => {
+    voucherForm.value = {
+        code: '',
+        description: '',
+        discount_type: 'percent',
+        discount_value: 0,
+        usage_limit: 0,
+        expires_at: '',
+        min_order_value: 0,
+        max_discount_value: 0,
+        status: 'active'
+    }
     drawerVisible.value = true
 }
 
@@ -117,10 +170,12 @@ const handleSubmit = async () => {
     await voucherStore.fetchVouchers() // Tải lại danh sách voucher sau khi thêm mới
 }
 
-const editVoucher = (voucher: number | string) => {
-    Object.assign(voucherForm.value, voucher)
+const editVoucher = (voucher: TVoucher) => {
+    voucherForm.value = { ...voucher }
+    // Object.assign(voucherForm.value, voucher)
     drawerVisible.value = true
 }
+
 
 const deleteVoucher = async (code: number | string) => {
     await voucherStore.deleteVoucher(code)

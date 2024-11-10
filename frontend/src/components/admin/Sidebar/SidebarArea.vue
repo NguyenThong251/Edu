@@ -202,7 +202,7 @@ const menuGroups = ref<MenuGroup[]>([
 </script>
 
 <template>
-  <aside class="shadow-xl z-20" :class="{
+  <aside class="shadow-xl z-10" :class="{
     'ssm:hidden': !sidebarStore.isSidebarOpen,
   }">
     <div
