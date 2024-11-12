@@ -146,7 +146,7 @@ class ManageController extends Controller
         $user = User::find($id);
 
         if ($user) {
-            $contactInfo = $user->contact_info ?: [];
+            $contactInfo = json_decode($user->contact_info, true) ?: [];
 
             if ($request->has('facebook')) {
                 $contactInfo['facebook'] = $request->input('facebook');
@@ -156,7 +156,7 @@ class ManageController extends Controller
                 $contactInfo['linkedin'] = $request->input('linkedin');
             }
 
-            $user->contact_info = $contactInfo;
+            $user->contact_info = json_encode($contactInfo);
 
             $user->save();
 
@@ -446,5 +446,49 @@ class ManageController extends Controller
             return formatResponse(STATUS_OK, '', '', 'Bỏ yêu thích khóa học thành công');
         }
         return formatResponse(STATUS_FAIL, '', '', 'Bỏ yêu thích khóa học thất bại.', CODE_FAIL);
+    }
+
+    /*Categories data*/
+    public function getCategoryList(Request $request){
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+
+        $courseList = Course::with(['sections.lectures', 'category','creator'])
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $result = $courseList->getCollection()->map(function ($item) {
+            return [
+                'course_id' => $item->id,
+                'course_name' => $item->title ?? 'N/A',
+                'instructor_name' => $item->creator->first_name . ' ' . $item->creator->last_name ?? 'N/A',
+                'instructor_email' => $item->creator->email,
+                'category_name' => $item->category->name,
+                'section' => $item->sections->map(function ($section) {
+                    return [
+                        'section_id' => $section->id,
+                        'section_name' => $section->name ?? 'N/A',
+                        'lectures' => $section->lectures->map(function ($lecture) {
+                            return [
+                                'lecture_id' => $lecture->id,
+                                'lecture_name' => $lecture->title ?? 'N/A',
+                            ];
+                        }),
+                    ];
+                }),
+                'status' => $item->status,
+                'total_price' => number_format($item->price, 0, ',', '.'),
+                'created_date' => $item->created_at->format('d/m/Y'),
+            ];
+        });
+        $pagination = [
+            'total' => $courseList->total(),
+            'current_page' => $courseList->currentPage(),
+            'last_page' => $courseList->lastPage(),
+            'per_page' => $courseList->perPage(),
+        ];
+        return formatResponse(STATUS_OK, [
+            'data' => $result,
+            'pagination' => $pagination,
+        ], '', __('messages.getUsers'));
     }
 }

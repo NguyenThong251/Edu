@@ -82,6 +82,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::delete('delReport/{id}', [ManageController::class, 'deleteReportPayment']);
             Route::get('order-history', [ManageController::class, 'getOrderHistory']);
             Route::get('order-detail/{orderId}', [ManageController::class, 'getOrderDetail']);
+            Route::get('getCategoryList', [ManageController::class, 'getCategoryList']);
 
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
