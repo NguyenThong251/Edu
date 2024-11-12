@@ -35,7 +35,6 @@ export const useCartStore = defineStore('cart', () => {
       if (isAuthenticated.value) {
         try {
           await api.post('/auth/cart/courses', { course_id: courseId })
-
           ElNotification({
             title: 'Thành công',
             message: 'Sản phẩm của bạn đã thêm vào giỏ hàng',

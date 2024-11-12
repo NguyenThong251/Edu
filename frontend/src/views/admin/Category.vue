@@ -11,23 +11,25 @@ import InputGroup from '@/components/admin/Dialog/InputGroup.vue';
 import IconGroup from '@/components/admin/Dialog/IconGroup.vue';
 import DescriptionGroup from '@/components/admin/Dialog/DescriptionGroup.vue';
 import UploadGroup from '@/components/admin/Dialog/UploadGroup.vue';
-import useAddCategory from '@/composables/admin/category/useAddCategory';
-import useFetchCategories from '@/composables/admin/category/useCardCategory';
 import SelectGroup from '@/components/admin/Dialog/SelectGroup.vue';
-import useEditCategory from '@/composables/admin/category/useEditCategory';
+import Loading from 'vue-loading-overlay';
+import { useCate } from '@/composables/admin/useCate';
 const sidebarStore = useSidebarStore();
 const dialogFormVisible = ref(false);
 
-const { categories, loading, error, fetchCategories } = useFetchCategories()
-const { handlePreviewImg, submitForm, formData, imageUrl } = useAddCategory();
+// const { handlePreviewImg, submitForm, formData, imageUrl } = useAddCategory();
 
-const { formDataEdit, handlePreviewImgEdit, submitFormEdit, initializeForm } = useEditCategory();
+// const { categories, loading, error, fetchCategories } = useFetchCategories()
+// onMounted(async () => {
+//   await fetchCategories(); // Gọi hàm fetchCategories khi component được mount
+//   console.log(categories.value); // In dữ liệu đã lấy được
+// });
 
-
-onMounted(async () => {
-  await fetchCategories(); // Gọi hàm fetchCategories khi component được mount
-  console.log(categories.value); // In dữ liệu đã lấy được
+onMounted(() => {
+  apiStore.fetchCategory();
 });
+
+
 
 const dialogEditVisible = ref(false);
 const categoryIdToEdit = ref<number | null>(null); // Biến để lưu id danh mục cần chỉnh sửa
@@ -58,11 +60,12 @@ const openEditDialog = (id: number) => {
         />
     </HeaderNavbar>
   </div>
-  <div v-if="loading">Loading...</div>
+  <!-- <div v-if="loading">Loading...</div> -->
+  <Loading :active="loading" :is-full-page="true" />
   <div v-if="error">{{ error }}</div>
   <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
     <CardCategory 
-    v-for="(category, index) in categories" 
+    v-for="(category, index) in apiStore.categories" 
     :key="index" 
     :category="category" 
     @edit="openEditDialog"

@@ -4,7 +4,6 @@ import { ref } from 'vue'
 
 export function useFilter() {
   // States
-
   const coursesFilter = ref<any[]>([])
   const totalCourses = ref(0)
   const loading = ref(false)

@@ -1,8 +1,8 @@
 // src/composables/useShowCourse.ts
 import { ref } from 'vue';
 import axios from 'axios';
-import { myToken } from '@/interfaces/token';
 import type { TCourseAdmin } from '@/interfaces/course.interface';
+import Cookies from 'js-cookie';
 
 
 
@@ -11,7 +11,7 @@ export const useShowCourse = () => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
-  const userToken = ref(myToken);
+  const userToken = ref(Cookies.get('token_user_edu'));
 
   const fetchCourses = async (limit:number) => {
     isLoading.value = true;

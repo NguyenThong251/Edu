@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ref, onMounted } from 'vue';
-import { myToken } from '@/interfaces/token';
+import Cookies from 'js-cookie';
 
 export default function useAddCourse() {
   // State để lưu dữ liệu form của khóa học
@@ -25,7 +25,7 @@ export default function useAddCourse() {
   const error = ref(null);
 
 
-  const userToken = ref(myToken);
+  const userToken = ref(Cookies.get('token_user_edu'));
   // Hàm lấy dữ liệu cấp độ khóa học
   const fetchCourseLevels = async () => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${userToken.value}`

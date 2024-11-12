@@ -8,7 +8,6 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = Cookies.get('token_user_edu')
-
     if (token) {
       config.headers.Authorization = `Bearer ${token}` // Thêm token vào header nếu có
     }

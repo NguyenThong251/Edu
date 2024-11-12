@@ -18,6 +18,7 @@ export const apisStore = defineStore('homeStore', () => {
     try {
       const res = await api.get('/categories')
       categories.value = res.data.data.data
+      console.log(categories.value);
     } catch (error) {
       console.error('Error fetching categories:', error)
     }

@@ -2,12 +2,11 @@ import { ref } from 'vue';
 import axios from 'axios';
 // import Cookies from 'js-cookie';
 import type { TListCategories } from '@/interfaces/category.interface';
-import { myToken } from '@/interfaces/token';
+import Cookies from 'js-cookie';
 
 export default function useEditCategory() {
   // Token lấy từ Cookies (hoặc có thể thay thế bằng phương pháp khác)
-  const userToken = ref(myToken);
-
+  const userToken = ref(Cookies.get('token_user_edu'))
   // Biến để lưu thông tin danh mục đang chỉnh sửa
   const formDataEdit = ref<TListCategories>({
     id: 0,

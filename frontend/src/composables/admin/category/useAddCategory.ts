@@ -1,14 +1,15 @@
 
 import type { TListCategories } from '@/interfaces/category.interface';
+import api from '@/services/axiosConfig';
+import { Loading } from '@element-plus/icons-vue';
 import axios from 'axios'
+import { ElNotification } from 'element-plus';
 import Cookies from 'js-cookie'
 import { ref } from 'vue'
-import { myToken } from "@/interfaces/token";
 
 export default function useAddCategory() {
-  // const userToken = ref(Cookies.get('token_user_edu'))
+  const userToken = ref(Cookies.get('token_user_edu'))
   const imageUrl = ref<string | null>(null)
-  const userToken = ref(myToken); 
   console.log("Token:", userToken.value);
 
   const formData = ref({
@@ -34,6 +35,7 @@ export default function useAddCategory() {
   }
 
   const submitForm = async () => {
+    Loading.value = true
     try {
       const requestData = new FormData();
       requestData.append('name', formData.value.name);
@@ -48,38 +50,18 @@ export default function useAddCategory() {
         requestData.append('children', JSON.stringify(formData.value.children));
       }
 
-      const response = await axios.post('http://localhost:8000/api/auth/categories/', requestData, {
-        headers: {
-          Authorization: `Bearer ${userToken.value}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      // Kiểm tra phản hồi có thành công hay không
-      if (response.status === 200 || response.status === 201) {
-        console.log('Response data:', response.data);2
-        alert(response.data.message);
-        alert('Thêm thành công rồi bạn ei');
-      } else {
-        // Nếu phản hồi không phải thành công, hiển thị thông báo lỗi
-        console.error('Error response:', response.data);
-        alert(response.data.message || 'Có lỗi xảy ra từ phía server.');
-      }
+      const response = await api.post('/auth/categories/', requestData);
+      ElNotification({
+        title: 'Thành công',
+        message: 'Đã thêm danh mục khoá học.',
+        type: 'success'
+      })
     } catch (error: any) {
-      // Xử lý lỗi khi có lỗi xảy ra trong quá trình gửi yêu cầu
-      if (error.response) {
-        // Lỗi từ phía server
-        const { status, data } = error.response;
-        console.error(`Error ${status}: ${data.message}`);
-        alert(data.message || 'Đã xảy ra lỗi từ phía server.');
-      } else if (error.request) {
-        // Không nhận được phản hồi từ server
-        console.error('No response received from server.');
-        alert('Không nhận được phản hồi từ server.');
-      } else {
-        // Lỗi trong khi thiết lập yêu cầu
-        console.error('Error:', error.message);
-        alert('Đã xảy ra lỗi: ' + error.message);
-      }
+      ElNotification({
+        title: 'Thông báo',
+        message: 'Thêm danh mục thất bại.',
+        type: 'warning'
+      })
     }
   }
 

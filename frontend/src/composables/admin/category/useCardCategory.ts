@@ -3,16 +3,14 @@ import { ref } from "vue";
 import axios from "axios";
 import Cookies from "js-cookie";
 import type { TListCategories } from "@/interfaces/admin.interface";
-import { myToken } from "@/interfaces/token";
 export default function useFetchCategories() {
   const categories = ref<TListCategories[]>([]);
   const loading = ref<boolean>(true)
   const error = ref<string | null>(null);
 
   // Lấy token từ Cookies
-  // const userToken = ref(Cookies.get('token_user_edu'));
+  const userToken = ref(Cookies.get('token_user_edu'));
   // console.log("Token:", userToken.value); 
-  const userToken = ref(myToken); 
   console.log("Token:", userToken.value);
 
   // Hàm lấy danh sách danh mục
