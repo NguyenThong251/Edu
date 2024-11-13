@@ -58,18 +58,8 @@ export const useVoucherStore = defineStore('voucher', () => {
     try {
       await api.put(`/auth/vouchers/${voucherData.id}`, voucherData)
       await fetchVouchers()
-      ElNotification({
-        title: 'Thành công',
-        message: 'Voucher đã được cập nhật thành công',
-        type: 'success'
-      })
     } catch (error) {
       state.value.error = 'Không thể cập nhật voucher'
-      ElNotification({
-        title: 'Thất bại',
-        message: 'Không thể cập nhật voucher',
-        type: 'error'
-      })
     }
   }
   //   Xóa mềm Voucher

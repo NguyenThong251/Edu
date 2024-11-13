@@ -21,9 +21,8 @@ const mappedIcon = computed(() => {
   return solidIcons[iconName as keyof typeof solidIcons] || solidIcons.faQuestionCircle;
 });
 
-const props = defineProps<{
-  category: TListCategories;
-}>();
+const props = defineProps<TListCategories>();
+console.log(props)
 
 
 const isActive = computed(() => props.category.status === 'active')
