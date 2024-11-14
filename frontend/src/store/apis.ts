@@ -7,7 +7,7 @@ import type { TCardCourse } from '@/interfaces/course.interface'
 import type { TCategory } from '@/interfaces/category.interface'
 import type { TBill } from '@/interfaces/bill.interface'
 
-export const apisStore = defineStore('homeStore', () => {
+export const apisStore = defineStore('fetchApi', () => {
   // State
   const categories = ref<TCategory[]>([])
   const courses = ref<TCardCourse[]>([])

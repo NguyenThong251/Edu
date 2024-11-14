@@ -25,7 +25,7 @@ const handleItemClick = () => {
 </script>
 <template>
   <li class="relative">
-    <router-link :to="props.item.route" class="gap-2 flex  hover:bg-slate-500 p-3 rounded-[5px] items-center relative"
+    <RouterLink :to="props.item.route" class="gap-2 flex  hover:bg-slate-500 p-3 rounded-[5px] items-center relative"
       :class="{
         'bg-slate-500': sidebarStore.page === item.label,
         'justify-center': sidebarStore.isSidebarOpen
@@ -36,7 +36,7 @@ const handleItemClick = () => {
       <span :class="{ 'hidden': sidebarStore.isSidebarOpen }">{{ props.item.label }}</span>
       <ChevronRightIcon v-if="props.item.children" class="h-5 w-5 right-2 absolute"
         :class="{ 'rotate-90': sidebarStore.page === item.label, 'hidden': sidebarStore.isSidebarOpen }" />
-    </router-link>
+    </RouterLink>
     <!-- Dropdown Menu Start -->
     <div class="translate transform overflow-hidden"
       :class="{ 'absolute bg-white dark:bg-bg-primary w-[200px] rounded-lg top-[-22px] left-[75px] shadow-lg': sidebarStore.isSidebarOpen }"

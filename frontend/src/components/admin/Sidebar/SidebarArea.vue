@@ -209,12 +209,12 @@ const menuGroups = ref<MenuGroup[]>([
       class="w-[290px] h-full relative dark:bg-dark-sidebar bg-primary-sidebar rounded-[16px] shadow-sidebar transform duration-100"
       :class="sidebarClass">
       <!-- SIDEBAR HEADER -->
-      <router-link to="/admin">
+      <RouterLink to="/admin">
         <img class="pl-5 pt-4 " :class="{ 'p-4': currentLogo == logoMinimal }" :src="currentLogo" alt="">
         <!-- <WindowIcon 
             class="hidden sm:block w-6 h-6 dark:hover:text-gray-200 text-gray-400"
         /> -->
-      </router-link>
+      </RouterLink>
       <!-- note 1: Phím show hide sidebar -->
       <!-- END SIDEBAR HEADER -->
 

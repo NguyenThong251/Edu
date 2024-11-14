@@ -1,27 +1,30 @@
 export interface TCategory {
   id?: number
-  children?: TCategory[]
-  image?: string
+  image?: string | File
   name: string
+  icon?: string
   courses_count?: number
+  keyword?: string
+  description?: string
+  status?: 'active' | 'inactive'
+  children?: TCategory[]
 }
 
 // ====== ADMIN CATEGORY ======
 
 export interface TListCategories {
   id?: number
-  image?: string | null
+  image?: string
   icon: any
   name: string
   keyword?: string
   description?: string
   status?: string
-  children?: TListCategoriesChildren[]
+  children?: TListCategories[]
 }
-export interface TListCategoriesChildren extends TListCategories {}
 export interface CurrentCategoryType {
-  id?: number | null
+  id?: number
   name?: string
-  parentCategoryId?: number | null
+  parentCategoryId?: number
   parentCategoryName?: string
 }
