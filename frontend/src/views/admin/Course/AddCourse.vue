@@ -35,7 +35,7 @@ const radio2 = ref('1')
 <template>
   <div class="p-4">
     <HeaderNavbar
-    :namePage="sidebarStore.page"
+    namePage="Thêm khoá học mới"
     />
   </div>
   <div class="p-4 py-2">
@@ -68,41 +68,38 @@ const radio2 = ref('1')
             <div class="mb-2 ml-4">
               <el-radio-group class="grid" v-model="radio2">
                 <el-radio value ="1" >Kích hoạt</el-radio>
-                <el-radio value ="2" >Riêng tư</el-radio>
-                <el-radio value ="3" >Sắp tới</el-radio>
-                <el-radio value ="4" >Đang sử lý</el-radio>
-                <el-radio value ="5" >Lưu bản nháp</el-radio>
+                <el-radio value ="2" >Không kích hoạt</el-radio>
               </el-radio-group>
             </div>
             </RadioGroup>
           </div>
           <div class="">
             <SelectGroup
-  inputPlaceHoder="Chọn danh mục cho khoá học"
-  required="*"
-  label="Danh mục"
-  :optionsData="parentCategories.map(category => ({ label: category.name, value: category.id }))"
-  v-model="formDataAddCourse.category_id"
-  @change="() => console.log('Danh mục đã chọn:', formDataAddCourse.category_id)"
-/>
+            inputPlaceHoder="Chọn danh mục cho khoá học"
+            required="*"
+            label="Danh mục"
+            :optionsData="parentCategories.map(category => ({ label: category.name, value: category.id }))"
+            v-model="formDataAddCourse.category_id"
+            @change="() => console.log('Danh mục đã chọn:', formDataAddCourse.category_id)"
+          />
 
-<SelectGroup
-  inputPlaceHoder="Chọn cấp độ cho khoá học"
-  required="*"
-  label="Cấp độ khoá học"
-  :optionsData="courseLevels.map(level => ({ label: level.name, value: level.id }))"
-  v-model="formDataAddCourse.level_id"
-  @change="() => console.log('Cấp độ đã chọn:', formDataAddCourse.level_id)"
-/>
+          <SelectGroup
+            inputPlaceHoder="Chọn cấp độ cho khoá học"
+            required="*"
+            label="Cấp độ khoá học"
+            :optionsData="courseLevels.map(level => ({ label: level.name, value: level.id }))"
+            v-model="formDataAddCourse.level_id"
+            @change="() => console.log('Cấp độ đã chọn:', formDataAddCourse.level_id)"
+          />
 
-<SelectGroup
-  inputPlaceHoder="Chọn ngôn ngữ cho khoá học"
-  required="*"
-  label="Ngôn ngữ"
-  :optionsData="languages.map(language => ({ label: language.name, value: language.id }))"
-  v-model="formDataAddCourse.language_id"
-  @change="() => console.log('Ngôn ngữ đã chọn:', formDataAddCourse.language_id)"
-/>
+          <SelectGroup
+            inputPlaceHoder="Chọn ngôn ngữ cho khoá học"
+            required="*"
+            label="Ngôn ngữ"
+            :optionsData="languages.map(language => ({ label: language.name, value: language.id }))"
+            v-model="formDataAddCourse.language_id"
+            @change="() => console.log('Ngôn ngữ đã chọn:', formDataAddCourse.language_id)"
+          />
             <RadioGroup
             label="Loại giá"
             >

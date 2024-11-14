@@ -3,11 +3,16 @@ import logo from '@/assets/images/logo2.svg'
 import logoMinimal from '@/assets/images/minimal-logo.svg'
 import SidebarItems from './SidebarItems.vue';
 import { computed, ref } from 'vue';
-import { WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon, TicketIcon } from '@heroicons/vue/24/outline';
+import { WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon, TicketIcon, CreditCardIcon, CubeIcon } from '@heroicons/vue/24/outline';
 import { Cog8ToothIcon, UserCircleIcon } from '@heroicons/vue/20/solid';
 import type { MenuGroup } from '@/interfaces/admin.interface';
-
 import { useSidebarStore } from '@/store/sidebar';
+import { useAuthStore } from '@/store/auth'
+import { storeToRefs } from 'pinia';
+const authStore = useAuthStore()
+const { state } = storeToRefs(authStore)
+const userRole = state.value.user?.role
+
 
 const sidebarStore = useSidebarStore();
 const currentLogo = computed(() => {
@@ -24,7 +29,7 @@ const menuGroups = ref<MenuGroup[]>([
       {
         icon: HomeIcon,
         label: 'Bảng điều khiển',
-        route: '/admin/dashboard'
+        route: '/admin/dashboard',
       },
       {
         icon: SquaresPlusIcon,
@@ -199,6 +204,94 @@ const menuGroups = ref<MenuGroup[]>([
 
   }
 ])
+const menuGroupsTeacher = ref<MenuGroup[]>([
+  {
+    name: 'MENU',
+    menuItems: [
+      {
+        icon: HomeIcon,
+        label: 'Bảng điều khiển',
+        route: '/teacher/dashboard'
+      },
+      {
+        icon: SquaresPlusIcon,
+        label: 'Danh mục',
+        route: '/teacher/category'
+      },
+      {
+        icon: ArchiveBoxIcon,
+        label: 'Khoá học',
+        route: '#',
+        children: [
+          {
+            label: 'Quản lý khoá học',
+            route: '/teacher/course/manager-course'
+          },
+          {
+            label: 'Thêm khoá học mới',
+            route: '/teacher/course/add-course'
+          },
+          {
+            label: 'Phiếu giảm giá',
+            route: '/teacher/course/manager-coupon'
+          },
+        ]
+      },
+      {
+        icon: CubeIcon,
+        label: 'Quản lý đơn hàng',
+        route: '#',
+        children: [
+          {
+            label: 'Khoá học đã bán',
+            route: '/teacher/order/course-sold'
+          },
+          {
+            label: 'Lịch sử mua hàng',
+            route: '/teacher/order/history'
+          },
+        ]
+      },
+      {
+        icon: CreditCardIcon,
+        label: 'Thanh toán',
+        route: '#',
+        children: [
+          {
+            label: 'Rút tiền',
+            route: '/teacher/payment/teacher-revenue'
+          },
+          {
+            label: 'Cài đặt',
+            route: '/teacher/payment/history'
+          },
+        ]
+      },
+      {
+        icon: UserGroupIcon,
+        label: 'Quản lí học viên',
+        route: '/teacher/student',
+      },
+      {
+        icon: ChatBubbleLeftRightIcon,
+        label: 'Tin nhắn',
+        route: '/teacher/message',
+      }
+    
+    ]
+  },
+  {
+    name: 'cài đặt',
+    menuItems: [
+      {
+        icon: UserCircleIcon,
+        label: 'Thông tin cá nhân',
+        route: '/teacher/profile-settings'
+      },
+    ]
+
+  }
+])
 </script>
 
 <template>
@@ -235,7 +328,7 @@ const menuGroups = ref<MenuGroup[]>([
         </nav>
         <!-- End Sidebar Menu -->
         <div class="pt-7 pb-5 text-center text-sm text-zinc-400">
-          Create by Edunity 2024
+          Create by Edunity 2024 
         </div>
       </div>
     </div>

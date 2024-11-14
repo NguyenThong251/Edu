@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import api from '@/services/axiosConfig'
 import type { TAuthState, TUpdateUser, TUserAuth } from '@/interfaces/user.interface'
 import Cookies from 'js-cookie'
@@ -7,6 +7,7 @@ import { useRouter } from 'vue-router'
 import { ElNotification } from 'element-plus'
 
 export const useAuthStore = defineStore('auth', () => {
+  
   const state = ref<TAuthState>({
     user: null,
     token: Cookies.get('token_user_edu') || null,
@@ -21,6 +22,8 @@ export const useAuthStore = defineStore('auth', () => {
       state.value.token = response.data.access_token
       state.value.user = await response.data.data
       Cookies.set('token_user_edu', response.data.access_token, { expires: 7 }) // Lưu token vào localStorage
+      localStorage.setItem('role', response.data.data.role);
+      console.log(response.data.data);
       return response.data
     } catch (err: any) {
       state.value.error = err.response?.data?.message || 'Đăng nhập thật bại'
@@ -34,6 +37,7 @@ export const useAuthStore = defineStore('auth', () => {
     state.value.user = null
     state.value.token = null
     Cookies.remove('token_user_edu')
+    localStorage.removeItem('role'); 
     router.push('/')
   }
   const register = async (userData: TUserAuth) => {

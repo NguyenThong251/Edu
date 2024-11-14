@@ -19,7 +19,6 @@ const admin = [
     path: '/admin',
     name: 'admin',
     component: AdminLayout,
-
     meta: { requiresAuth: true, role: 'admin', title: 'Trang quản trị | Edunity' },
 
     children: [

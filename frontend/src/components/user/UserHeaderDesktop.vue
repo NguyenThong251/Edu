@@ -124,6 +124,4 @@ localStorage.setItem('redirectAfterLogin', currentPath);
 onMounted(async () => {
     await userData()
 })
-
-
 </script>

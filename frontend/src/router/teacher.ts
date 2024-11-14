@@ -1,10 +1,10 @@
 import LayoutCourseVideo from '@/layouts/LayoutCourseVideo.vue'
-import UserDashboard from '@/layouts/UserDashboard.vue'
+import TeacherLayout from '@/layouts/TeacherLayout.vue'
 
 const teacher = [
   {
     path: '/teacher',
-    component: () => import('@/layouts/ClientLayout.vue'),
+    component: TeacherLayout,
     children: [
       {
         path: '',
