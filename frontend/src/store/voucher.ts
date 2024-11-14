@@ -53,7 +53,15 @@ export const useVoucherStore = defineStore('voucher', () => {
       state.value.error = 'Không thể tạo voucher mới'
     }
   }
-
+  // edit
+  const updateVoucher = async (voucherData: TVoucher) => {
+    try {
+      await api.put(`/auth/vouchers/${voucherData.id}`, voucherData)
+      await fetchVouchers()
+    } catch (error) {
+      state.value.error = 'Không thể cập nhật voucher'
+    }
+  }
   //   Xóa mềm Voucher
   const deleteVoucher = async (code: string | number) => {
     try {
@@ -117,6 +125,7 @@ export const useVoucherStore = defineStore('voucher', () => {
     deleteVoucher,
     restoreVoucher,
     applyVoucher,
+    updateVoucher,
     voucher: computed(() => state.value.appliedVoucher),
     discount: computed(() => state.value.discount),
     total_price_after_discount: computed(() => state.value.total_price_after_discount)

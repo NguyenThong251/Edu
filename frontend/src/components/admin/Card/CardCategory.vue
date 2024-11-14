@@ -1,46 +1,3 @@
-<script setup lang="ts">
-import CategoryImgWeb from '@/assets/images/CategoryImgWeb.jpeg'
-import { PlusCircleIcon, PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/solid';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import type { TListCategories } from '@/interfaces/category.interface';
-import { computed, defineEmits, onMounted, ref } from 'vue';
-import ItemsChild from './ItemsChild.vue';
-import CardActionButton from './CardActionButton.vue';
-import { useDarkModeStore } from '@/store/darkmode';
-import * as solidIcons from '@fortawesome/free-solid-svg-icons';
-import updateStatus from '@/composables/admin/category/useCardCategory';
-const useUpdateStatus = updateStatus();
-
-const darkModeStore = useDarkModeStore()
-
-// Hàm tính toán để lấy icon từ tên
-const mappedIcon = computed(() => {
-  // Sử dụng props.category.icon để ánh xạ
-  const iconName = props.category.icon;
-  // Tìm icon trong solidIcons bằng cách lấy giá trị của iconName
-  return solidIcons[iconName as keyof typeof solidIcons] || solidIcons.faQuestionCircle;
-});
-
-const props = defineProps<{
-  category: TListCategories;
-}>();
-
-
-const isActive = computed(() => props.category.status === 'active')
-// Hàm gọi updateStatus khi thay đổi trạng thái
-const toggleStatus = (categoryId: number, currentStatus: string | undefined) => {
-  const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-  useUpdateStatus.updateStatus(categoryId, newStatus);
-};
-
-//Sửa category
-const emit = defineEmits(['editCategory']);
-// Hàm phát sự kiện khi nhấn nút "Sửa"
-const handleEditClick = () => {
-  emit('editCategory', props.category.id); // Phát ra sự kiện với id của danh mục
-  console.log(props.category.id);
-};
-</script>
 <template>
   <div class="bg-white dark:bg-dark-sidebar rounded-lg dark:border group hover:duration-700">
     <div class="p-3 h-full flex flex-wrap justify-center">
@@ -59,7 +16,7 @@ const handleEditClick = () => {
         <div class="py-4">
           <div class="flex justify-between pb-4 border-b">
             <div class="flex gap-2 items-center">
-              <FontAwesomeIcon :icon="mappedIcon" class="w-5" />
+              <!-- <FontAwesomeIcon :icon="mappedIcon" class="w-5" /> -->
               <div class="font-bold">{{ props.category.name }}</div>
             </div>
             <div class="">({{ props.category.children?.length }})</div>
@@ -69,10 +26,62 @@ const handleEditClick = () => {
         </div>
       </div>
       <div class="flex justify-center invisible gap-4 pb-5 group-hover:visible">
-        <CardActionButton :link="props.category.id" :icon="PlusCircleIcon" text="Thêm" />
-        <CardActionButton link="#" :icon="PencilSquareIcon" text="Sửa" @click="handleEditClick" />
-        <CardActionButton link="#" :icon="TrashIcon" text="Xoá" />
+        <div class="">
+          <button class="flex gap-1 items-center">
+            <PlusCircleIcon class="w-4 h-4" />
+            <p class="text-sm">Thêm</p>
+          </button>
+        </div>
+        <div class="">
+
+          <button @click="handleDeleteCategory(props.category.id)" class="flex gap-1 items-center">
+            <TrashIcon class="w-4 h-4" />
+            <p class="text-sm">Xoá</p>
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import CategoryImgWeb from '@/assets/images/CategoryImgWeb.jpeg'
+import { PlusCircleIcon, PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import type { TCategory } from '@/interfaces/category.interface';
+import { computed, defineEmits, onMounted, ref } from 'vue';
+import ItemsChild from './ItemsChild.vue';
+import CardActionButton from './CardActionButton.vue';
+import { useDarkModeStore } from '@/store/darkmode';
+import * as solidIcons from '@fortawesome/free-solid-svg-icons';
+import updateStatus from '@/composables/admin/category/useCardCategory';
+import { useCategory } from '@/composables/admin/useCategory';
+const useUpdateStatus = updateStatus();
+
+const darkModeStore = useDarkModeStore()
+
+const props = defineProps<{
+  category: TCategory;
+}>();
+
+const isActive = computed(() => props.category.status === 'active')
+// Hàm gọi updateStatus khi thay đổi trạng thái
+const toggleStatus = (categoryId: number, currentStatus: string | undefined) => {
+  const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+  useUpdateStatus.updateStatus(categoryId, newStatus);
+};
+
+// //Sửa category
+// const emit = defineEmits(['editCategory']);
+// // Hàm phát sự kiện khi nhấn nút "Sửa"
+// const handleEditClick = () => {
+//   emit('editCategory', props.category.id); // Phát ra sự kiện với id của danh mục
+//   console.log(props.category.id);
+// };
+const {
+
+  handleDeleteCategory,
+
+} = useCategory()
+</script>
