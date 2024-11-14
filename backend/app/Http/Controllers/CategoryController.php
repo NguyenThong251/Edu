@@ -97,7 +97,7 @@ class CategoryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:100|unique:categories',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            // 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'icon' => 'nullable|string',
             'keyword' => 'nullable|string',
@@ -236,7 +236,6 @@ class CategoryController extends Controller
         return formatResponse(STATUS_OK, $category, '', __('messages.category_update_success'));
     }
 
-    // Xóa mềm category (cập nhật is_deleted và deleted_by)
     public function destroy($id)
     {
         $category = Category::find($id);
@@ -244,8 +243,6 @@ class CategoryController extends Controller
             return formatResponse(STATUS_FAIL, '', '', __('messages.category_not_found'));
         }
 
-        // Cập nhật is_deleted và deleted_by
-        $category->is_deleted = true;
         $category->deleted_by = auth()->id();
         $category->save();
 
@@ -254,7 +251,6 @@ class CategoryController extends Controller
         return formatResponse(STATUS_OK, '', '', __('messages.category_soft_delete_success'));
     }
 
-    // Khôi phục category bị soft deleted (cập nhật is_deleted)
     public function restore($id)
     {
         // Tìm danh mục bị xóa mềm
@@ -272,8 +268,6 @@ class CategoryController extends Controller
             return formatResponse(STATUS_FAIL, '', '', __('messages.category_not_found')); // Thông báo danh mục không tồn tại
         }
 
-        // Cập nhật lại is_deleted và deleted_by
-        $category->is_deleted = false;
         $category->deleted_by = null; // Xóa thông tin deleted_by khi khôi phục
         $category->save();
 

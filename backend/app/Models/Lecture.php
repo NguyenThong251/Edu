@@ -12,7 +12,7 @@ class Lecture extends Model
     protected $fillable = [
         'section_id',
         'title',
-        'content',
+        'content_link',
         'link_url',
         'status',
         'duration',
