@@ -7,71 +7,50 @@ use App\Models\OrderItem;
 use App\Models\Section;
 use App\Models\Quiz;
 use App\Models\Lecture;
+use App\Models\ProgressLecture;
+use App\Models\ProgressQuiz;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class StudyController extends Controller
 {
-    public function studyCourse(Request $request)
+    
+
+    public function getAllContent($userId, $courseId)
     {
-        // Lấy user hiện tại
-        $currentUser = Auth::user();
 
-        // Lấy course_id từ request
-        $courseId = $request->input('course_id');
-
-        // Kiểm tra xem user đã mua khóa học chưa
-        $orderItem = OrderItem::where('course_id', $courseId)
-        ->where('status', 'active')
-        ->whereHas('order', function ($query) use ($currentUser) {
-            $query->where('user_id', $currentUser->id)
-                  ->where('status', 'active')
-                  ->where('payment_status', 'paid');
-        })
-        ->first();
-
-
-        // Nếu không tìm thấy orderItem, báo lỗi
-        if (!$orderItem) {
-            return formatResponse(
-                STATUS_FAIL,
-                '',
-                '',
-                __('messages.course_not_purchased')
-            );
-        }
-
-        $userId=$currentUser->id;
 
         $sections = Section::where('course_id', $courseId)
-        ->where('status', 'active')
-        ->orderBy('order', 'asc')
-        ->with([
-            'lectures' => function ($query) use ($userId) {
-                $query->where('status', 'active')
-                      ->select('id', 'section_id', 'title', 'order', 'duration', 'type')
-                      ->orderBy('order', 'asc')
-                      ->addSelect([
-                          'content_section_type' => DB::raw('"lecture"'),
-                      ])
-                      ->with(['progress' => function ($progressQuery) use ($userId) {
-                          $progressQuery->select('lecture_id', 'learned', 'percent')
-                                        ->where('user_id', $userId);
-                      }]);
-            },
-            'quizzes' => function ($query) use ($userId) {
-                $query->where('status', 'active')
-                      ->select('id', 'section_id', 'course_id', 'title', 'order')
-                      ->orderBy('order', 'asc')
-                      ->addSelect([
-                          'content_section_type' => DB::raw('"quiz"'),
-                      ])
-                      ->with(['progress' => function ($progressQuery) use ($userId) {
-                          $progressQuery->select('quiz_id', 'questions_done', 'percent')
-                                        ->where('user_id', $userId);
-                      }]);
-            }
-        ])->get();
+            ->where('status', 'active')
+            ->orderBy('order', 'asc')
+            ->with([
+                'lectures' => function ($query) use ($userId) {
+                    $query->where('status', 'active')
+                        ->select('id', 'section_id', 'title', 'order', 'duration', 'type')
+                        ->orderBy('order', 'asc')
+                        ->addSelect([
+                            'content_section_type' => DB::raw('"lecture"'),
+                        ])
+                        ->with(['progress' => function ($progressQuery) use ($userId) {
+                            $progressQuery->select('lecture_id', 'learned', 'percent')
+                                ->where('status', 'active')
+                                ->where('user_id', $userId);
+                        }]);
+                },
+                'quizzes' => function ($query) use ($userId) {
+                    $query->where('status', 'active')
+                        ->select('id', 'section_id', 'course_id', 'title', 'order')
+                        ->orderBy('order', 'asc')
+                        ->addSelect([
+                            'content_section_type' => DB::raw('"quiz"'),
+                        ])
+                        ->with(['progress' => function ($progressQuery) use ($userId) {
+                            $progressQuery->select('quiz_id', 'questions_done', 'percent')
+                                ->where('status', 'active')
+                                ->where('user_id', $userId);
+                        }]);
+                }
+            ])->get();
         $sections = $sections->map(function ($section) {
             $sectionContent = collect($section->lectures)
                 ->merge($section->quizzes)
@@ -79,7 +58,7 @@ class StudyController extends Controller
                 ->values()
                 ->map(function ($item) {
                     $progress = $item->progress->first() ?? null;
-        
+
                     if ($item instanceof Lecture) {
                         return [
                             'id' => $item->id,
@@ -101,7 +80,7 @@ class StudyController extends Controller
                     }
                     return [];
                 });
-        
+
             return [
                 'id' => $section->id,
                 'title' => $section->title,
@@ -112,41 +91,42 @@ class StudyController extends Controller
                 'section_content' => $sectionContent,
             ];
         });
-    
-    $quizzesForCourse = Quiz::where('course_id', $courseId)
-        ->whereNull('section_id')
-        ->where('status', 'active')
-        ->select('id', 'course_id', 'title', 'order')
-        ->orderBy('order', 'asc')
-        ->addSelect([
-            'content_course_type' => DB::raw('"quiz"'),
-        ])
-        ->with(['progress' => function ($query) use ($userId) {
-            $query->select('quiz_id', 'questions_done', 'percent')
-                  ->where('user_id', $userId);
-        }])
-        ->get()
-        ->map(function ($quiz) {
-            $progress = $quiz->progress ?? null;
-    
-            return [
-                'id' => $quiz->id,
-                'title' => $quiz->title,
-                'order' => $quiz->order,
-                'content_course_type' => 'quiz',
-                'section_content' => [],
-                'questions_done' => $progress && isset($progress->questions_done) ? $progress->questions_done : null,
-                'percent' => $progress && isset($progress->percent) ? $progress->percent : null,
-            ];
-        });
-    
+
+        $quizzesForCourse = Quiz::where('course_id', $courseId)
+            ->whereNull('section_id')
+            ->where('status', 'active')
+            ->select('id', 'course_id', 'title', 'order')
+            ->orderBy('order', 'asc')
+            ->addSelect([
+                'content_course_type' => DB::raw('"quiz"'),
+            ])
+            ->with(['progress' => function ($query) use ($userId) {
+                $query->select('quiz_id', 'questions_done', 'percent')
+                    ->where('status', 'active')
+                    ->where('user_id', $userId);
+            }])
+            ->get()
+            ->map(function ($quiz) {
+                $progress = $quiz->progress ?? null;
+
+                return [
+                    'id' => $quiz->id,
+                    'title' => $quiz->title,
+                    'order' => $quiz->order,
+                    'content_course_type' => 'quiz',
+                    'section_content' => [],
+                    'questions_done' => $progress && isset($progress->questions_done) ? $progress->questions_done : null,
+                    'percent' => $progress && isset($progress->percent) ? $progress->percent : null,
+                ];
+            });
+
         $sections = $sections->map(function ($section) {
             $contentCount = $section['section_content']->count(); // Tổng số nội dung trong section
             $contentDone = $section['section_content']->where('percent', 100)->count(); // Tổng số nội dung hoàn thành
-        
+
             $section['content_count'] = $contentCount;
             $section['content_done'] = $contentDone;
-        
+
             return $section;
         });
 
@@ -164,10 +144,58 @@ class StudyController extends Controller
         // Tính progress của toàn khóa học
         $progress = $totalContentCount > 0 ? ($totalContentDone / $totalContentCount) * 100 : 0;
 
-        
+
         // Nếu cần merge thêm quizzes bên ngoài section
         $allContent = $sections->merge($quizzesForCourse)->sortBy('order')->values();
 
+        $responseData = [
+            'allContent' => $allContent,
+            'total_content_count' => $totalContentCount,
+            'total_content_done' => $totalContentDone,
+            'progress' => round($progress, 2), // Làm tròn đến 2 chữ số thập phân
+        ];
+
+
+        // Nếu đã mua khóa học, tiếp tục xử lý logic khác
+        return $responseData;
+    }
+    public function studyCourse(Request $request)
+    {
+        // Lấy user hiện tại
+        $currentUser = Auth::user();
+
+        // Lấy course_id từ request
+        $courseId = $request->input('course_id');
+
+        // Kiểm tra xem user đã mua khóa học chưa
+        $orderItem = OrderItem::where('course_id', $courseId)
+            ->where('status', 'active')
+            ->whereHas('order', function ($query) use ($currentUser) {
+                $query->where('user_id', $currentUser->id)
+                    ->where('status', 'active')
+                    ->where('payment_status', 'paid');
+            })
+            ->first();
+
+
+        // Nếu không tìm thấy orderItem, báo lỗi
+        if (!$orderItem) {
+            return formatResponse(
+                STATUS_FAIL,
+                '',
+                '',
+                __('messages.course_not_purchased')
+            );
+        }
+
+        $userId = $currentUser->id;        
+        $data = $this->getAllContent($userId, $courseId);
+        $allContent=$data['allContent'];
+        $totalContentCount=$data['total_content_count'];
+        $totalContentDone=$data['total_content_done'];
+        $progress=$data['progress'];
+
+        
         $currentContent = null;
 
         foreach ($allContent as $content) {
@@ -182,6 +210,7 @@ class StudyController extends Controller
                                 $currentContent = array_merge(
                                     $lecture->toArray(),
                                     [
+                                        'current_content_type' => 'lecture',
                                         'learned' => $sectionContent['learned'] ?? null,
                                         'percent' => $sectionContent['percent'] ?? null
                                     ]
@@ -192,15 +221,16 @@ class StudyController extends Controller
                                 ->where('id', $sectionContent['id'])
                                 ->where('status', 'active')
                                 ->first();
-        
+
                             if ($quiz) {
                                 $questions = $quiz->questions;
                                 $nextQuestionIndex = $sectionContent['questions_done'] ?? 0;
                                 $nextQuestion = $questions[$nextQuestionIndex] ?? null;
-        
+
                                 $currentContent = array_merge(
                                     $quiz->toArray(),
                                     [
+                                        'current_content_type' => 'quiz',
                                         'questions_done' => $sectionContent['questions_done'] ?? null,
                                         'percent' => $sectionContent['percent'] ?? null,
                                         'current_question' => $nextQuestion && $nextQuestion->status === 'active'
@@ -214,7 +244,7 @@ class StudyController extends Controller
                     }
                 }
             }
-        
+
             // Nếu là quiz bên ngoài section
             if ($content['content_course_type'] === 'quiz') {
                 if (!isset($content['percent']) || $content['percent'] < 100) {
@@ -222,15 +252,16 @@ class StudyController extends Controller
                         ->where('id', $content['id'])
                         ->where('status', 'active')
                         ->first();
-        
+
                     if ($quiz) {
                         $questions = $quiz->questions;
                         $nextQuestionIndex = $content['questions_done'] ?? 0;
                         $nextQuestion = $questions[$nextQuestionIndex] ?? null;
-        
+
                         $currentContent = array_merge(
                             $quiz->toArray(),
                             [
+                                'current_content_type' => 'quiz',
                                 'questions_done' => $content['questions_done'] ?? null,
                                 'percent' => $content['percent'] ?? null,
                                 'current_question' => $nextQuestion && $nextQuestion->status === 'active'
@@ -243,7 +274,7 @@ class StudyController extends Controller
                 }
             }
         }
-        
+
         // Nếu không tìm thấy content nào phù hợp, lấy phần tử đầu tiên
         if (!$currentContent) {
             foreach ($allContent as $content) {
@@ -254,6 +285,7 @@ class StudyController extends Controller
                         $currentContent = array_merge(
                             $lecture->toArray(),
                             [
+                                'current_content_type' => 'lecture',
                                 'learned' => $sectionContent['learned'] ?? null,
                                 'percent' => $sectionContent['percent'] ?? null
                             ]
@@ -263,15 +295,16 @@ class StudyController extends Controller
                             ->where('id', $sectionContent['id'])
                             ->where('status', 'active')
                             ->first();
-        
+
                         if ($quiz) {
                             $questions = $quiz->questions;
                             $nextQuestionIndex = $sectionContent['questions_done'] ?? 0;
                             $nextQuestion = $questions[$nextQuestionIndex] ?? null;
-        
+
                             $currentContent = array_merge(
                                 $quiz->toArray(),
                                 [
+                                    'current_content_type' => 'quiz',
                                     'questions_done' => $sectionContent['questions_done'] ?? null,
                                     'percent' => $sectionContent['percent'] ?? null,
                                     'current_question' => $nextQuestion && $nextQuestion->status === 'active'
@@ -283,21 +316,22 @@ class StudyController extends Controller
                     }
                     break;
                 }
-        
+
                 if ($content['content_course_type'] === 'quiz') {
                     $quiz = Quiz::with('questions')
                         ->where('id', $content['id'])
                         ->where('status', 'active')
                         ->first();
-        
+
                     if ($quiz) {
                         $questions = $quiz->questions;
                         $nextQuestionIndex = $content['questions_done'] ?? 0;
                         $nextQuestion = $questions[$nextQuestionIndex] ?? null;
-        
+
                         $currentContent = array_merge(
                             $quiz->toArray(),
                             [
+                                'current_content_type' => 'quiz',
                                 'questions_done' => $content['questions_done'] ?? null,
                                 'percent' => $content['percent'] ?? null,
                                 'current_question' => $nextQuestion && $nextQuestion->status === 'active'
@@ -319,8 +353,134 @@ class StudyController extends Controller
             'progress' => round($progress, 2), // Làm tròn đến 2 chữ số thập phân
         ];
 
-        
+
         // Nếu đã mua khóa học, tiếp tục xử lý logic khác
+        return formatResponse(STATUS_OK, $responseData, '', __('messages.course_access_granted'));
+    }
+    public function changeContent(Request $request)
+    {
+        // Lấy user hiện tại
+        $currentUser = Auth::user();
+
+        // Lấy course_id từ request
+        $courseId = $request->input('course_id');
+
+        // Kiểm tra xem user đã mua khóa học chưa
+        $orderItem = OrderItem::where('course_id', $courseId)
+            ->where('status', 'active')
+            ->whereHas('order', function ($query) use ($currentUser) {
+                $query->where('user_id', $currentUser->id)
+                    ->where('status', 'active')
+                    ->where('payment_status', 'paid');
+            })
+            ->first();
+
+        // Nếu không tìm thấy orderItem, báo lỗi
+        if (!$orderItem) {
+            return formatResponse(
+                STATUS_FAIL,
+                '',
+                '',
+                __('messages.course_not_purchased')
+            );
+        }
+
+        $userId = $currentUser->id;
+
+        // Dữ liệu từ request
+        $contentType = $request->input('content_type');
+        $contentId = $request->input('content_id');
+        $contentOldType = $request->input('content_old_type');
+        $contentOldId = $request->input('content_old_id');
+        $learned = $request->input('learned');
+
+        // Xử lý nội dung cũ
+        if ($contentOldType === 'lecture') {
+            $lecture = Lecture::where('id', $contentOldId)
+                ->where('status', 'active')
+                ->first();
+
+            if ($lecture) {
+                $percent = ($learned / $lecture->duration) * 100;
+                $progressLecture = ProgressLecture::updateOrCreate(
+                    [
+                        'lecture_id' => $contentOldId,
+                        'user_id' => $userId,
+                    ],
+                    [
+                        'learned' => $learned,
+                        'percent' => round($percent, 2),
+                        'status' => 'active',
+                    ]
+                );
+            }
+        } elseif ($contentOldType === 'quiz') {
+            $quiz = Quiz::withCount('questions')
+                ->where('id', $contentOldId)
+                ->where('status', 'active')
+                ->first();
+
+            if ($quiz) {
+                $percent = ($learned / $quiz->questions_count) * 100;
+                $progressQuiz = ProgressQuiz::updateOrCreate(
+                    [
+                        'quiz_id' => $contentOldId,
+                        'user_id' => $userId,
+                    ],
+                    [
+                        'learned' => $learned,
+                        'percent' => round($percent, 2),
+                        'status' => 'active',
+                    ]
+                );
+            }
+        }
+
+        // Hiển thị current_content cho nội dung mới
+        $currentContent = null;
+        if ($contentType === 'lecture') {
+            $lecture = Lecture::where('id', $contentId)
+                ->where('status', 'active')
+                ->first();
+
+            if ($lecture) {
+                $currentContent = $lecture->toArray();
+            }
+        } elseif ($contentType === 'quiz') {
+            $quiz = Quiz::with('questions')
+                ->where('id', $contentId)
+                ->where('status', 'active')
+                ->first();
+
+            if ($quiz) {
+                $nextQuestionIndex = 0;
+                $currentQuestion = $quiz->questions[$nextQuestionIndex] ?? null;
+
+                $currentContent = array_merge(
+                    $quiz->toArray(),
+                    [
+                        'current_question' => $currentQuestion ? $currentQuestion->toArray() : null,
+                    ]
+                );
+            }
+        }
+
+        // Lấy dữ liệu tổng quan
+        $data = $this->getAllContent($userId, $courseId);
+        $allContent = $data['allContent'];
+        $totalContentCount = $data['total_content_count'];
+        $totalContentDone = $data['total_content_done'];
+        $progress = $data['progress'];
+
+        $responseData = [
+            'currentContent' => $currentContent,
+            'allContent' => $allContent,
+            'total_content_count' => $totalContentCount,
+            'total_content_done' => $totalContentDone,
+            'progress' => round($progress, 2),
+        ];
+
+        // Trả về response
         return formatResponse(STATUS_OK, $responseData, '', __('messages.course_access_granted'));
     }
 }
