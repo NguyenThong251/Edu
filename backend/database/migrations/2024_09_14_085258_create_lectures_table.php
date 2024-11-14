@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->integer('duration');
             $table->enum('preview', ['can', 'cant'])->default('cant');
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->integer('order')->default(0);
             $table->softDeletes();
             $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();

@@ -22,7 +22,7 @@ class OrderSeeder extends Seeder
         $voucherIds = Voucher::pluck('id')->toArray();
 
         // Tạo 50 đơn hàng ngẫu nhiên
-        for ($i = 0; $i < 50; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             Order::create([
                 'user_id' => $faker->randomElement($userIds),
                 'voucher_id' => $faker->optional()->randomElement($voucherIds), // Có thể null hoặc chọn voucher ngẫu nhiên
@@ -31,8 +31,8 @@ class OrderSeeder extends Seeder
                 'payment_method' => $faker->randomElement(['credit_card', 'paypal', 'cash']),
                 'payment_status' => $faker->randomElement(['paid', 'pending', 'cancelled']),
                 'payment_code' => $faker->regexify('[A-Z0-9]{10}'), // Mã thanh toán ngẫu nhiên hoặc null
-                'status' => $faker->randomElement(['active', 'inactive']),
-                'deleted_by' => $faker->optional()->randomElement($userIds), // Ngẫu nhiên chọn người xóa hoặc null
+                'status' => $faker->randomElement(['active']),
+                // 'deleted_by' => $faker->optional()->randomElement($userIds), // Ngẫu nhiên chọn người xóa hoặc null
                 'created_by' => $faker->randomElement($userIds), // Ngẫu nhiên chọn người tạo
                 'updated_by' => $faker->randomElement($userIds), // Ngẫu nhiên chọn người cập nhật
             ]);

@@ -13,13 +13,17 @@ return new class extends Migration {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('quiz_id');
-            $table->text('content');
-            $table->boolean('answer_correct')->default(false);
-            $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
+            $table->string('question', 255);
+            $table->json('options');
+            $table->string('answer', 255);
 
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->integer('order')->default(0);
+            $table->softDeletes();
+            $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
 
             // Foreign key
             $table->foreign('quiz_id')->references('id')->on('quizzes')->onDelete('cascade');

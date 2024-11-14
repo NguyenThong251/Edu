@@ -14,6 +14,8 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ManageController;
 use App\Http\Controllers\Api\GoogleController;
 use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\LectureController;
+use App\Http\Controllers\StudyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -116,6 +118,12 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('courses/{id}', [CourseController::class, 'update'])->name('courses.update');
             Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
             Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
+
+            Route::post('lectures', [LectureController::class, 'store'])->name('lectures.store');
+            Route::get('lectures/{id}', [LectureController::class, 'show'])->name('lectures.show');
+            Route::post('lectures/{id}', [LectureController::class, 'update'])->name('lectures.update');
+            Route::get('lectures/restore/{id}', [LectureController::class, 'restore'])->name('lectures.restore');
+            Route::delete('lectures/{id}', [LectureController::class, 'destroy'])->name('lectures.destroy');
         });
 
         // Routes cho student
@@ -127,6 +135,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/messages/{receiverId}', [ChatController::class, 'store']);
             Route::post('/auth/upload-chat-image', [ChatController::class, 'uploadChatImage']);
             Route::delete('/auth/delete-chat-image', [ChatController::class, 'deleteChatImage']);
+
+            Route::get('/study-course', [StudyController::class, 'studyCourse']);
 
             // Các route dành cho student có thể thêm tại đây
 

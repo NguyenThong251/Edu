@@ -16,10 +16,15 @@ class Lecture extends Model
         'link_url',
         'status',
         'duration',
+        'order',
     ];
 
     public function section(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Section::class);
+    }
+    public function progress()
+    {
+        return $this->hasMany(ProgressLecture::class, 'lecture_id');
     }
 }

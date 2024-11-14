@@ -26,17 +26,36 @@ class SectionSeeder extends Seeder
             $this->command->info('Không có dữ liệu trong bảng courses.');
             return;
         }
+
+        // Lấy tất cả ID từ bảng users
         $userIds = User::pluck('id')->toArray();
+
+        // Khởi tạo mảng để theo dõi thứ tự order cho từng course_id
+        $orderForCourse = [];
+
         // Tạo 100 section cho các khóa học
         for ($i = 0; $i < 100; $i++) {
+            // Chọn ngẫu nhiên course_id từ mảng courseIds
+            $courseId = $faker->randomElement($courseIds);
+
+            // Nếu course_id này chưa có trong mảng orderForCourse, khởi tạo giá trị order ban đầu là 1
+            if (!isset($orderForCourse[$courseId])) {
+                $orderForCourse[$courseId] = 1;
+            }
+
+            // Tạo section với thứ tự tăng dần không trùng trong từng khóa học
             Section::create([
-                'course_id' => $faker->randomElement($courseIds), // Chọn ngẫu nhiên course_id từ mảng courseIds
-                'name' => $faker->sentence(2),                    // Tên section với 2 từ
-                'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
-                'deleted_by' => null,                              // Giá trị mặc định là null
-                'created_by' => $faker->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
+                'course_id' => $courseId,
+                'title' => $faker->sentence(2),                             // Tên section với 2 từ
+                'status' => $faker->randomElement(['active']), // Trạng thái ngẫu nhiên
+                'order' => $orderForCourse[$courseId],                     // Thứ tự tăng dần trong course
+                'deleted_by' => null,                                      // Giá trị mặc định là null
+                'created_by' => $faker->randomElement($userIds),           // Chọn ngẫu nhiên ID từ danh sách user
                 'updated_by' => $faker->optional()->randomElement($userIds), // Người cập nhật ngẫu nhiên hoặc null
             ]);
+
+            // Tăng thứ tự order cho course_id này
+            $orderForCourse[$courseId]++;
         }
     }
 }

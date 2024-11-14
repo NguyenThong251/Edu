@@ -5,6 +5,8 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 use App\Models\Lecture;
+use App\Models\ProgressLecture;
+use App\Models\ProgressQuiz;
 use App\Models\Section;
 use App\Models\Wishlist;
 use Illuminate\Database\Seeder;
@@ -28,5 +30,9 @@ class DatabaseSeeder extends Seeder
         $this->call(OrderSeeder::class);
         $this->call(OrderItemSeeder::class);
         $this->call(WishlistSeeder::class);
+        $this->call(QuizSeeder::class);
+        $this->call(QuestionSeeder::class);
+        $this->call(ProgressLecture::class);
+        $this->call(ProgressQuiz::class);
     }
 }

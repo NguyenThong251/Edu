@@ -362,10 +362,34 @@ class CourseController extends Controller
     // Hiển thị một khóa học cụ thể
     public function detail($id)
     {
-        $course = Course::with(['category', 'level', 'creator', 'sections.lectures', 'reviews', 'language'])
-            ->where('status', 'active')
-            ->where('id', $id)
-            ->first();
+        $course = Course::with([
+            'category' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'level' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'creator' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'sections' => function ($query) {
+                $query->where('status', 'active')->with([
+                    'lectures' => function ($query) {
+                        $query->where('status', 'active');
+                    },
+                ]);
+            },
+            'reviews' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'language' => function ($query) {
+                $query->where('status', 'active');
+            },
+        ])
+        ->where('status', 'active')
+        ->where('id', $id)
+        ->first();
+        
 
         if (!$course) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.course_not_found'));
