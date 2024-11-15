@@ -291,19 +291,25 @@ private function formatDuration($seconds)
     }
 
     $minutes = floor($seconds / 60);
+    $remainingSeconds = $seconds % 60; // Tính số giây lẻ
+
     if ($minutes < 60) {
-        return "{$minutes} phút"; // Dưới 1 giờ
+        return $remainingSeconds > 0
+            ? "{$minutes} phút {$remainingSeconds} giây" // Hiển thị phút và giây lẻ nếu có
+            : "{$minutes} phút"; // Chỉ hiển thị phút
     }
 
     $hours = floor($minutes / 60);
     $remainingMinutes = $minutes % 60;
 
-    if ($remainingMinutes > 0) {
-        return "{$hours} giờ {$remainingMinutes} phút"; // Đủ giờ và phút lẻ
+    if ($remainingMinutes > 0 || $remainingSeconds > 0) {
+        return "{$hours} giờ"
+            . ($remainingMinutes > 0 ? " {$remainingMinutes} phút" : ""); // Chỉ thêm giây nếu khác 0
     }
 
-    return "{$hours} giờ"; // Chỉ giờ
+    return "{$hours} giờ"; // Chỉ hiển thị giờ nếu không có phút và giây
 }
+
 
 
 
