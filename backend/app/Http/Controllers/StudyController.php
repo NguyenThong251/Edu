@@ -286,6 +286,10 @@ class StudyController extends Controller
 
 private function formatDuration($seconds)
 {
+    if ($seconds < 60) {
+        return "{$seconds} giây"; // Dưới 1 phút
+    }
+
     $minutes = floor($seconds / 60);
     if ($minutes < 60) {
         return "{$minutes} phút"; // Dưới 1 giờ
@@ -300,6 +304,7 @@ private function formatDuration($seconds)
 
     return "{$hours} giờ"; // Chỉ giờ
 }
+
 
 
     public function studyCourse(Request $request)
@@ -500,8 +505,11 @@ private function formatDuration($seconds)
         }
     }
 
-
+    $course = Course::where('id', $courseId)
+    ->where('status', 'active')
+    ->first();
         $responseData = [
+            'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
             'total_content_count' => $totalContentCount,
@@ -660,7 +668,11 @@ private function formatDuration($seconds)
         $totalContentDone = $data['total_content_done'];
         $progress = $data['progress'];
 
+        $course = Course::where('id', $courseId)
+        ->where('status', 'active')
+        ->first();
         $responseData = [
+            'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
             'total_content_count' => $totalContentCount,
