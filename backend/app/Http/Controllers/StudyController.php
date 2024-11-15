@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\OrderItem;
+use App\Models\Order;
+use App\Models\Course;
 use App\Models\Section;
 use App\Models\Quiz;
 use App\Models\Lecture;
@@ -15,6 +17,120 @@ use Illuminate\Support\Facades\DB;
 class StudyController extends Controller
 {
     
+    public function getUserCourses(Request $request)
+{
+    $userId = Auth::id();
+
+    if (!$userId) {
+        return formatResponse(
+            STATUS_FAIL,
+            '',
+            '',
+            __('messages.user_not_logged_in')
+        );
+    }
+
+    // Lấy các đơn hàng với trạng thái thanh toán là 'paid'
+    $orderIds = Order::where('user_id', $userId)
+        ->where('payment_status', 'paid')
+        ->pluck('id');
+
+    if ($orderIds->isEmpty()) {
+        return formatResponse(
+            STATUS_FAIL,
+            '',
+            '',
+            __('messages.no_courses_found') // Thông báo: không có khóa học nào
+        );
+    }
+
+    // Lấy course_id từ OrderItem liên kết với các orderIds
+    $courseIds = OrderItem::whereIn('order_id', $orderIds)
+        ->pluck('course_id');
+
+    if ($courseIds->isEmpty()) {
+        return formatResponse(
+            STATUS_FAIL,
+            '',
+            '',
+            __('messages.no_courses_found') // Thông báo: không có khóa học nào
+        );
+    }
+
+    // Lấy tất cả các khóa học đã mua và có trạng thái active
+    $courses = Course::whereIn('id', $courseIds)
+        ->where('status', 'active')
+        ->get()
+        ->map(function ($course) use ($userId) {
+            // Lấy tổng số lecture của course qua Section và Lecture
+            $totalLectures = Lecture::where('status', 'active')
+                ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
+                ->count();
+
+            // Lấy số lượng lecture đã hoàn thành trong ProgressLecture
+            $completedLectures = ProgressLecture::where('user_id', $userId)
+                ->whereIn('lecture_id', Lecture::where('status', 'active')
+                    ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
+                    ->pluck('id'))
+                ->count();
+
+            // Lấy thông tin creator
+            $creatorName = $course->creator && ($course->creator->last_name || $course->creator->first_name)
+                ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
+                : '';
+
+            return [
+                'id' => $course->id ?? null,
+                'thumbnail' => $course->thumbnail ?? null,
+                'title' => $course->title ?? null,
+                'creator' => $creatorName ?? null,
+                'total_lectures' => $totalLectures ?? null,
+                'completed_lectures' => $completedLectures ?? null,
+                'progress_percent' => $totalLectures > 0 
+                    ? round(($completedLectures / $totalLectures) * 100) 
+                    : 0, // Tính phần trăm và làm tròn đến số nguyên
+            ];
+        });
+
+    if ($courses->isEmpty()) {
+        return formatResponse(
+            STATUS_FAIL,
+            '',
+            '',
+            __('messages.no_courses_found') // Thông báo: không có khóa học nào
+        );
+    }
+
+    // Lọc các khóa học dựa trên request search
+    $titleSearch = $request->input('title', null); // Tìm theo title
+    $creatorSearch = $request->input('creator', null); // Tìm theo creator
+
+    if ($titleSearch || $creatorSearch) {
+        $courses = $courses->filter(function ($course) use ($titleSearch, $creatorSearch) {
+            $matchTitle = $titleSearch ? stripos($course['title'], $titleSearch) !== false : false;
+            $matchCreator = $creatorSearch ? stripos($course['creator'], $creatorSearch) !== false : false;
+            return $matchTitle || $matchCreator; // Sử dụng OR để gộp kết quả
+        })->values(); // Reset index của collection
+    }
+
+    if ($courses->isEmpty()) {
+        return formatResponse(
+            STATUS_FAIL,
+            '',
+            '',
+            __('messages.no_courses_found') // Thông báo: không có khóa học nào
+        );
+    }
+
+    return formatResponse(
+        STATUS_OK,
+        $courses,
+        '',
+        __('messages.courses_retrieved_successfully') // Thông báo: đã lấy thành công các khóa học của bạn
+    );
+}
+
+
 
     public function getAllContent($userId, $courseId)
 {

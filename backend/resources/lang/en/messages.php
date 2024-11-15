@@ -178,6 +178,9 @@ return [
     //STUDY
     'course_not_purchased' => 'You have not purchased this course.',
     'course_access_granted' => 'You can access this course.',
+    'no_courses_found' => 'No courses found.',
+    'courses_retrieved_successfully' => 'Courses retrieved successfully.',
+
 
     // CART
     'cart_items_fetched' => 'List of courses in cart retrieved successfully.',

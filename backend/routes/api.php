@@ -138,6 +138,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
             Route::get('/study-course', [StudyController::class, 'studyCourse']);
             Route::get('/change-content', [StudyController::class, 'changeContent']);
+            Route::get('/get-user-courses', [StudyController::class, 'getUserCourses']);
 
             // Các route dành cho student có thể thêm tại đây
 

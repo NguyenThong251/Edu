@@ -179,6 +179,9 @@ return [
     //STUDY
     'course_not_purchased' => 'Bạn chưa mua khóa học này.',
     'course_access_granted' => 'Bạn có thể truy cập khóa học này.',
+    'no_courses_found' => 'Không có khóa học nào.',
+    'courses_retrieved_successfully' => 'Đã lấy thành công các khóa học của bạn.',
+
 
     // CART
     'cart_items_fetched' => 'Danh sách khóa học trong giỏ hàng đã được lấy thành công.',
