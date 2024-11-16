@@ -100,8 +100,12 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
             // Voucher
             Route::prefix('vouchers')->group(function () {
+                // Get all vouchers
                 Route::get('/', [VoucherController::class, 'index']);
+                Route::get('/filter', [VoucherController::class, 'filter']);
+                // Get all deleted vouchers
                 Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
+                // Get voucher by id or code
                 Route::get('/{idOrCode}', [VoucherController::class, 'show']);
                 Route::post('/create', [VoucherController::class, 'create']);
                 Route::post('/delete', [VoucherController::class, 'destroy']);
