@@ -23,6 +23,8 @@ class Course extends Model
         'sale_value',
         'language_id',
         'status',
+        'created_by',
+        'updated_by',
     ];
 
 
@@ -63,6 +65,10 @@ class Course extends Model
         return $this->sections->sum(function ($section) {
             return $section->lectures->sum('duration');
         });
+    }
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'course_id');
     }
 
 

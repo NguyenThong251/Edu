@@ -104,4 +104,8 @@ class User extends Authenticatable implements JWTSubject
     {
         return json_decode($value, true);
     }
+    public function courses()
+    {
+        return $this->hasMany(Course::class, 'created_by');
+    }
 }
