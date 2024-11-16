@@ -209,6 +209,11 @@ class StudyController extends Controller
                     return [];
                 });
         
+            // Tính tổng duration cho các lecture có type là 'video'
+            $totalVideoDuration = $section->lectures
+                ->where('type', 'video')
+                ->sum('duration');
+        
             return [
                 'id' => $section->id,
                 'title' => $section->title,
@@ -216,9 +221,11 @@ class StudyController extends Controller
                 'content_course_type' => 'section',
                 'content_count' => null, // Ban đầu là null
                 'content_done' => null, // Ban đầu là null
+                'duration_display' => $this->formatDuration($totalVideoDuration), // Tổng thời lượng định dạng
                 'section_content' => $sectionContent,
             ];
         });
+        
         
 
     $quizzesForCourse = Quiz::where('course_id', $courseId)
