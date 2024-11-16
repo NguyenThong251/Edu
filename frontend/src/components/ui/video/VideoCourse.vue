@@ -1,9 +1,10 @@
 <template>
-    <div class="rounded-lg w-full overflow-hidden">
+    <div class="rounded-2xl w-full overflow-hidden">
         <vue-plyr>
-            <video controls>
-                <source :src="src" type="video/webm" />
-                Your browser does not support the video tag.
+            <video controls preload="metadata" @timeupdate="handleTimeUpdate" @ended="handleVideoEnd"
+                ref="videoElement">
+                <source :src="src" type="video/mp4" />
+                Trình duyệt của bạn không hỗ trợ video.
             </video>
         </vue-plyr>
     </div>
@@ -13,77 +14,44 @@
 <script setup lang="ts">
 import { ref, defineProps, watch } from 'vue';
 import type { PlayerOptions } from '@/interfaces'
+
 // Define props
+
 defineProps({
     src: {
         type: String,
         required: true,
     },
+    lesson: {
+        type: Object,
+        required: true,
+    },
+    onUpdateLearned: {
+        type: Function,
+        required: true,
+    },
 });
+const videoElement = ref<HTMLVideoElement | null>(null);
 
-// // Default video player options
-// const playerOptions = ref<PlayerOptions>({
-//     autoplay: false,
-//     playbackRates: [0.5, 1, 1.5, 2],
-//     controls: true,
-//     controlBar: {
-//         volumePanel: {
-//             inline: false,
-//         },
-//         fullscreenToggle: true,
-//     },
-//     sources: [],
-// });
+// Function to handle video progress updates
+const handleTimeUpdate = () => {
+    if (videoElement.value && lesson) {
+        const percentWatched =
+            (videoElement.value.currentTime / videoElement.value.duration) * 100;
 
-// // Watch for changes in src and update player options
-// watch(() => props.src, (newSrc) => {
-//     playerOptions.value.sources = [
-//         {
-//             src: newSrc,
-//             type: 'video/mp4',
-//         },
-//     ];
-// }, { immediate: true });
+        // Gọi hàm onUpdateLearned để truyền thông tin lên cha
+        onUpdateLearned({
+            id: lesson.id,
+            learned: Math.min(Math.round(percentWatched), 100),
+        });
+    }
+};
+
+// Function to handle when video ends
+const handleVideoEnd = () => {
+    if (videoElement.value && lesson) {
+        onUpdateLearned({ id: lesson.id, learned: 100 }); // Đảm bảo đánh dấu hoàn thành khi video kết thúc
+    }
+};
+
 </script>
-
-<!-- <style scoped>
-/* Use deep selector to apply styles to child components even in scoped styles */
-::v-deep .vjs-control-bar {
-    background-color: #1f2937 !important;
-    /* Custom background color for control bar */
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
-}
-
-::v-deep .vjs-play-control,
-::v-deep .vjs-volume-menu-button,
-::v-deep .vjs-fullscreen-control {
-    color: #ffffff !important;
-    /* Change control button colors */
-}
-
-::v-deep .vjs-slider {
-    background-color: #6b7280 !important;
-    /* Custom color for volume and progress sliders */
-}
-
-::v-deep .vjs-volume-bar {
-    background-color: #5d5fdf !important;
-    /* Custom color for volume bar */
-}
-
-::v-deep .vjs-progress-holder {
-    background-color: #f0f4fe !important;
-    /* Custom color for progress bar */
-}
-
-::v-deep .vjs-play-progress {
-    background-color: #5d5fdf !important;
-    /* Custom color for the played portion of the video */
-}
-
-::v-deep .vjs-mouse-display {
-    background-color: #5d5fdf !important;
-    /* Custom color for mouse hover time display */
-}
-</style> -->

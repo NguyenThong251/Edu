@@ -131,7 +131,6 @@ export const useAuthStore = defineStore('auth', () => {
       })
       if (response.data.status === 'OK') {
         state.value.user = response.data.data // Cập nhật thông tin người dùng
-        console.log(response.data.data)
         return response.data
       } else {
         throw new Error(response.data.message || 'Upload failed')

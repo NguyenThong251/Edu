@@ -28,6 +28,11 @@ export interface VideoFreeItem {
   duration: string
   isActive?: boolean
 }
+export interface Lesson {
+  id: number
+  learned: number
+  content_section_type: string
+}
 export interface CourseContentItem {
   content: string
 }

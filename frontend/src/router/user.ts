@@ -111,7 +111,7 @@ const user = [
     component: LayoutCourseVideo,
     children: [
       {
-        path: '/mylearncourse',
+        path: '/mycourses/:id',
         name: 'mylearncourse',
         component: () => import('@/views/user/MyLearnCourse.vue')
       }

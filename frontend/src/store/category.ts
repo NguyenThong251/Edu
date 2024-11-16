@@ -73,18 +73,8 @@ export const useCategoryStore = defineStore('category', () => {
     try {
       await api.delete(`/auth/categories/${id}`)
       await fetchCategories()
-      ElNotification({
-        title: 'Thành công',
-        message: 'Xóa danh mục thành công',
-        type: 'success'
-      })
     } catch (error) {
       state.value.error = 'Không thể xóa danh mục'
-      ElNotification({
-        title: 'Thất bại',
-        message: 'Xóa danh mục thất bại',
-        type: 'error'
-      })
     }
   }
 

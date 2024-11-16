@@ -28,12 +28,14 @@ export interface TCourseAdmin {
   updated_at: string
 }
 
-export interface CardMyCourse {
-  image: string
-  name: string
-  lecture: string
-  completed: number
-  total: number
+export interface TCardMyCourse {
+  id: number
+  thumbnail?: string
+  title: string
+  creator: string
+  total_lectures: number
+  completed_lectures: number
+  progress_percent: number
 }
 export interface TCartCourseViewItem {
   id: number

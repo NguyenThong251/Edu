@@ -1,11 +1,24 @@
 <template>
     <main class="px-10 bg-indigo-100 py-10">
-        <div class="flex gap-5">
-            <div class="w-4/6">
-                <div class=" border-2 bg-white  border-indigo-600 rounded-lg">
-                    <VideoCourse :src="videoUrl" />
+        <div class="flex lg:flex-row  flex-col  gap-5">
+            <div class="lg:w-4/6 w-full">
+                <h2 class="text-xl font-bold mb-3">{{ currentContent.title }}</h2>
+                <div class=" border-2 bg-white  p-5 rounded-2xl">
+                    <!-- <VideoCourse :src="videoUrl" /> -->
+                    <div v-if="currentContent.type === 'video'" class="relative">
+                        <VideoCourse :src="currentContent.content_link" :lesson="currentContent"
+                            :onUpdateLearned="updateLearned" />
+                        <!-- <VideoCourse :src="videoUrl" /> -->
+                    </div>
+                    <!-- file -->
+                    <div v-else-if="currentContent.type === 'file'" class="p-3 border rounded-lg">
+                        <a :href="currentContent.content_link" target="_blank" class="text-blue-500 underline">
+                            Tải xuống tài liệu: {{ currentContent.title }}
+                        </a>
+                    </div>
                     <!-- Quizz -->
-                    <!-- <div class="min-h-screen bg-white flex items-center justify-center">
+                    <div v-else-if="currentContent.type === 'quiz'"
+                        class="min-h-screen bg-white flex items-center justify-center">
                         <div class="bg-white p-4 rounded-lg shadow-md max-w-md w-full">
                             <h2 class="text-xl font-semibold mb-4 text-center">Bài tập: Biến Python</h2>
 
@@ -42,7 +55,7 @@
                                 </button>
                             </form>
                         </div>
-                    </div> -->
+                    </div>
                 </div>
                 <div class="bg-white rounded-lg my-5 p-2">
                     <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
@@ -62,45 +75,72 @@
                     </el-tabs>
                 </div>
             </div>
-            <div class="w-2/6">
-                <div class="bg-white rounded-lg shadow-lg p-3">
+            <div class="lg:w-2/6 w-full">
+                <div class="bg-white rounded-lg shadow-lg p-5">
                     <header class="p-2 flex items-center gap-3 overflow-hidden bg-gray-800 rounded-lg">
                         <img class="-ms-6 w-20"
                             src="https://ik.imagekit.io/laracasts/series/thumbnails/svg/livewire-basics.svg?tr=w-200"
                             alt="">
                         <div class="flex flex-col gap-3">
-                            <h3 class="text-xl font-medium text-white">Build the Livewire App With Me!</h3>
-                            <el-progress :percentage="100" status="success" />
+                            <h3 class="text-xl font-medium text-white">Danh sách chương học</h3>
+                            <el-progress :percentage="progress" status="success" />
                         </div>
 
                     </header>
-                    <el-collapse class="border-0" v-model="activeNames" accordion>
-                        <el-collapse-item v-for="chapter in chapters" :key="chapter.name" :name="chapter.name">
+                    <!-- <el-collapse accordion>
+                        <el-collapse-item v-for="(content, index) in allContent" :key="content.id" :name="index">
+                            <template #title>
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-lg">{{ content.title }}</h3>
+                                    <div class="flex gap-2 text-gray-500">
+                                        <span v-if="content.content_course_type === 'section'">
+                                            {{ content.content_done }}/{{ content.content_count }} Hoàn thành
+                                        </span>
+                                        <span v-else-if="content.content_course_type === 'quiz'">
+                                            Quiz {{ content.total_question_count }} câu hỏi
+                                        </span>
+                                    </div>
+                                </div>
+                            </template>
+<ul v-if="content.section_content" class="ml-4">
+    <li v-for="lesson in content.section_content" :key="lesson.id"
+        class="flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
+        @click="handleChangeContent(lesson)">
+        <span>{{ lesson.title }}</span>
+        <span class="text-gray-500">{{ lesson.duration_display }}</span>
+    </li>
+</ul>
+</el-collapse-item>
+</el-collapse> -->
+                    <el-collapse class="border-0" accordion>
+                        <el-collapse-item v-for="(content, index) in allContent" :key="content.id" :name="index">
                             <template #title>
                                 <div class="px-4 !text-gray-900 flex gap-5 items-center justify-between leading-5">
-                                    <h3 class="text-lg">{{ chapter.title }}</h3>
-                                    <div class="flex gap-1">
-                                        <span class="text-gray-500">{{ chapter.videosCount }}/{{ chapter.totalVideos }}
-                                            Videos</span> •
-                                        <span class="text-pink-500">{{ chapter.totalDuration }}</span>
+                                    <h3 class="text-lg">{{ content.title }}</h3>
+                                    <div class="flex gap-1" v-if="content.content_course_type === 'section'">
+                                        <span class="text-gray-500">{{ content.content_done }}/{{ content.content_count
+                                            }}
+                                            Hoàn thành</span> •
+                                        <span class="text-pink-500">{{ content.duration_display }}</span>
                                     </div>
                                 </div>
                             </template>
 
-                            <!-- Loop through lessons within each chapter -->
-                            <div v-for="lesson in chapter.lessons" :key="lesson.name"
+                            <div v-for="lesson in content.section_content" :key="lesson.id"
                                 class="cursor-pointer flex justify-between items-start bg-gray-50 px-4 py-2">
-                                <div class="flex items-center gap-3">
-                                    <CheckOuline class="h-5 w-5 " />
-                                    <div class="flex flex-col">
-                                        <h3>{{ lesson.name }}</h3>
+                                <div class="flex items-center gap-3 w-full" @click="handleChangeContent(lesson)"
+                                    :class="{ 'bg-gray-200 rounded-lg': currentContent.id === lesson.id }">
+
+                                    <CheckOuline :class="lesson.learned === 100 ? 'text-green-500' : 'text-gray-500'"
+                                        class="h-5 w-5" />
+                                    <div class=" flex flex-col">
+                                        <h3>{{ lesson.title }}</h3>
                                         <div class="flex items-center gap-1">
                                             <PlayCircleIcon class="h-4 w-4 text-gray-600" />
-                                            <span class="text-pink-500">{{ lesson.duration }}</span>
+                                            <span class="text-pink-500">{{ lesson.duration_display }}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Show preview link if available -->
                             </div>
                         </el-collapse-item>
                     </el-collapse>
@@ -112,8 +152,9 @@
 </template>
 <script setup lang="ts">
 import VideoCourse from '@/components/ui/video/VideoCourse.vue';
-import { ref } from 'vue';
-const videoUrl = ref('https://cdn.theguardian.tv/webM/2015/07/20/150716YesMen_synd_768k_vp8.webm');
+import { onMounted, ref } from 'vue';
+// const videoUrl = ref('https://cdn.theguardian.tv/webM/2015/07/20/150716YesMen_synd_768k_vp8.webm');
+// const videoUrl = ref('https://www.youtube.com/watch?v=HMsprZM5Y8s');
 import { PlayCircleIcon, CheckCircleIcon as CheckOuline } from "@heroicons/vue/24/outline";
 import { CheckCircleIcon as CheckSolid } from "@heroicons/vue/24/solid";
 import type { TabsPaneContext } from 'element-plus'
@@ -121,6 +162,9 @@ import UserSearch from '@/components/user/mycourse/UserSearch.vue';
 import UserQuestion from '@/components/user/mycourse/UserQuestion.vue';
 import UserNote from '@/components/user/mycourse/UserNote.vue';
 import UserFeedback from '@/components/user/mycourse/UserFeedback.vue';
+import { useRoute } from 'vue-router';
+import { useCourseStore } from '@/store/course';
+import { storeToRefs } from 'pinia';
 
 const activeName = ref('first')
 
@@ -131,33 +175,31 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 const activeNames = ref(['1']);
 
 // Chapters data including lessons
-const chapters = ref([
-    {
-        name: '1',
-        title: 'Chương 1: Course Overview',
-        videosCount: 1,
-        totalVideos: 12,
-        totalDuration: '1h 28m',
-        lessons: [
-            { name: 'Cài đặt phần mềm', duration: '12m', check: false },
-            { name: 'Code giao diện', duration: '18m', check: true },
-        ],
-    },
-    {
-        name: '2',
-        title: 'Chương 2: Curriculum',
-        videosCount: 1,
-        totalVideos: 12,
-        totalDuration: '1h 28m',
-        lessons: [
-            { name: 'Vue Templating', duration: '12m', check: true },
-            { name: 'Vue Forms', duration: '23m', check: false },
-            { name: 'Vue Styling', duration: '57m', check: false },
-            { name: 'Vue Routing', duration: '1h 30m', check: false },
-            { name: 'Vue Animation', duration: '1h 19m', check: false },
-        ],
-    },
-]);
-</script>
 
-<style scoped></style>
+
+
+const route = useRoute();
+const id = Number(route.params.id);
+const courseStore = useCourseStore()
+const { studyCourse, currentContent,
+    allContent,
+    progress, } = storeToRefs(courseStore)
+const { fetchStudyCourse, changeContent } = courseStore
+console.log(studyCourse)
+onMounted(async () => {
+    await fetchStudyCourse(id)
+})
+const handleChangeContent = async (lesson: any) => {
+    await changeContent(id, lesson.section_id, lesson);
+};
+const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
+    // Cập nhật trạng thái learned
+    currentContent.value.learned = learned;
+
+    // Gửi thông tin learned lên API thông qua changeContent
+    await changeContent(id, currentContent.value.section_id, {
+        ...currentContent.value,
+        learned,
+    });
+};
+</script>
