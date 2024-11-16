@@ -186,7 +186,7 @@ return [
     // CART
     'cart_items_fetched' => 'Danh sách khóa học trong giỏ hàng đã được lấy thành công.',
     'course_not_found_in_cart' => 'Khóa học không có trong giỏ hàng.',
-    'course_added_success' => 'Khóa học đã được yêu thich.',
+    'course_added_success' => 'Khóa học đã được thêm vào giỏ hàng.',
     'course_already_in_cart' => 'Khóa học đã có trong giỏ hàng.',
     'course_already_in_paid_order' => 'Khóa học đã có trong đơn hàng đã thanh toán.',
     'course_removed_success' => 'Khóa học đã được xóa thành công.',
