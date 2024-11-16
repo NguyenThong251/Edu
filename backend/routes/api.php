@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\GoogleController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\LectureController;
 use App\Http\Controllers\StudyController;
+use App\Http\Controllers\InstructorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -124,6 +125,12 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('lectures/{id}', [LectureController::class, 'update'])->name('lectures.update');
             Route::get('lectures/restore/{id}', [LectureController::class, 'restore'])->name('lectures.restore');
             Route::delete('lectures/{id}', [LectureController::class, 'destroy'])->name('lectures.destroy');
+
+            Route::get('instructor/course', [InstructorController::class, 'getListCourses']);
+            Route::get('instructor/report', [InstructorController::class, 'getReport']);
+            Route::get('instructor/line-chart', [InstructorController::class, 'getLineChartData']);
+            Route::get('instructor/course-statistics', [InstructorController::class, 'getCourseStatistics']);
+
         });
 
         // Routes cho student
