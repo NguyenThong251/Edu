@@ -2,14 +2,25 @@
     <main class="px-10 bg-indigo-100 py-10">
         <div class="flex lg:flex-row  flex-col  gap-5">
             <div class="lg:w-4/6 w-full">
-                <h2 class="text-xl font-bold mb-3">{{ currentContent.title }}</h2>
+                <div v-if="currentContent && currentContent.title">
+                    <h2 class="text-xl font-bold mb-3">{{ currentContent.title }}</h2>
+                </div>
                 <div class=" border-2 bg-white  p-5 rounded-2xl">
                     <!-- <VideoCourse :src="videoUrl" /> -->
                     <div v-if="currentContent.type === 'video'" class="relative">
-                        <VideoCourse :src="currentContent.content_link" :lesson="currentContent"
-                            :onUpdateLearned="updateLearned" @timeupdate="handleTimeUpdate" @ended="handleVideoEnd" />
+                        <!-- <VideoCourse :src="currentContent.content_link" :lesson="currentContent"
+                            :onUpdateLearned="updateLearned" @timeupdate="handleTimeUpdate" @ended="handleVideoEnd" /> -->
 
                         <!-- <VideoCourse :src="videoUrl" /> -->
+                        <div class="rounded-2xl w-full overflow-hidden">
+                            <vue-plyr>
+                                <video controls preload="metadata" @timeupdate="handleTimeUpdate"
+                                    @ended="handleVideoEnd" ref="videoElement">
+                                    <source :src="currentContent.content_link" type="video/mp4" />
+                                    Trình duyệt của bạn không hỗ trợ video.
+                                </video>
+                            </vue-plyr>
+                        </div>
                     </div>
                     <!-- file -->
                     <div v-else-if="currentContent.type === 'file'" class="p-3 border rounded-lg">
@@ -139,7 +150,7 @@
 
     </main>
 </template>
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import VideoCourse from '@/components/ui/video/VideoCourse.vue';
 import { onMounted, ref } from 'vue';
 // const videoUrl = ref('https://cdn.theguardian.tv/webM/2015/07/20/150716YesMen_synd_768k_vp8.webm');
@@ -181,6 +192,7 @@ const handleChangeContent = async (lesson: any) => {
 const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
     // Cập nhật trạng thái learned
     currentContent.value.learned = learned;
+    // console.log(learned)
 
     // Gửi thông tin learned lên API thông qua changeContent
     await changeContent(id, currentContent.value.section_id, {
@@ -218,4 +230,83 @@ onMounted(() => {
         }
     });
 });
+</script> -->
+<script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { PlayCircleIcon, CheckCircleIcon as CheckOuline, QuestionMarkCircleIcon, DocumentIcon } from "@heroicons/vue/24/outline";
+import { useRoute } from 'vue-router';
+import { useCourseStore } from '@/store/course';
+import { storeToRefs } from 'pinia';
+import type { TLesson } from '@/interfaces';
+
+const route = useRoute();
+const id = Number(route.params.id);
+const courseStore = useCourseStore();
+const { studyCourse, currentContent, allContent, progress } = storeToRefs(courseStore);
+const { fetchStudyCourse, changeContent } = courseStore;
+
+const videoElement = ref<HTMLVideoElement | null>(null);
+
+
+onMounted(async () => {
+    await fetchStudyCourse(id);
+});
+
+// const handleChangeContent = async (lesson: any) => {
+//     await changeContent(id, lesson.section_id, lesson);
+// };
+const handleChangeContent = async (lesson: TLesson) => {
+    await changeContent(id, lesson.content_id, lesson);
+};
+
+// const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
+//     console.log(`Updating progress for lesson ${id}: ${learned}%`);
+//     await changeContent(id, currentContent.value.section_id, {
+//         ...currentContent.value,
+//         learned,
+//     });
+// };
+const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
+    if (!currentContent.value || !currentContent.value.id || !currentContent.value.section_id) {
+        console.warn('Missing content details for updating learned progress');
+        return;
+    }
+
+    // console.log('Updating learned:', {
+    //     course_id: id, // `id` được truyền vào từ `currentContent` hoặc logic của bạn
+    //     content_id: currentContent.value.id,
+    //     learned,
+    //     content_type: currentContent
+    // });
+    // Gửi thông tin lên API
+    await changeContent(id, currentContent.value.section_id, {
+        ...currentContent.value,
+        learned,
+    });
+};
+const handleTimeUpdate = () => {
+    if (videoElement.value && videoElement.value.paused) {
+        const percentWatched = (videoElement.value.currentTime / videoElement.value.duration) * 100;
+        // console.log(id)
+        updateLearned({
+            id: id,
+            learned: Math.min(Math.round(percentWatched), 100),
+        });
+    }
+};
+
+const handleVideoEnd = () => {
+    updateLearned({ id: currentContent.value.id, learned: 100 });
+    handleNextLesson();
+};
+
+const handleNextLesson = () => {
+    const currentIndex = allContent.value.findIndex(
+        (lesson) => lesson.id === currentContent.value.id
+    );
+    const nextLesson = allContent.value[currentIndex + 1];
+    if (nextLesson) {
+        changeContent(nextLesson.course_id, nextLesson.section_id, nextLesson);
+    }
+};
 </script>

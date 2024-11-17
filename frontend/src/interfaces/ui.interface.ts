@@ -28,10 +28,27 @@ export interface VideoFreeItem {
   duration: string
   isActive?: boolean
 }
-export interface Lesson {
-  id: number
-  learned: number
-  content_section_type: string
+export interface TLesson {
+  // id: number
+  // learned: number
+  // current_content_type?: string
+  // content_section_type: string
+  // type?: string
+  // content_link?: string
+  id?: number
+  course_id: number
+  content_type?: string
+  content_id: number
+  learned?: number
+  current_content_type?: string
+  content_section_type?: string
+  content_old_type: string
+  content_old_id?: number
+}
+export interface TVideo {
+  src: string
+  lesson: TLesson
+  onUpdateLearned: (data: { id: number; learned: number }) => void
 }
 export interface CourseContentItem {
   content: string

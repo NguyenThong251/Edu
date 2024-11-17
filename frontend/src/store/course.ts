@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/services/axiosConfig'
 import type { TCardCourse, TCardMyCourse } from '@/interfaces/course.interface'
-import type { Lesson } from '@/interfaces/ui.interface'
+import type { TLesson } from '@/interfaces/ui.interface'
 
 export const useCourseStore = defineStore('courseStore', () => {
   // State
@@ -60,10 +60,14 @@ export const useCourseStore = defineStore('courseStore', () => {
         params: { course_id: courseId }
       })
       studyCourse.value = response.data.data // Gán dữ liệu vào state
-      const { currentContent: current, allContent: all, progress: prog } = response.data.data
-      currentContent.value = current
+      const {
+        currentContent: currentContent,
+        allContent: all,
+        progress_percent: progress_percent
+      } = response.data.data
+      currentContent.value = currentContent
       allContent.value = all
-      progress.value = prog
+      progress.value = progress_percent
       error.value = null
     } catch (err: any) {
       console.error('Fetch Study Course Error:', err)
@@ -89,7 +93,7 @@ export const useCourseStore = defineStore('courseStore', () => {
   //     error.value = 'Không thể chuyển bài học.'
   //   }
   // }
-  const changeContent = async (courseId: number, sectionId: number, lesson: Lesson) => {
+  const changeContent = async (courseId: number, sectionId: number, lesson: TLesson) => {
     try {
       const response = await api.get('/auth/change-content', {
         params: {

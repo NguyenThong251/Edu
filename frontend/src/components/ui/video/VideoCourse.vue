@@ -13,40 +13,53 @@
 
 <script setup lang="ts">
 import { ref, defineProps, onUpdated } from 'vue';
-import type { PlayerOptions } from '@/interfaces'
+import type { PlayerOptions, TVideo } from '@/interfaces/ui.interface'
 
-// Define props
-
-defineProps({
-    src: {
-        type: String,
-        required: true,
-    },
-    lesson: {
-        type: Object,
-        required: true,
-    },
-    onUpdateLearned: {
-        type: Function,
-        required: true,
-    },
-});
+// Define prop
+defineProps<TVideo>()
+// defineProps({
+//     src: {
+//         type: String,
+//         required: true,
+//     },
+//     lesson: {
+//         type: Object,
+//         required: true,
+//     },
+//     onUpdateLearned: {
+//         type: Function,
+//         required: true,
+//     },
+// });
 const videoElement = ref<HTMLVideoElement | null>(null);
 
 // Function to handle video progress updates
+// const handleTimeUpdate = () => {
+//     const dd = videoElement.value.currentTime
+//     console.log(dd)
+//     // if (videoElement.value && lesson) {
+//     //     const percentWatched =
+//     //         (videoElement.value.currentTime / videoElement.value.duration) * 100;
+
+//     //     // Gọi hàm onUpdateLearned để truyền thông tin lên cha
+//     //     onUpdateLearned({
+//     //         id: lesson.id,
+//     //         learned: Math.min(Math.round(percentWatched), 100),
+//     //     });
+//     // }
+// };
 const handleTimeUpdate = () => {
-    if (videoElement.value && lesson) {
+    if (videoElement.value && videoElement.value.paused) {
         const percentWatched =
             (videoElement.value.currentTime / videoElement.value.duration) * 100;
-
-        // Gọi hàm onUpdateLearned để truyền thông tin lên cha
+        console.log(percentWatched)
+        // Gọi hàm onUpdateLearned khi video tạm dừng
         onUpdateLearned({
             id: lesson.id,
             learned: Math.min(Math.round(percentWatched), 100),
         });
     }
 };
-
 // Function to handle when video ends
 const handleVideoEnd = () => {
     if (videoElement.value && lesson) {
