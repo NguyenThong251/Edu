@@ -7,7 +7,8 @@
                     <!-- <VideoCourse :src="videoUrl" /> -->
                     <div v-if="currentContent.type === 'video'" class="relative">
                         <VideoCourse :src="currentContent.content_link" :lesson="currentContent"
-                            :onUpdateLearned="updateLearned" />
+                            :onUpdateLearned="updateLearned" @timeupdate="handleTimeUpdate" @ended="handleVideoEnd" />
+
                         <!-- <VideoCourse :src="videoUrl" /> -->
                     </div>
                     <!-- file -->
@@ -17,8 +18,8 @@
                         </a>
                     </div>
                     <!-- Quizz -->
-                    <div v-else-if="currentContent.type === 'quiz'"
-                        class="min-h-screen bg-white flex items-center justify-center">
+                    <div v-else-if="currentContent.current_content_type === 'quiz'"
+                        class="min-h-[70vh] bg-white flex items-center justify-center">
                         <div class="bg-white p-4 rounded-lg shadow-md max-w-md w-full">
                             <h2 class="text-xl font-semibold mb-4 text-center">Bài tập: Biến Python</h2>
 
@@ -57,7 +58,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg my-5 p-2">
+                <!-- <div class="bg-white rounded-lg my-5 p-2">
                     <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
                         <el-tab-pane label="Tìm kiếm" name="first">
                             <UserSearch />
@@ -73,7 +74,7 @@
                             <UserFeedback />
                         </el-tab-pane>
                     </el-tabs>
-                </div>
+                </div> -->
             </div>
             <div class="lg:w-2/6 w-full">
                 <div class="bg-white rounded-lg shadow-lg p-5">
@@ -87,31 +88,7 @@
                         </div>
 
                     </header>
-                    <!-- <el-collapse accordion>
-                        <el-collapse-item v-for="(content, index) in allContent" :key="content.id" :name="index">
-                            <template #title>
-                                <div class="flex justify-between items-center">
-                                    <h3 class="text-lg">{{ content.title }}</h3>
-                                    <div class="flex gap-2 text-gray-500">
-                                        <span v-if="content.content_course_type === 'section'">
-                                            {{ content.content_done }}/{{ content.content_count }} Hoàn thành
-                                        </span>
-                                        <span v-else-if="content.content_course_type === 'quiz'">
-                                            Quiz {{ content.total_question_count }} câu hỏi
-                                        </span>
-                                    </div>
-                                </div>
-                            </template>
-<ul v-if="content.section_content" class="ml-4">
-    <li v-for="lesson in content.section_content" :key="lesson.id"
-        class="flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
-        @click="handleChangeContent(lesson)">
-        <span>{{ lesson.title }}</span>
-        <span class="text-gray-500">{{ lesson.duration_display }}</span>
-    </li>
-</ul>
-</el-collapse-item>
-</el-collapse> -->
+
                     <el-collapse class="border-0" accordion>
                         <el-collapse-item v-for="(content, index) in allContent" :key="content.id" :name="index">
                             <template #title>
@@ -127,17 +104,29 @@
                             </template>
 
                             <div v-for="lesson in content.section_content" :key="lesson.id"
-                                class="cursor-pointer flex justify-between items-start bg-gray-50 px-4 py-2">
-                                <div class="flex items-center gap-3 w-full" @click="handleChangeContent(lesson)"
+                                class="cursor-pointer flex justify-between items-start bg-gray-50  py-2">
+                                <div class="flex items-center gap-3 w-full px-4" @click="handleChangeContent(lesson)"
                                     :class="{ 'bg-gray-200 rounded-lg': currentContent.id === lesson.id }">
 
                                     <CheckOuline :class="lesson.learned === 100 ? 'text-green-500' : 'text-gray-500'"
                                         class="h-5 w-5" />
                                     <div class=" flex flex-col">
                                         <h3>{{ lesson.title }}</h3>
-                                        <div class="flex items-center gap-1">
-                                            <PlayCircleIcon class="h-4 w-4 text-gray-600" />
-                                            <span class="text-pink-500">{{ lesson.duration_display }}</span>
+                                        <div>
+                                            <div class="flex items-center gap-1" v-if="lesson.type === 'video'">
+                                                <PlayCircleIcon class="h-4 w-4 text-gray-600" />
+                                                <span class="text-pink-500">{{ lesson.duration_display }}</span>
+                                            </div>
+                                            <div class="flex items-center gap-1" v-else-if="lesson.type === 'file'">
+                                                <DocumentIcon class="h-4 w-4 text-gray-600" />
+                                                <span class="text-pink-500">{{ lesson.duration_display }}</span>
+
+                                            </div>
+                                            <!-- Nếu không, hiển thị biểu tượng câu hỏi -->
+                                            <div class="flex items-center gap-1"
+                                                v-else-if="lesson.content_section_type === 'quiz'">
+                                                <QuestionMarkCircleIcon class="h-4 w-4 text-gray-600" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -155,7 +144,7 @@ import VideoCourse from '@/components/ui/video/VideoCourse.vue';
 import { onMounted, ref } from 'vue';
 // const videoUrl = ref('https://cdn.theguardian.tv/webM/2015/07/20/150716YesMen_synd_768k_vp8.webm');
 // const videoUrl = ref('https://www.youtube.com/watch?v=HMsprZM5Y8s');
-import { PlayCircleIcon, CheckCircleIcon as CheckOuline } from "@heroicons/vue/24/outline";
+import { PlayCircleIcon, CheckCircleIcon as CheckOuline, QuestionMarkCircleIcon, DocumentIcon } from "@heroicons/vue/24/outline";
 import { CheckCircleIcon as CheckSolid } from "@heroicons/vue/24/solid";
 import type { TabsPaneContext } from 'element-plus'
 import UserSearch from '@/components/user/mycourse/UserSearch.vue';
@@ -166,15 +155,12 @@ import { useRoute } from 'vue-router';
 import { useCourseStore } from '@/store/course';
 import { storeToRefs } from 'pinia';
 
-const activeName = ref('first')
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
     console.log(tab, event)
 }
-// Keep track of which chapters are open
-const activeNames = ref(['1']);
 
-// Chapters data including lessons
+
 
 
 
@@ -185,7 +171,7 @@ const { studyCourse, currentContent,
     allContent,
     progress, } = storeToRefs(courseStore)
 const { fetchStudyCourse, changeContent } = courseStore
-console.log(studyCourse)
+// console.log(studyCourse)
 onMounted(async () => {
     await fetchStudyCourse(id)
 })
@@ -202,4 +188,34 @@ const updateLearned = async ({ id, learned }: { id: number; learned: number }) =
         learned,
     });
 };
+// Hàm chuyển bài học
+const handleNextLesson = () => {
+    const currentIndex = allContent.value.findIndex(
+        (lesson) => lesson.id === currentContent.value.id
+    );
+    const nextLesson = allContent.value[currentIndex + 1];
+    if (nextLesson) {
+        changeContent(nextLesson.course_id, nextLesson.section_id, nextLesson);
+    }
+};
+// Lắng nghe sự kiện video
+const handleTimeUpdate = ({ id, learned }: { id: number; learned: number }) => {
+    updateLearned({ id, learned });
+};
+const handleVideoEnd = () => {
+    updateLearned({ id: currentContent.value.id, learned: 100 });
+    handleNextLesson(); // Tự chuyển bài học
+};
+
+onMounted(() => {
+    window.addEventListener('next-lesson', () => {
+        const currentIndex = allContent.value.findIndex(
+            (lesson) => lesson.id === currentContent.value.id
+        );
+        const nextLesson = allContent.value[currentIndex + 1];
+        if (nextLesson) {
+            changeContent(nextLesson.course_id, nextLesson.section_id, nextLesson);
+        }
+    });
+});
 </script>

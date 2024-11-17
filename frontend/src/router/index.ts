@@ -7,7 +7,17 @@ import { useAuthStore } from '@/store/auth'
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
 import { ElNotification } from 'element-plus'
-const routes = [...user, ...teacher, ...admin]
+const routes = [
+  ...user,
+  ...teacher,
+  ...admin,
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/404.vue'), // Component hiển thị 404
+    meta: { requiresAuth: false }
+  }
+]
 const router = createRouter({
   history: createWebHistory(),
   routes
@@ -21,6 +31,11 @@ router.beforeEach(async (to, from, next) => {
   const userRole = state.value.user?.role
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login')
+    ElNotification({
+      title: 'Cảnh báo',
+      message: 'Bạn cần đăng nhập để tiếp tục!',
+      type: 'warning'
+    })
   }
 
   if (to.meta.requiresAuth && !isAuthenticated) {
@@ -30,6 +45,7 @@ router.beforeEach(async (to, from, next) => {
       next('/')
       return
     }
+
     // Kiểm tra quyền truy cập dựa trên vai trò
     if (to.meta.role === 'admin' && userRole !== 'admin') {
       next('/') // Chặn nếu không phải admin

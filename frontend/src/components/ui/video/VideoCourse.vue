@@ -12,7 +12,7 @@
 <!-- <video-player class="video-player vjs-custom-skin w-full h-[20rem]" :options="playerOptions"></video-player> -->
 
 <script setup lang="ts">
-import { ref, defineProps, watch } from 'vue';
+import { ref, defineProps, onUpdated } from 'vue';
 import type { PlayerOptions } from '@/interfaces'
 
 // Define props
@@ -50,8 +50,18 @@ const handleTimeUpdate = () => {
 // Function to handle when video ends
 const handleVideoEnd = () => {
     if (videoElement.value && lesson) {
-        onUpdateLearned({ id: lesson.id, learned: 100 }); // Đảm bảo đánh dấu hoàn thành khi video kết thúc
+        // Đánh dấu hoàn thành khi video kết thúc
+        onUpdateLearned({ id: lesson.id, learned: 100 });
+
+        // Tự động chuyển bài học tiếp theo
+        handleNextLesson();
     }
+};
+
+// Function to handle moving to the next lesson
+const handleNextLesson = () => {
+    const event = new CustomEvent('next-lesson');
+    window.dispatchEvent(event);
 };
 
 </script>

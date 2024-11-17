@@ -71,36 +71,43 @@ const user = [
       {
         path: '',
         component: UserDashboard,
+        meta: { requiresAuth: true },
         children: [
           {
             path: '/mycourses',
             name: 'mycourses',
-            component: () => import('@/views/user/MyCourses.vue')
+            component: () => import('@/views/user/MyCourses.vue'),
+            meta: { requiresAuth: true }
           },
           {
             path: '/myprofile',
             name: 'myprofile',
-            component: () => import('@/views/user/MyProfile.vue')
+            component: () => import('@/views/user/MyProfile.vue'),
+            meta: { requiresAuth: true }
           },
           {
             path: '/wishlist',
             name: 'wishlist',
-            component: () => import('@/views/user/MyWishlist.vue')
+            component: () => import('@/views/user/MyWishlist.vue'),
+            meta: { requiresAuth: true }
           },
           {
             path: '/history',
             name: 'history',
-            component: () => import('@/views/user/MyHistory.vue')
+            component: () => import('@/views/user/MyHistory.vue'),
+            meta: { requiresAuth: true }
           },
           {
             path: '/security',
             name: 'security',
-            component: () => import('@/views/user/Security.vue')
+            component: () => import('@/views/user/Security.vue'),
+            meta: { requiresAuth: true }
           },
           {
             path: '/mymessage',
             name: 'mymessage',
-            component: () => import('@/views/user/MyMessage.vue')
+            component: () => import('@/views/user/MyMessage.vue'),
+            meta: { requiresAuth: true }
           }
         ]
       }
@@ -113,7 +120,8 @@ const user = [
       {
         path: '/mycourses/:id',
         name: 'mylearncourse',
-        component: () => import('@/views/user/MyLearnCourse.vue')
+        component: () => import('@/views/user/MyLearnCourse.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   }
