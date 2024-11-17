@@ -9,6 +9,7 @@ use App\Models\Course;
 use App\Models\Section;
 use App\Models\Quiz;
 use App\Models\Lecture;
+use App\Models\AnswerUser;
 use App\Models\ProgressLecture;
 use App\Models\ProgressQuiz;
 use Illuminate\Support\Facades\Auth;
@@ -69,10 +70,12 @@ class StudyController extends Controller
 
             // Lấy số lượng lecture đã hoàn thành trong ProgressLecture
             $completedLectures = ProgressLecture::where('user_id', $userId)
+                ->where('percent', '>=', 100) // Thêm điều kiện percent >= 100
                 ->whereIn('lecture_id', Lecture::where('status', 'active')
                     ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
                     ->pluck('id'))
                 ->count();
+
 
             // Lấy thông tin creator
             $creatorName = $course->creator && ($course->creator->last_name || $course->creator->first_name)
@@ -258,37 +261,39 @@ class StudyController extends Controller
             ];
         });
 
-    $sections = $sections->map(function ($section) {
-        $contentCount = $section['section_content']->count(); // Tổng số nội dung trong section
-        $contentDone = $section['section_content']->where('percent', 100)->count(); // Tổng số nội dung hoàn thành
-
-        $section['content_count'] = $contentCount;
-        $section['content_done'] = $contentDone;
-
-        return $section;
-    });
-
-    $totalContentCount = $sections->sum('content_count');
-    $totalContentDone = $sections->sum('content_done');
-
-    $quizContentCount = $quizzesForCourse->count();
-    $quizContentDone = $quizzesForCourse->where('percent', 100)->count();
-
-    $totalContentCount += $quizContentCount;
-    $totalContentDone += $quizContentDone;
-
-    $progress = $totalContentCount > 0 ? ($totalContentDone / $totalContentCount) * 100 : 0;
-
-    $allContent = $sections->merge($quizzesForCourse)->sortBy('order')->values();
-
-    $responseData = [
-        'allContent' => $allContent,
-        'total_content_count' => $totalContentCount,
-        'total_content_done' => $totalContentDone,
-        'progress' => round($progress, 2),
-    ];
-
-    return $responseData;
+        $sections = $sections->map(function ($section) {
+            // Lọc chỉ các lecture trong section_content
+            $lectures = $section['section_content']->where('content_section_type', 'lecture');
+        
+            $contentCount = $lectures->count(); // Tổng số lecture trong section
+            $contentDone = $lectures->where('percent', '>=', 100)->count(); // Tổng số lecture hoàn thành
+        
+            $section['content_count'] = $contentCount;
+            $section['content_done'] = $contentDone;
+        
+            return $section;
+        });
+        
+        // Tổng hợp từ tất cả các section
+        $totalContentCount = $sections->sum('content_count'); // Tổng số lecture
+        $totalContentDone = $sections->sum('content_done');  // Tổng số lecture hoàn thành
+        
+        // Tính phần trăm tiến độ
+        $progress = $totalContentCount > 0 ? ($totalContentDone / $totalContentCount) * 100 : 0;
+        
+        // Gộp tất cả nội dung (section và quiz)
+        $allContent = $sections->merge($quizzesForCourse)->sortBy('order')->values();
+        
+        // Chuẩn bị dữ liệu trả về
+        $responseData = [
+            'allContent' => $allContent,
+            'total_lecture_count' => $totalContentCount,
+            'total_lecture_done' => $totalContentDone,
+            'progress_percent' => round($progress, 2),
+        ];
+        
+        return $responseData;
+        
 }
 
 private function formatDuration($seconds)
@@ -352,9 +357,9 @@ private function formatDuration($seconds)
         $userId = $currentUser->id;        
         $data = $this->getAllContent($userId, $courseId);
         $allContent=$data['allContent'];
-        $totalContentCount=$data['total_content_count'];
-        $totalContentDone=$data['total_content_done'];
-        $progress=$data['progress'];
+        $totalContentCount=$data['total_lecture_count'];
+        $totalContentDone=$data['total_lecture_done'];
+        $progress=$data['progress_percent'];
 
         
         $currentContent = null;
@@ -525,9 +530,9 @@ private function formatDuration($seconds)
             'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
-            'total_content_count' => $totalContentCount,
-            'total_content_done' => $totalContentDone,
-            'progress' => round($progress, 2), // Làm tròn đến 2 chữ số thập phân
+            'total_lecture_count' => $totalContentCount,
+            'total_lecture_done' => $totalContentDone,
+            'progress_percent' => round($progress, 2), // Làm tròn đến 2 chữ số thập phân
         ];
 
 
@@ -570,6 +575,9 @@ private function formatDuration($seconds)
         $contentOldType = $request->input('content_old_type');
         $contentOldId = $request->input('content_old_id');
         $learned = $request->input('learned');
+        $questionsDone = $request->input('questions_done');
+        $answerUser = $request->input('answer_user');
+        $questionId = $request->input('question_id');
 
         // Xử lý nội dung cũ
         if ($contentOldType === 'lecture') {
@@ -602,9 +610,19 @@ private function formatDuration($seconds)
                 ->where('id', $contentOldId)
                 ->where('status', 'active')
                 ->first();
-    
+            
+                AnswerUser::updateOrCreate(
+                    [
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ],
+                    [
+                        'content' => $answerUser,
+                        'status' => 'active',
+                    ]
+                );
             if ($quiz) {
-                $percent = ($learned / $quiz->questions_count) * 100;
+                $percent = ($questionsDone / $quiz->questions_count) * 100;
                 $progressQuiz = ProgressQuiz::where('quiz_id', $contentOldId)
                     ->where('user_id', $userId)
                     ->first();
@@ -616,7 +634,7 @@ private function formatDuration($seconds)
                             'user_id' => $userId,
                         ],
                         [
-                            'questions_done' => $learned,
+                            'questions_done' => $questionsDone,
                             'percent' => $progressQuiz && $percent > $progressQuiz->percent ? round($percent, 2) : $progressQuiz->percent,
                             'status' => 'active',
                         ]
@@ -659,27 +677,37 @@ private function formatDuration($seconds)
                     ->where('status', 'active')
                     ->first();
 
-                $nextQuestionIndex = $progressQuiz['questions_done'] ?? 0;
-                $currentQuestion = $quiz->questions[$nextQuestionIndex] ?? null;
+                $questionsDone = $progressQuiz->questions_done ?? 0;
+                $totalQuestions = $quiz->questions->count();
+
+                // Kiểm tra nếu đã làm hết câu hỏi
+                if ($questionsDone >= $totalQuestions) {
+                    // Lấy câu hỏi cuối cùng
+                    $currentQuestion = $quiz->questions->last();
+                } else {
+                    // Lấy câu hỏi tiếp theo
+                    $currentQuestion = $quiz->questions[$questionsDone] ?? null;
+                }
 
                 $currentContent = array_merge(
                     $quiz->toArray(),
                     [
                         'current_content_type' => 'quiz',
-                        'questions_done' => $progressQuiz->questions_done ?? null,
+                        'questions_done' => $questionsDone,
                         'percent' => $progressQuiz->percent ?? null,
                         'current_question' => $currentQuestion ? $currentQuestion->toArray() : null,
                     ]
                 );
             }
+
         }
 
         // Lấy dữ liệu tổng quan
         $data = $this->getAllContent($userId, $courseId);
         $allContent = $data['allContent'];
-        $totalContentCount = $data['total_content_count'];
-        $totalContentDone = $data['total_content_done'];
-        $progress = $data['progress'];
+        $totalContentCount = $data['total_lecture_count'];
+        $totalContentDone = $data['total_lecture_done'];
+        $progress = $data['progress_percent'];
 
         $course = Course::where('id', $courseId)
         ->where('status', 'active')
@@ -688,9 +716,9 @@ private function formatDuration($seconds)
             'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
-            'total_content_count' => $totalContentCount,
-            'total_content_done' => $totalContentDone,
-            'progress' => round($progress, 2),
+            'total_lecture_count' => $totalContentCount,
+            'total_lecture_done' => $totalContentDone,
+            'progress_percent' => round($progress, 2),
         ];
 
         // Trả về response
