@@ -178,10 +178,10 @@ onMounted(async () => {
 
 
 const handleChangeContent = async (lesson: any) => {
-    if (!lesson || !lesson.id || !lesson.type) {
-        console.error('Invalid lesson data:', lesson);
-        return;
-    }
+    // if (!lesson || !lesson.id || !lesson.type) {
+    //     console.error('Invalid lesson data:', lesson);
+    //     return;
+    // }
     const data = {
         course_id: idCourse,
         content_type: lesson.content_section_type,
@@ -190,6 +190,7 @@ const handleChangeContent = async (lesson: any) => {
         content_old_type: currentContent.value?.type || '',
         content_old_id: currentContent.value?.id || 0
     }
+    console.log(lesson)
     await changeContent(data);
 };
 const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
@@ -209,6 +210,16 @@ const handleTimeUpdate = () => {
         // updateLearned({ id: currentContent.value.id, learned: videoElement.value.currentTime });
     }
 };
+const handlePause = async () => {
+    if (videoElement.value && currentContent.value) {
+        console.log('Video paused at:', videoElement.value.currentTime);
+        // Gọi API để cập nhật thời gian đã xem
+        // await updateLearned({
+        //     id: currentContent.value.id,
+        //     learned: Math.floor(videoElement.value.currentTime), // Làm tròn giá trị thời gian
+        // });
+    }
+};
 // const handleTimeUpdate = () => {
 //     if (videoElement.value && videoElement.value.paused) {
 //         // const percentWatched = (videoElement.value.currentTime / videoElement.value.duration) * 100;
@@ -225,18 +236,29 @@ const handleTimeUpdate = () => {
 //     }
 // };
 
-// const handleVideoEnd = () => {
-//     updateLearned({ id: currentContent.value.id, learned: 100 });
-//     handleNextLesson();
-// };
+const handleVideoEnd = () => {
+    // updateLearned({ id: currentContent.value.id, learned: 100 });
+    handleNextLesson();
+};
 
-// const   = () => {
-//     const currentIndex = allContent.value.findIndex(
-//         (lesson) => lesson.id === currentContent.value.id
-//     );
-//     const nextLesson = allContent.value[currentIndex + 1];
-//     if (nextLesson) {
-//         changeContent(nextLesson.course_id, nextLesson.section_id, nextLesson);
-//     }
-// };
+const handleNextLesson = async () => {
+
+    // const currentIndex = allContent.value.findIndex(
+    //     (lesson) => lesson.id === currentContent.value.id
+    // );
+    // const nextLesson = allContent.value[currentIndex + 1];
+
+
+    const currentSection = allContent.value.find(section =>
+        section.section_content.some((lesson: any) => lesson.id === currentContent.value.id)
+    );
+    const sectionLessons = currentSection.section_content;
+    const currentIndex = sectionLessons.findIndex((lesson: TLesson) => lesson.id === currentContent.value?.id);
+    const nextLesson = sectionLessons[currentIndex + 1];
+    // console.log(nextLesson)
+    await handleChangeContent(nextLesson);
+    // if (nextLesson) {
+    //     changeContent(nextLesson.course_id, nextLesson.section_id, nextLesson);
+    // }
+};
 </script>
