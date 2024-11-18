@@ -59,15 +59,10 @@ export const useCourseStore = defineStore('courseStore', () => {
       const response = await api.get('/auth/study-course', {
         params: { course_id: courseId }
       })
-      studyCourse.value = response.data.data // Gán dữ liệu vào state
-      const {
-        currentContent: currentContent,
-        allContent: all,
-        progress_percent: progress_percent
-      } = response.data.data
-      currentContent.value = currentContent
-      allContent.value = all
-      progress.value = progress_percent
+      studyCourse.value = response.data.data
+      currentContent.value = response.data.data.currentContent
+      allContent.value = response.data.data.allContent
+      progress.value = response.data.data.progress_percent
       error.value = null
     } catch (err: any) {
       console.error('Fetch Study Course Error:', err)

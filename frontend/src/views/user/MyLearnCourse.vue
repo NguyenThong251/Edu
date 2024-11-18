@@ -19,6 +19,7 @@
                                     <source :src="currentContent.content_link" type="video/mp4" />
                                     Trình duyệt của bạn không hỗ trợ video.
                                 </video>
+
                             </vue-plyr>
                         </div>
                     </div>
@@ -152,87 +153,7 @@
 
     </main>
 </template>
-<!-- <script setup lang="ts">
-import VideoCourse from '@/components/ui/video/VideoCourse.vue';
-import { onMounted, ref } from 'vue';
-// const videoUrl = ref('https://cdn.theguardian.tv/webM/2015/07/20/150716YesMen_synd_768k_vp8.webm');
-// const videoUrl = ref('https://www.youtube.com/watch?v=HMsprZM5Y8s');
-import { PlayCircleIcon, CheckCircleIcon as CheckOuline, QuestionMarkCircleIcon, DocumentIcon } from "@heroicons/vue/24/outline";
-import { CheckCircleIcon as CheckSolid } from "@heroicons/vue/24/solid";
-import type { TabsPaneContext } from 'element-plus'
-import UserSearch from '@/components/user/mycourse/UserSearch.vue';
-import UserQuestion from '@/components/user/mycourse/UserQuestion.vue';
-import UserNote from '@/components/user/mycourse/UserNote.vue';
-import UserFeedback from '@/components/user/mycourse/UserFeedback.vue';
-import { useRoute } from 'vue-router';
-import { useCourseStore } from '@/store/course';
-import { storeToRefs } from 'pinia';
 
-
-const handleClick = (tab: TabsPaneContext, event: Event) => {
-    console.log(tab, event)
-}
-
-
-
-
-
-const route = useRoute();
-const id = Number(route.params.id);
-const courseStore = useCourseStore()
-const { studyCourse, currentContent,
-    allContent,
-    progress, } = storeToRefs(courseStore)
-const { fetchStudyCourse, changeContent } = courseStore
-// console.log(studyCourse)
-onMounted(async () => {
-    await fetchStudyCourse(id)
-})
-const handleChangeContent = async (lesson: any) => {
-    await changeContent(id, lesson.section_id, lesson);
-};
-const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
-    // Cập nhật trạng thái learned
-    currentContent.value.learned = learned;
-    // console.log(learned)
-
-    // Gửi thông tin learned lên API thông qua changeContent
-    await changeContent(id, currentContent.value.section_id, {
-        ...currentContent.value,
-        learned,
-    });
-};
-// Hàm chuyển bài học
-const handleNextLesson = () => {
-    const currentIndex = allContent.value.findIndex(
-        (lesson) => lesson.id === currentContent.value.id
-    );
-    const nextLesson = allContent.value[currentIndex + 1];
-    if (nextLesson) {
-        changeContent(nextLesson.course_id, nextLesson.section_id, nextLesson);
-    }
-};
-// Lắng nghe sự kiện video
-const handleTimeUpdate = ({ id, learned }: { id: number; learned: number }) => {
-    updateLearned({ id, learned });
-};
-const handleVideoEnd = () => {
-    updateLearned({ id: currentContent.value.id, learned: 100 });
-    handleNextLesson(); // Tự chuyển bài học
-};
-
-onMounted(() => {
-    window.addEventListener('next-lesson', () => {
-        const currentIndex = allContent.value.findIndex(
-            (lesson) => lesson.id === currentContent.value.id
-        );
-        const nextLesson = allContent.value[currentIndex + 1];
-        if (nextLesson) {
-            changeContent(nextLesson.course_id, nextLesson.section_id, nextLesson);
-        }
-    });
-});
-</script> -->
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { PlayCircleIcon, CheckCircleIcon as CheckOuline, QuestionMarkCircleIcon, DocumentIcon } from "@heroicons/vue/24/outline";
@@ -240,9 +161,8 @@ import { useRoute } from 'vue-router';
 import { useCourseStore } from '@/store/course';
 import { storeToRefs } from 'pinia';
 import type { TLesson } from '@/interfaces';
-import PDFViewer from 'vue3-pdfjs'
 const route = useRoute();
-const id = Number(route.params.id);
+const idCourse = Number(route.params.id);
 const courseStore = useCourseStore();
 const { studyCourse, currentContent, allContent, progress } = storeToRefs(courseStore);
 const { fetchStudyCourse, changeContent } = courseStore;
@@ -253,69 +173,70 @@ const { fetchStudyCourse, changeContent } = courseStore;
 const videoElement = ref<HTMLVideoElement | null>(null);
 
 onMounted(async () => {
-    await fetchStudyCourse(id);
+    await fetchStudyCourse(idCourse);
 });
 
-// const handleChangeContent = async (lesson: any) => {
-//     await changeContent(id, lesson.section_id, lesson);
-// };
-const handleChangeContent = async (lesson: TLesson) => {
-    await changeContent(id, lesson.content_id, lesson);
-};
 
-// const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
-//     console.log(`Updating progress for lesson ${id}: ${learned}%`);
-//     await changeContent(id, currentContent.value.section_id, {
-//         ...currentContent.value,
-//         learned,
-//     });
-// };
-const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
-    if (!currentContent.value || !currentContent.value.id || !currentContent.value.section_id) {
-        console.warn('Missing content details for updating learned progress');
+const handleChangeContent = async (lesson: any) => {
+    if (!lesson || !lesson.id || !lesson.type) {
+        console.error('Invalid lesson data:', lesson);
         return;
     }
-
-    // console.log('Updating learned:', {
-    //     course_id: id, // `id` được truyền vào từ `currentContent` hoặc logic của bạn
-    //     content_id: currentContent.value.id,
-    //     learned,
-    //     content_type: currentContent
-    // });
-    // Gửi thông tin lên API
-    await changeContent(id, currentContent.value.section_id, {
-        ...currentContent.value,
+    const data = {
+        course_id: idCourse,
+        content_type: lesson.content_section_type,
+        content_id: lesson.id,
+        learned: lesson.learned,
+        content_old_type: currentContent.value?.type || '',
+        content_old_id: currentContent.value?.id || 0
+    }
+    await changeContent(data);
+};
+const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
+    if (!currentContent.value) return;
+    await changeContent({
+        course_id: idCourse,
+        content_type: currentContent.value.type,
+        content_id: id,
         learned,
+        // content_old_type: currentContent.value.type,
+        // content_old_id: currentContent.value.id
     });
 };
 const handleTimeUpdate = () => {
-    if (videoElement.value && videoElement.value.paused) {
-        // const percentWatched = (videoElement.value.currentTime / videoElement.value.duration) * 100;
-        // // console.log(id)
-        // updateLearned({
-        //     id: id,
-        //     learned: Math.min(Math.round(percentWatched), 100),
-        // });
-        // console.log(id)
-        updateLearned({
-            id: id,
-            learned: videoElement.value.currentTime,
-        });
+    if (videoElement.value && currentContent.value) {
+        console.log(videoElement.value.currentTime)
+        // updateLearned({ id: currentContent.value.id, learned: videoElement.value.currentTime });
     }
 };
+// const handleTimeUpdate = () => {
+//     if (videoElement.value && videoElement.value.paused) {
+//         // const percentWatched = (videoElement.value.currentTime / videoElement.value.duration) * 100;
+//         // // console.log(id)
+//         // updateLearned({
+//         //     id: id,
+//         //     learned: Math.min(Math.round(percentWatched), 100),
+//         // });
+//         // console.log(id)
+//         updateLearned({
+//             id: id,
+//             learned: videoElement.value.currentTime,
+//         });
+//     }
+// };
 
-const handleVideoEnd = () => {
-    updateLearned({ id: currentContent.value.id, learned: 100 });
-    handleNextLesson();
-};
+// const handleVideoEnd = () => {
+//     updateLearned({ id: currentContent.value.id, learned: 100 });
+//     handleNextLesson();
+// };
 
-const handleNextLesson = () => {
-    const currentIndex = allContent.value.findIndex(
-        (lesson) => lesson.id === currentContent.value.id
-    );
-    const nextLesson = allContent.value[currentIndex + 1];
-    if (nextLesson) {
-        changeContent(nextLesson.course_id, nextLesson.section_id, nextLesson);
-    }
-};
+// const   = () => {
+//     const currentIndex = allContent.value.findIndex(
+//         (lesson) => lesson.id === currentContent.value.id
+//     );
+//     const nextLesson = allContent.value[currentIndex + 1];
+//     if (nextLesson) {
+//         changeContent(nextLesson.course_id, nextLesson.section_id, nextLesson);
+//     }
+// };
 </script>

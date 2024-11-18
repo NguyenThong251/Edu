@@ -6,7 +6,6 @@ import router from './router/index'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import '@/assets/index.css'
-import Vue3PdfJs from 'vue3-pdfjs'
 // import '@/assets/css/style.css'
 
 // video
