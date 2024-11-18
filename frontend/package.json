@@ -31,6 +31,7 @@
     "element-plus": "^2.8.2",
     "js-cookie": "^3.0.5",
     "laravel-echo": "^1.16.1",
+    "pdfjs-dist": "^4.8.69",
     "pinia": "^2.2.2",
     "pusher-js": "8.4.0-rc2",
     "video.js": "^8.17.4",
@@ -41,7 +42,8 @@
     "vue-router": "4",
     "vue-video-player": "^6.0.0",
     "vue3-apexcharts": "^1.7.0",
-    "vue3-datepicker": "^0.4.0"
+    "vue3-datepicker": "^0.4.0",
+    "vue3-pdfjs": "^0.1.6"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",

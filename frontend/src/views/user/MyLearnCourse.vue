@@ -27,6 +27,8 @@
                         <a :href="currentContent.content_link" target="_blank" class="text-blue-500 underline">
                             Tải xuống tài liệu: {{ currentContent.title }}
                         </a>
+                        <!-- <PDFViewer :src="currentContent.content_link" style="height: 500px; width: 100%;" /> -->
+
                     </div>
                     <!-- Quizz -->
                     <div v-else-if="currentContent.current_content_type === 'quiz'"
@@ -119,7 +121,7 @@
                                 <div class="flex items-center gap-3 w-full px-4" @click="handleChangeContent(lesson)"
                                     :class="{ 'bg-gray-200 rounded-lg': currentContent.id === lesson.id }">
 
-                                    <CheckOuline :class="lesson.learned === 100 ? 'text-green-500' : 'text-gray-500'"
+                                    <CheckOuline :class="lesson.percent >= 100 ? 'text-green-500' : 'text-gray-500'"
                                         class="h-5 w-5" />
                                     <div class=" flex flex-col">
                                         <h3>{{ lesson.title }}</h3>
@@ -238,15 +240,17 @@ import { useRoute } from 'vue-router';
 import { useCourseStore } from '@/store/course';
 import { storeToRefs } from 'pinia';
 import type { TLesson } from '@/interfaces';
-
+import PDFViewer from 'vue3-pdfjs'
 const route = useRoute();
 const id = Number(route.params.id);
 const courseStore = useCourseStore();
 const { studyCourse, currentContent, allContent, progress } = storeToRefs(courseStore);
 const { fetchStudyCourse, changeContent } = courseStore;
 
-const videoElement = ref<HTMLVideoElement | null>(null);
 
+
+
+const videoElement = ref<HTMLVideoElement | null>(null);
 
 onMounted(async () => {
     await fetchStudyCourse(id);
@@ -286,11 +290,16 @@ const updateLearned = async ({ id, learned }: { id: number; learned: number }) =
 };
 const handleTimeUpdate = () => {
     if (videoElement.value && videoElement.value.paused) {
-        const percentWatched = (videoElement.value.currentTime / videoElement.value.duration) * 100;
+        // const percentWatched = (videoElement.value.currentTime / videoElement.value.duration) * 100;
+        // // console.log(id)
+        // updateLearned({
+        //     id: id,
+        //     learned: Math.min(Math.round(percentWatched), 100),
+        // });
         // console.log(id)
         updateLearned({
             id: id,
-            learned: Math.min(Math.round(percentWatched), 100),
+            learned: videoElement.value.currentTime,
         });
     }
 };

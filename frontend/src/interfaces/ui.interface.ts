@@ -45,6 +45,14 @@ export interface TLesson {
   content_old_type: string
   content_old_id?: number
 }
+export interface TChangeContent {
+  course_id: number
+  content_type: string
+  content_id: number
+  learned: number
+  content_old_type?: string
+  content_old_id: number
+}
 export interface TVideo {
   src: string
   lesson: TLesson

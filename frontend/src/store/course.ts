@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/services/axiosConfig'
 import type { TCardCourse, TCardMyCourse } from '@/interfaces/course.interface'
-import type { TLesson } from '@/interfaces/ui.interface'
+import type { TChangeContent, TLesson } from '@/interfaces/ui.interface'
 
 export const useCourseStore = defineStore('courseStore', () => {
   // State
@@ -93,19 +93,27 @@ export const useCourseStore = defineStore('courseStore', () => {
   //     error.value = 'Không thể chuyển bài học.'
   //   }
   // }
-  const changeContent = async (courseId: number, sectionId: number, lesson: TLesson) => {
+  // const changeContent = async (courseId: number, sectionId: number, lesson: TLesson) => {
+  const changeContent = async (data: TChangeContent) => {
     try {
       const response = await api.get('/auth/change-content', {
         params: {
-          course_id: courseId,
-          content_type: lesson.content_section_type,
-          content_id: lesson.id,
-          learned: lesson.learned || 0,
-          content_old_type: currentContent.value.type,
+          course_id: data.course_id,
+          content_type: data.content_type,
+          content_id: data.content_id,
+          learned: data.learned || 0,
+          content_old_type: currentContent.value.type || '',
           content_old_id: currentContent.value.id
+          // course_id: data.courseId,
+          // content_type: lesson.content_section_type,
+          // content_id: lesson.id,
+          // learned: lesson.learned || 0,
+          // content_old_type: currentContent.value.type,
+          // content_old_id: currentContent.value.id
         }
       })
       currentContent.value = response.data.data.currentContent
+      // console.log(response.data.data.currentContent)
     } catch (err) {
       console.error('Error changing content:', err)
       error.value = 'Không thể chuyển bài học.'
