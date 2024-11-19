@@ -190,24 +190,34 @@ const handleChangeContent = async (lesson: any) => {
         content_old_type: currentContent.value?.type || '',
         content_old_id: currentContent.value?.id || 0
     }
-    console.log(lesson)
     await changeContent(data);
 };
 const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
     if (!currentContent.value) return;
-    await changeContent({
+    // console.log(learned, id)
+    const data = {
         course_id: idCourse,
         content_type: currentContent.value.type,
         content_id: id,
         learned,
-        // content_old_type: currentContent.value.type,
-        // content_old_id: currentContent.value.id
-    });
+        content_old_type: currentContent.value?.current_content_type,
+    }
+    console.log(data)
+    await changeContent(data);
+    // console.log(data)
+    // await changeContent({
+    //     course_id: idCourse,
+    //     content_type: currentContent.value.type,
+    //     content_id: id,
+    //     learned,
+    //     // content_old_type: currentContent.value.type,
+    //     // content_old_id: currentContent.value.id
+    // });
 };
 const handleTimeUpdate = () => {
     if (videoElement.value && currentContent.value) {
-        console.log(videoElement.value.currentTime)
-        // updateLearned({ id: currentContent.value.id, learned: videoElement.value.currentTime });
+        // console.log(videoElement.value.currentTime)
+        updateLearned({ id: currentContent.value.id, learned: videoElement.value.currentTime });
     }
 };
 const handlePause = async () => {

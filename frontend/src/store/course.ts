@@ -97,7 +97,8 @@ export const useCourseStore = defineStore('courseStore', () => {
           content_type: data.content_type,
           content_id: data.content_id,
           learned: data.learned || 0,
-          content_old_type: currentContent.value.type || '',
+          // content_old_type: currentContent.value.type || '',
+          content_old_type: data.content_old_type || currentContent.value.type,
           content_old_id: currentContent.value.id
           // course_id: data.courseId,
           // content_type: lesson.content_section_type,
