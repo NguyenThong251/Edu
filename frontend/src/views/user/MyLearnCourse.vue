@@ -25,12 +25,16 @@
                     </div>
                     <!-- file -->
                     <div v-else-if="currentContent.type === 'file'" class="p-3 border rounded-lg">
-                        <a :href="currentContent.content_link" target="_blank" class="text-blue-500 underline">
+                        <!-- <a :href="currentContent.content_link" target="_blank" class="text-blue-500 underline">
                             Tải xuống tài liệu: {{ currentContent.title }}
-                        </a>
-                        <!-- <PDFViewer :src="currentContent.content_link" style="height: 500px; width: 100%;" /> -->
-
+                        </a> -->
+                        <div class="pdf-viewer" ref="pdfViewer" @scroll="handleScroll">
+                            <div v-for="page in totalPages" :key="page" class="pdf-page">
+                                <canvas :id="'canvas-' + page"></canvas>
+                            </div>
+                        </div>
                     </div>
+
                     <!-- Quizz -->
                     <div v-else-if="currentContent.current_content_type === 'quiz'"
                         class="min-h-[70vh] bg-white flex items-center justify-center">
@@ -45,30 +49,6 @@
                             <p class="text-center mb-6">{{ currentQuestion.question }}</p>
 
                             <form class="space-y-4" @submit.prevent="checkAnswer">
-                                <!-- <label class="flex items-center bg-blue-50 p-3 rounded-lg cursor-pointer">
-                                    <input type="radio" name="question" class="form-radio h-4 w-4 text-blue-600" />
-                                    <span class="ml-2 text-gray-700">var x = 5</span>
-                                </label>
-
-                                <label class="flex items-center bg-blue-50 p-3 rounded-lg cursor-pointer">
-                                    <input type="radio" name="question" class="form-radio h-4 w-4 text-blue-600" />
-                                    <span class="ml-2 text-gray-700">#x = 5</span>
-                                </label>
-
-                                <label class="flex items-center bg-blue-50 p-3 rounded-lg cursor-pointer">
-                                    <input type="radio" name="question" class="form-radio h-4 w-4 text-blue-600" />
-                                    <span class="ml-2 text-gray-700">$x = 5</span>
-                                </label>
-
-                                <label class="flex items-center bg-blue-50 p-3 rounded-lg cursor-pointer">
-                                    <input type="radio" name="question" class="form-radio h-4 w-4 text-blue-600" />
-                                    <span class="ml-2 text-gray-700">x = 5</span>
-                                </label>
-
-                                <button type="submit"
-                                    class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg text-center mt-4">
-                                    Gửi câu trả lời
-                                </button> -->
                                 <label v-for="(option, index) in currentQuestion.options" :key="index"
                                     class="flex items-center bg-blue-50 p-3 rounded-lg cursor-pointer">
                                     <input type="radio" name="question" class="form-radio h-4 w-4 text-blue-600"
@@ -168,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { PlayCircleIcon, CheckCircleIcon as CheckOuline, QuestionMarkCircleIcon, DocumentIcon } from "@heroicons/vue/24/outline";
 import { useRoute } from 'vue-router';
 import { useCourseStore } from '@/store/course';
@@ -335,57 +315,103 @@ const handleQuizCompletion = () => {
     // Ví dụ: Gọi API để đánh dấu quiz đã hoàn thành
 };
 
+// PDF 
+import * as pdfjsLib from 'pdfjs-dist';
 
-// const checkAnswer = async () => {
-//     const payload = {
-//         course_id: idCourse,
-//         content_type: 'quiz',
-//         content_id: currentContent.value.id,
-//         content_old_type: currentContent.value.current_content_type,
-//         content_old_id: currentContent.value.id,
-//         questions_done: currentQuestionIndex.value + 1,
-//         question_id: currentQuestion.value.id,
-//         answer_user: selectedAnswer.value,
-//         total_questions: currentContent.value.questions.length
-//     };
-//     console.log(payload)
-//     await quizStore.handleAnswer(payload);
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+// Biến PDF URL
+const pdfUrl = ref<string | null>(null);
+const pdfInstance = ref<any>(null); // Tham chiếu tài liệu PDF
+const totalPages = ref<number>(0); // Tổng số trang
+const viewedPages = ref<number[]>([]); // Danh sách các trang đã xem
+const pdfViewer = ref<HTMLDivElement | null>(null); // Vùng hiển thị PDF
 
-//     if (!quizStore.error) {
-//         feedbackMessage.value = '';
-//         nextQuestion();
-//     } else {
-//         feedbackMessage.value = quizStore.error;
-//     }
-// };
-// const nextQuestion = async () => {
-//     // Kiểm tra xem đã hoàn thành quiz chưa
-//     if (currentQuestionIndex.value < currentContent.value.questions.length - 1) {
-//         const payload = {
-//             course_id: idCourse,
-//             content_type: 'quiz',
-//             content_id: currentContent.value.id,
-//             content_old_type: currentContent.value.current_content_type,
-//             content_old_id: currentContent.value.id,
-//             questions_done: currentQuestionIndex.value + 1,
-//             question_id: currentQuestion.value.id,
-//             answer_user: selectedAnswer.value,
-//             total_questions: currentContent.value.questions.length
-//         };
+// Theo dõi `currentContent.content_link` để cập nhật PDF
+const currentContentt = ref<{ content_link: string | null }>({ content_link: null });
 
-//         // Gửi câu trả lời qua API
-//         await quizStore.handleAnswer(payload);
+// Khi `currentContent.content_link` thay đổi, tải PDF mới
+watch(
+    () => currentContentt.value.content_link,
+    async (newLink) => {
+        if (newLink) {
+            pdfUrl.value = newLink; // Cập nhật đường dẫn PDF
+            await loadPdf(newLink);
+        }
+    }
+);
 
-//         // Nếu câu trả lời đúng, chuyển sang câu hỏi tiếp theo
-//         if (!quizStore.error) {
-//             currentQuestionIndex.value++; // Cập nhật câu hỏi hiện tại
-//             feedbackMessage.value = ''; // Xóa thông báo lỗi
-//             selectedAnswer.value = ''; // Reset câu trả lời
-//         } else {
-//             feedbackMessage.value = quizStore.error; // Hiển thị lỗi nếu có
-//         }
-//     } else {
-//         handleQuizCompletion(); // Hoàn thành quiz
-//     }
-// };
+// Tải và hiển thị PDF
+const loadPdf = async (url: string) => {
+    pdfInstance.value = await pdfjsLib.getDocument(url).promise;
+    totalPages.value = pdfInstance.value.numPages;
+
+    for (let pageNumber = 1; pageNumber <= totalPages.value; pageNumber++) {
+        await renderPage(pageNumber);
+    }
+};
+
+const renderPage = async (pageNumber: number) => {
+    const page = await pdfInstance.value.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: 1.5 });
+    const canvas = document.getElementById(`canvas-${pageNumber}`) as HTMLCanvasElement;
+
+    if (canvas) {
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({
+            canvasContext: context!,
+            viewport: viewport,
+        }).promise;
+    }
+};
+
+// Theo dõi cuộn và cập nhật trạng thái các trang đã xem
+const handleScroll = () => {
+    if (!pdfViewer.value) return;
+
+    const viewerTop = pdfViewer.value.scrollTop;
+    const viewerHeight = pdfViewer.value.clientHeight;
+
+    for (let i = 1; i <= totalPages.value; i++) {
+        const canvas = document.getElementById(`canvas-${i}`);
+        if (!canvas) continue;
+
+        const canvasTop = canvas.offsetTop;
+        const canvasBottom = canvasTop + canvas.offsetHeight;
+
+        if (
+            canvasTop < viewerTop + viewerHeight &&
+            canvasBottom > viewerTop
+        ) {
+            if (!viewedPages.value.includes(i)) {
+                viewedPages.value.push(i);
+                console.log(`Trang ${i} đang được xem.`);
+            }
+        }
+    }
+};
+
+// Tải PDF khi component được mount
+onMounted(async () => {
+    if (currentContent.value.content_link) {
+        await loadPdf(currentContent.value.content_link);
+    }
+});
 </script>
+<style scoped>
+.pdf-viewer {
+    height: 500px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.pdf-page {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+}
+</style>
