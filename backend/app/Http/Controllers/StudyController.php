@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Course;
 use App\Models\Section;
 use App\Models\Quiz;
+use App\Models\Question;
 use App\Models\Lecture;
 use App\Models\AnswerUser;
 use App\Models\ProgressLecture;
@@ -231,35 +232,35 @@ class StudyController extends Controller
 
 
 
-        $quizzesForCourse = Quiz::where('course_id', $courseId)
-            ->whereNull('section_id')
-            ->where('status', 'active')
-            ->select('id', 'course_id', 'title', 'order')
-            ->orderBy('order', 'asc')
-            ->addSelect([
-                'content_course_type' => DB::raw('"quiz"'),
-            ])
-            ->withCount('questions') // Đếm số lượng câu hỏi
-            ->with(['progress' => function ($query) use ($userId) {
-                $query->select('quiz_id', 'questions_done', 'percent')
-                    ->where('status', 'active')
-                    ->where('user_id', $userId);
-            }])
-            ->get()
-            ->map(function ($quiz) {
-                $progress = $quiz->progress ?? null;
+        // $quizzesForCourse = Quiz::where('course_id', $courseId)
+        //     ->whereNull('section_id')
+        //     ->where('status', 'active')
+        //     ->select('id', 'course_id', 'title', 'order')
+        //     ->orderBy('order', 'asc')
+        //     ->addSelect([
+        //         'content_course_type' => DB::raw('"quiz"'),
+        //     ])
+        //     ->withCount('questions') // Đếm số lượng câu hỏi
+        //     ->with(['progress' => function ($query) use ($userId) {
+        //         $query->select('quiz_id', 'questions_done', 'percent')
+        //             ->where('status', 'active')
+        //             ->where('user_id', $userId);
+        //     }])
+        //     ->get()
+        //     ->map(function ($quiz) {
+        //         $progress = $quiz->progress ?? null;
 
-                return [
-                    'id' => $quiz->id,
-                    'title' => $quiz->title,
-                    'order' => $quiz->order,
-                    'content_course_type' => 'quiz',
-                    'total_question_count' => $quiz->questions_count, // Sử dụng questions_count từ withCount
-                    'section_content' => [],
-                    'questions_done' => $progress && isset($progress->questions_done) ? $progress->questions_done : null,
-                    'percent' => $progress && isset($progress->percent) ? $progress->percent : null,
-                ];
-            });
+        //         return [
+        //             'id' => $quiz->id,
+        //             'title' => $quiz->title,
+        //             'order' => $quiz->order,
+        //             'content_course_type' => 'quiz',
+        //             'total_question_count' => $quiz->questions_count, // Sử dụng questions_count từ withCount
+        //             'section_content' => [],
+        //             'questions_done' => $progress && isset($progress->questions_done) ? $progress->questions_done : null,
+        //             'percent' => $progress && isset($progress->percent) ? $progress->percent : null,
+        //         ];
+        //     });
 
         $sections = $sections->map(function ($section) {
             // Lọc chỉ các lecture trong section_content
@@ -282,7 +283,7 @@ class StudyController extends Controller
         $progress = $totalContentCount > 0 ? ($totalContentDone / $totalContentCount) * 100 : 0;
 
         // Gộp tất cả nội dung (section và quiz)
-        $allContent = $sections->merge($quizzesForCourse)->sortBy('order')->values();
+        $allContent = $sections->sortBy('order')->values();
 
         // Chuẩn bị dữ liệu trả về
         $responseData = [
@@ -592,73 +593,92 @@ class StudyController extends Controller
         $questionsDone = $request->input('questions_done');
         $answerUser = $request->input('answer_user');
         $questionId = $request->input('question_id');
-
+        $redoQuiz = $request->input('redo_quiz');
+        
         // Xử lý nội dung cũ
-        if ($contentOldType === 'lecture') {
-            $lecture = Lecture::where('id', $contentOldId)
-                ->where('status', 'active')
-                ->first();
+        
 
-            if ($lecture) {
-                $percent = ($learned / $lecture->duration) * 100;
-                $progressLecture = ProgressLecture::where('lecture_id', $contentOldId)
-                    ->where('user_id', $userId)
-                    ->first();
-
-                // if (!$progressLecture || $progressLecture->percent < 100) {
-                ProgressLecture::updateOrCreate(
-                    [
-                        'lecture_id' => $contentOldId,
-                        'user_id' => $userId,
-                    ],
-                    [
-                        'learned' => $learned,
-                        'percent' => $progressLecture && $percent > ($progressLecture->percent ?? 0)
-                            ? round($percent, 2)
-                            : ($progressLecture->percent ?? round($percent, 2)),
-                        'status' => 'active',
-                    ]
-                );
-                // }
-            }
-        } elseif ($contentOldType === 'quiz') {
-            $quiz = Quiz::withCount('questions')
-                ->where('id', $contentOldId)
-                ->where('status', 'active')
-                ->first();
-
-            AnswerUser::updateOrCreate(
-                [
-                    'user_id' => $userId,
-                    'question_id' => $questionId
-                ],
-                [
-                    'content' => $answerUser,
-                    'status' => 'active',
-                ]
-            );
-            if ($quiz) {
-                $percent = ($questionsDone / $quiz->questions_count) * 100;
-                $progressQuiz = ProgressQuiz::where('quiz_id', $contentOldId)
-                    ->where('user_id', $userId)
+        if ($redoQuiz) {
+            // Xóa bản ghi trong ProgressQuiz
+            ProgressQuiz::where('user_id', $userId)
+                ->where('quiz_id', $contentOldId)
+                ->delete();
+        
+            // Lấy danh sách question_id của Quiz có id là $contentOldId
+            $questionIds = Question::where('quiz_id', $contentOldId)
+                ->pluck('id'); // Lấy mảng các id
+        
+            // Xóa bản ghi trong AnswerUser
+            AnswerUser::where('user_id', $userId)
+                ->whereIn('question_id', $questionIds) // Kiểm tra question_id thuộc danh sách $questionIds
+                ->delete();
+        }else{
+            if ($contentOldType === 'lecture') {
+                $lecture = Lecture::where('id', $contentOldId)
                     ->where('status', 'active')
                     ->first();
-
-                // if (!$progressQuiz || $progressQuiz->percent < 100) {
-                ProgressQuiz::updateOrCreate(
+    
+                if ($lecture) {
+                    $percent = ($learned / $lecture->duration) * 100;
+                    $progressLecture = ProgressLecture::where('lecture_id', $contentOldId)
+                        ->where('user_id', $userId)
+                        ->first();
+    
+                    // if (!$progressLecture || $progressLecture->percent < 100) {
+                    ProgressLecture::updateOrCreate(
+                        [
+                            'lecture_id' => $contentOldId,
+                            'user_id' => $userId,
+                        ],
+                        [
+                            'learned' => $learned,
+                            'percent' => $progressLecture && $percent > ($progressLecture->percent ?? 0)
+                                ? round($percent, 2)
+                                : ($progressLecture->percent ?? round($percent, 2)),
+                            'status' => 'active',
+                        ]
+                    );
+                    // }
+                }
+            } elseif ($contentOldType === 'quiz') {
+                $quiz = Quiz::withCount('questions')
+                    ->where('id', $contentOldId)
+                    ->where('status', 'active')
+                    ->first();
+    
+                AnswerUser::updateOrCreate(
                     [
-                        'quiz_id' => $contentOldId,
                         'user_id' => $userId,
+                        'question_id' => $questionId
                     ],
                     [
-                        'questions_done' => $questionsDone,
-                        'percent' => $progressQuiz && $percent > ($progressQuiz->percent ?? 0)
-                            ? round($percent, 2)
-                            : ($progressQuiz->percent ?? round($percent, 2)),
+                        'content' => $answerUser,
                         'status' => 'active',
                     ]
                 );
-                // }
+                if ($quiz) {
+                    $percent = ($questionsDone / $quiz->questions_count) * 100;
+                    $progressQuiz = ProgressQuiz::where('quiz_id', $contentOldId)
+                        ->where('user_id', $userId)
+                        ->where('status', 'active')
+                        ->first();
+    
+                    // if (!$progressQuiz || $progressQuiz->percent < 100) {
+                    ProgressQuiz::updateOrCreate(
+                        [
+                            'quiz_id' => $contentOldId,
+                            'user_id' => $userId,
+                        ],
+                        [
+                            'questions_done' => $questionsDone,
+                            'percent' => $progressQuiz && $percent > ($progressQuiz->percent ?? 0)
+                                ? round($percent, 2)
+                                : ($progressQuiz->percent ?? round($percent, 2)),
+                            'status' => 'active',
+                        ]
+                    );
+                    // }
+                }
             }
         }
 

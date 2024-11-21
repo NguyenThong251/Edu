@@ -47,7 +47,6 @@ class QuizSeeder extends Seeder
             $useCourseId = $faker->boolean;
 
             Quiz::create([
-                'course_id' => $useCourseId ? $section->course_id : null, // Chỉ nhập course_id hoặc null
                 'section_id' => $useCourseId ? null : $section->id,      // Chỉ nhập section_id hoặc null
                 'title' => $faker->sentence(3),                          // Tên quiz với 3 từ
                 'status' => $faker->randomElement(['active']), // Trạng thái ngẫu nhiên
