@@ -13,7 +13,6 @@ class Quiz extends Model
     protected $table = 'quizzes';
 
     protected $fillable = [
-        'course_id',
         'section_id',
         'title',
         'status',
