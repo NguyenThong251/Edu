@@ -13,9 +13,9 @@ return new class extends Migration {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('quiz_id');
-            $table->string('question', 255);
+            $table->text('question');
             $table->json('options');
-            $table->string('answer', 255);
+            $table->text('answer');
 
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->integer('order')->default(0);
