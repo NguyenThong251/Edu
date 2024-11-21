@@ -27,4 +27,8 @@ class Lecture extends Model
     {
         return $this->hasMany(ProgressLecture::class, 'lecture_id');
     }
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
 }
