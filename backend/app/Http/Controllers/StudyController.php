@@ -157,7 +157,7 @@ class StudyController extends Controller
                 },
                 'quizzes' => function ($query) use ($userId) {
                     $query->where('status', 'active')
-                        ->select('id', 'section_id', 'course_id', 'title', 'order')
+                        ->select('id', 'section_id', 'title', 'order')
                         ->orderBy('order', 'asc')
                         ->addSelect([
                             'content_section_type' => DB::raw('"quiz"'),
