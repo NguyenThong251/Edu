@@ -32,5 +32,9 @@ class Section extends Model
         return $this->hasMany(Quiz::class, 'section_id');
     }
 
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
 
 }
