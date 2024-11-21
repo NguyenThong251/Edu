@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/services/axiosConfig'
 import type { TCardCourse, TCardMyCourse } from '@/interfaces/course.interface'
-import type { TChangeContent, TLesson, TQuiz } from '@/interfaces/ui.interface'
+import type { TChangeContent, TLesson } from '@/interfaces/ui.interface'
 
 export const useCourseStore = defineStore('courseStore', () => {
   // State
@@ -31,7 +31,23 @@ export const useCourseStore = defineStore('courseStore', () => {
       isLoading.value = false
     }
   }
-
+  const fetchMyCourseFilter = async (title: string, creator: string) => {
+    isLoading.value = true
+    try {
+      const response = await api.get('/auth/get-user-courses', {
+        params: {
+          title: title || undefined,
+          creator: creator || undefined
+        }
+      })
+      myCourses.value = response.data.data
+      error.value = null
+    } catch (err: any) {
+      error.value = 'Đã có lỗi xảy ra khi tìm kiếm khóa học'
+    } finally {
+      isLoading.value = false
+    }
+  }
   const fetchMyCourse = async () => {
     isLoading.value = true
     try {
@@ -107,6 +123,7 @@ export const useCourseStore = defineStore('courseStore', () => {
     getCourse,
     fetchMyCourse,
     fetchStudyCourse,
-    changeContent
+    changeContent,
+    fetchMyCourseFilter
   }
 })

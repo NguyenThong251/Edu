@@ -11,8 +11,8 @@
 
                         <div class="rounded-2xl w-full overflow-hidden">
                             <vue-plyr>
-                                <video controls preload="metadata" @timeupdate="handleTimeUpdate" @pause="handlePause"
-                                    @ended="handleVideoEnd" ref="videoElement">
+                                <video controls preload="metadata" @pause="handlePause" @ended="handleVideoEnd"
+                                    ref="videoElement">
                                     <source :src="currentContent.content_link" type="video/mp4" />
                                     Trình duyệt của bạn không hỗ trợ video.
                                 </video>
@@ -22,24 +22,14 @@
                     </div>
                     <!-- file -->
                     <div v-else-if="currentContent.type === 'file'" class="p-3 border rounded-lg">
-                        <!-- <PdfApp style="height: 90vh" :pdf="`https://cors-anywhere.herokuapp.com/${currentContent.content_link}`"></PdfApp> -->
-
-                        <!-- <PdfApp style="height: 90vh" :pdf="currentContent.content_link" @pageChange="onPageChange">
-                        </PdfApp> -->
-                        <!-- <pdf-viewer :src="pdfUrl" @pageChange="onPageChange" @documentLoaded="onDocumentLoaded"
-                            @error="onError" /> -->
-                        <vue-pdf :url="pdfUrl" @loaded="onPdfLoaded" @pageChanged="onPageChanged" />
-                        <!-- <vue-pdf :src="currentContent.content_link" /> -->
-                        <!-- <a :href="currentContent.content_link" target="_blank" class="text-blue-500 underline">
-                            Tải xuống tài liệu: {{ currentContent.title }}
-                        </a> -->
-
+                        <vue-pdf ref="pdfViewerRef" :url="currentContent.content_link" />
                     </div>
 
                     <!-- Quizz -->
                     <div v-else-if="currentContent.current_content_type === 'quiz'"
                         class="min-h-[70vh] bg-white flex items-center justify-center">
-                        <div class="bg-white p-4 rounded-lg shadow-md max-w-md w-full">
+                        <div v-if="currentContent.percent < 100"
+                            class="bg-white p-4 rounded-lg shadow-md max-w-md w-full">
                             <h2 class="text-xl font-semibold mb-4 text-center">Bài tập: {{ currentContent.title }}</h2>
 
                             <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
@@ -63,6 +53,14 @@
                                 </button>
                             </form>
                             <p v-if="feedbackMessage" class="text-center mt-4 text-red-500">{{ feedbackMessage }}</p>
+                        </div>
+                        <!-- Nếu quiz đã hoàn thành -->
+                        <div v-else class="flex flex-col items-center">
+                            <canvas id="celebrationCanvas" class="w-full h-[300px]"></canvas>
+                            <p class="text-xl font-bold text-center text-indigo-600 mt-5">Chúc mừng bạn đã hoàn thành
+                                bài
+                                tập!</p>
+                            <Button variant="primary" class="mt-10" @click="handleNextLesson()">Bài tiếp theo</Button>
                         </div>
                     </div>
                 </div>
@@ -108,6 +106,11 @@
                                             Hoàn thành</span> •
                                         <span class="text-pink-500">{{ content.duration_display }}</span>
                                     </div>
+                                    <!-- <div @click="handleChangeContent(content)" -->
+                                    <div @click="handleChangeContent(content)"
+                                        v-if="content.content_course_type === 'quiz'" class=" text-blue-500">
+                                        Quiz
+                                    </div>
                                 </div>
                             </template>
 
@@ -115,7 +118,6 @@
                                 class="cursor-pointer flex justify-between items-start bg-gray-50  py-2">
                                 <div class="flex items-center gap-3 w-full px-4" @click="handleChangeContent(lesson)"
                                     :class="{ 'bg-gray-200 rounded-lg': currentContent.id === lesson.id }">
-
                                     <CheckOuline :class="lesson.percent >= 100 ? 'text-green-500' : 'text-gray-500'"
                                         class="h-5 w-5" />
                                     <div class=" flex flex-col">
@@ -149,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { PlayCircleIcon, CheckCircleIcon as CheckOuline, QuestionMarkCircleIcon, DocumentIcon } from "@heroicons/vue/24/outline";
 import { useRoute } from 'vue-router';
 import { useCourseStore } from '@/store/course';
@@ -160,28 +162,69 @@ import UserQuestion from '@/components/user/mycourse/UserQuestion.vue';
 import UserNote from '@/components/user/mycourse/UserNote.vue';
 import UserFeedback from '@/components/user/mycourse/UserFeedback.vue';
 import { useQuizStore } from '@/store/quiz';
-import Vue3Pdfjs from 'vue3-pdfjs';
 
+import VuePdf from "vue-pdf-next";
 const route = useRoute();
 const idCourse = Number(route.params.id);
 const courseStore = useCourseStore();
 const quizStore = useQuizStore();
 const { studyCourse, currentContent, allContent, progress } = storeToRefs(courseStore);
-// const { currentQuestionIndex, progressQuizz } = storeToRefs(quizStore);
 const { fetchStudyCourse, changeContent } = courseStore;
 
-
 const videoElement = ref<HTMLVideoElement | null>(null);
+// PDF
+const pdfViewerRef = ref(null);
+const learned = ref(0); // Biến lưu số giây đã học
+const isLearning = ref(false); // Trạng thái đang học
+const duration = computed(() => currentContent.value?.duration || 0); // Thời lượng học
+let timer: any = null; // Biến để lưu setInterval
 
+const startLearning = () => {
+    if (!isLearning.value && currentContent.value.type === "file") {
+        isLearning.value = true;
+        timer = setInterval(() => {
+            learned.value++;
+
+            // Nếu thời gian học đạt đến thời lượng yêu cầu, cập nhật backend
+            if (learned.value >= duration.value) {
+                updateLearned({ id: currentContent.value.id, learned: duration.value });
+                clearInterval(timer); // Dừng timer
+            }
+        }, 1000); // Mỗi giây tăng 1
+    }
+};
+
+// Khi rời khỏi tài liệu hoặc chuyển bài học, dừng tính thời gian
+const stopLearning = () => {
+    isLearning.value = false;
+    if (timer) {
+        clearInterval(timer);
+        timer = null;
+    }
+};
+
+
+
+// Theo dõi khi nội dung thay đổi
+watch(currentContent, (newContent, oldContent) => {
+    if (newContent?.type === "file" && duration.value > currentContent.value.learned) {
+        startLearning();
+    } else {
+        stopLearning();
+    }
+});
+
+// Xóa timer khi component bị hủy
+onUnmounted(() => {
+    stopLearning();
+});
+// end
 onMounted(async () => {
     await fetchStudyCourse(idCourse);
 });
 
 const handleChangeContent = async (lesson: any) => {
-    // if (!lesson || !lesson.id || !lesson.type) {
-    //     console.error('Invalid lesson data:', lesson);
-    //     return;
-    // }
+    console.log(lesson)
     const data = {
         course_id: idCourse,
         content_type: lesson.content_section_type,
@@ -191,6 +234,7 @@ const handleChangeContent = async (lesson: any) => {
         content_old_id: currentContent.value?.id || 0
     }
     await changeContent(data);
+    timer = null;
 
 };
 const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
@@ -206,28 +250,16 @@ const updateLearned = async ({ id, learned }: { id: number; learned: number }) =
     await changeContent(data);
 
 };
-const handleTimeUpdate = () => {
-    // if (videoElement.value && currentContent.value) {
-    //     console.log(videoElement.value.currentTime)
-    //     updateLearned({ id: currentContent.value.id, learned: videoElement.value.currentTime });
-    // }
-};
+
 const handlePause = async () => {
     if (videoElement.value && currentContent.value) {
-        // console.log(currentContent.value.learned)
         if (videoElement.value.currentTime > currentContent.value.learned) {
-
-            // console.log('hi')
             updateLearned({ id: currentContent.value.id, learned: videoElement.value.currentTime });
         }
-        // console.log(videoElement.value.currentTime)
-        // Gọi API để cập nhật thời gian đã xem
-        // await updateLearned({
-        //     id: currentContent.value.id,
-        //     learned: Math.floor(videoElement.value.currentTime), // Làm tròn giá trị thời gian
-        // });
+
     }
 };
+
 
 
 const handleVideoEnd = () => {
@@ -241,6 +273,7 @@ const handleNextLesson = async () => {
     const currentSection = allContent.value.find(section =>
         section.section_content.some((lesson: any) => lesson.id === currentContent.value.id)
     );
+    console.log(currentSection)
     const sectionLessons = currentSection.section_content;
     const currentIndex = sectionLessons.findIndex((lesson: TLesson) => lesson.id === currentContent.value?.id);
     const nextLesson = sectionLessons[currentIndex + 1];
@@ -256,10 +289,6 @@ const progressQuizz = ref(0);
 // Lấy câu hỏi hiện tại
 const currentQuestion = computed(() => currentContent.value?.questions[currentQuestionIndex.value] || {});
 
-// Tiến trình (progress bar)
-// const progressQuizz = computed(() =>
-//     ((currentQuestionIndex.value + 1) / currentContent.value?.questions.length) * 100
-// );
 const updateProgress = () => {
     progressQuizz.value = ((currentQuestionIndex.value) / currentContent.value.questions.length) * 100;
 };
@@ -277,10 +306,10 @@ const checkAnswer = async () => {
             answer_user: selectedAnswer.value,
             total_questions: currentContent.value.questions.length
         };
-        console.log(payload)
         await quizStore.handleAnswer(payload);
         feedbackMessage.value = ''; // Xóa thông báo lỗi
         nextQuestion(); // Chuyển sang câu hỏi tiếp theo hoặc hoàn thành quiz
+
     } else {
         feedbackMessage.value = 'Câu trả lời không chính xác. Hãy thử lại!';
     }
@@ -293,18 +322,7 @@ const nextQuestion = () => {
         updateProgress(); // Cập nhật tiến trình
         selectedAnswer.value = ''; // Reset câu trả lời
         feedbackMessage.value = ''; // Xóa thông báo cũ
-        // const questionId = currentQuestion.value.id; // ID của câu hỏi hiện tại
-        // const userAnswer = selectedAnswer.value; // Câu trả lời của người dùng
-        // const data = {
-        //     course_id: idCourse, // ID của khóa học
-        //     content_type: 'quiz', // Loại nội dung
-        //     content_id: currentContent.value?.id, // ID của quiz hiện tại
-        //     content_old_type: currentContent.value?.current_content_type,
-        //     content_old_id: currentContent.value?.id,
-        //     questions_done: currentQuestionIndex.value + 1, // Số câu đã hoàn thành
-        //     question_id: questionId, // ID của câu hỏi hiện tại
-        //     answer_user: userAnswer, // Câu trả lời của người dùng
-        // }
+
     } else {
         handleQuizCompletion(); // Hoàn thành quiz
     }
@@ -313,44 +331,29 @@ const nextQuestion = () => {
 const handleQuizCompletion = () => {
     progressQuizz.value = 100; // Đảm bảo tiến trình đạt 100% khi hoàn thành
     feedbackMessage.value = 'Bạn đã hoàn thành bài tập!'; // Hiển thị thông báo
-    console.log('Quiz completed!'); // Log hoàn thành
-    // Thêm logic cập nhật trạng thái bài học (nếu cần)
-    // Ví dụ: Gọi API để đánh dấu quiz đã hoàn thành
+};
+import confetti from "canvas-confetti";
+import Button from '@/components/ui/button/Button.vue';
+
+const startConfetti = () => {
+    confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { x: 0.5, y: 0.7 },
+    });
 };
 
-// PDF 
-// import PdfApp from "vue3-pdf-app";
-// import "vue3-pdf-app/dist/icons/main.css";
-// import PdfViewer from 'vue3-pdf-viewer';
-// import 'vue3-pdf-viewer/dist/style.css';
-import VuePdf from "vue-pdf-next";
-// const onPdfPageChange = (currentPage: number, totalPages: number) => {
-//     console.log(currentPage)
-//     console.log(totalPages)
-//     // // Tính toán tiến độ
-//     // const learned = Math.floor((currentPage / totalPages) * 100);
-//     // console.log(`Page: ${currentPage}/${totalPages}, Progress: ${learned}%`);
-
-//     // // Cập nhật tiến độ đã học
-//     // updateLearned(learned);
-// };
-
-const pdfUrl = ref('https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf');
-
-const onPdfLoaded = (totalPages: number) => {
-    console.log(`Total pages: ${totalPages}`);
-};
-
-const onPageChanged = (currentPage: number, totalPages: number) => {
-    console.log(`Current page: ${currentPage}, Total pages: ${totalPages}`);
-};
-
+// Theo dõi trạng thái progressQuizz để kích hoạt hiệu ứng
+watch(progressQuizz, (newValue) => {
+    if (newValue === 100) {
+        startConfetti();
+    }
+});
 </script>
 <style scoped>
 .pdf-viewer {
     height: 500px;
     overflow-y: auto;
-    border: 1px solid #ddd;
     padding: 10px;
     background-color: #f9f9f9;
 }
@@ -359,5 +362,15 @@ const onPageChanged = (currentPage: number, totalPages: number) => {
     margin-bottom: 20px;
     display: flex;
     justify-content: center;
+}
+
+#celebrationCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
 }
 </style>
