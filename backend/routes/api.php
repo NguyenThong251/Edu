@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
@@ -150,6 +151,15 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('/study-course', [StudyController::class, 'studyCourse']);
             Route::get('/change-content', [StudyController::class, 'changeContent']);
             Route::get('/get-user-courses', [StudyController::class, 'getUserCourses']);
+
+            //notes course
+            Route::get('/notes/course/{course_id}', [NoteController::class, 'index']); // Lấy ghi chú cho một khóa học cụ thể
+            Route::get('/notes/{id}', [NoteController::class, 'show']); // Lấy một ghi chú cụ thể
+            Route::post('/notes', [NoteController::class, 'store']); // Tạo mới ghi chú
+            Route::post('/notes/update/{id}', [NoteController::class, 'update']); // Cập nhật ghi chú
+            Route::post('/notes/delete/{id}', [NoteController::class, 'destroy']); // Xóa ghi chú
+
+
 
             // Các route dành cho student có thể thêm tại đây
 
