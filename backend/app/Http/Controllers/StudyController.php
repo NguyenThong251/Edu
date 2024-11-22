@@ -392,14 +392,14 @@ class StudyController extends Controller
                                 ->where('id', $sectionContent['id'])
                                 ->where('status', 'active')
                                 ->first();
-                        
+
                             if ($quiz) {
                                 $questions = $quiz->questions;
                                 $nextQuestionIndex = $sectionContent['questions_done'] ?? 0;
                                 $nextQuestion = $questions[$nextQuestionIndex] ?? null;
-                        
+
                                 $currentQuestionContent = null;
-                        
+
                                 // Kiểm tra nếu `nextQuestion` tồn tại và là `active`
                                 if ($nextQuestion && $nextQuestion->status === 'active') {
                                     // Tìm content trong bảng dựa trên user_id và question_id
@@ -407,13 +407,13 @@ class StudyController extends Controller
                                         ->where('question_id', $nextQuestion->id)
                                         ->where('status', 'active')
                                         ->value('content'); // Lấy giá trị cột `content`
-                        
+
                                     $currentQuestionContent = array_merge(
                                         $nextQuestion->toArray(),
                                         ['answer_user' => $questionContent] // Thêm `content` vào mảng
                                     );
                                 }
-                        
+
                                 $currentContent = array_merge(
                                     $quiz->toArray(),
                                     [
@@ -425,7 +425,7 @@ class StudyController extends Controller
                                 );
                             }
                         }
-                        
+
                         break 2; // Dừng cả hai vòng lặp
                     }
                 }
@@ -594,36 +594,36 @@ class StudyController extends Controller
         $answerUser = $request->input('answer_user');
         $questionId = $request->input('question_id');
         $redoQuiz = $request->input('redo_quiz');
-        
+
         // Xử lý nội dung cũ
-        
+
 
         if ($redoQuiz) {
             // Xóa bản ghi trong ProgressQuiz
             ProgressQuiz::where('user_id', $userId)
                 ->where('quiz_id', $contentOldId)
                 ->delete();
-        
+
             // Lấy danh sách question_id của Quiz có id là $contentOldId
             $questionIds = Question::where('quiz_id', $contentOldId)
                 ->pluck('id'); // Lấy mảng các id
-        
+
             // Xóa bản ghi trong AnswerUser
             AnswerUser::where('user_id', $userId)
                 ->whereIn('question_id', $questionIds) // Kiểm tra question_id thuộc danh sách $questionIds
                 ->delete();
-        }else{
+        } else {
             if ($contentOldType === 'lecture') {
                 $lecture = Lecture::where('id', $contentOldId)
                     ->where('status', 'active')
                     ->first();
-    
+
                 if ($lecture) {
                     $percent = ($learned / $lecture->duration) * 100;
                     $progressLecture = ProgressLecture::where('lecture_id', $contentOldId)
                         ->where('user_id', $userId)
                         ->first();
-    
+
                     // if (!$progressLecture || $progressLecture->percent < 100) {
                     ProgressLecture::updateOrCreate(
                         [
@@ -641,43 +641,45 @@ class StudyController extends Controller
                     // }
                 }
             } elseif ($contentOldType === 'quiz') {
-                $quiz = Quiz::withCount('questions')
-                    ->where('id', $contentOldId)
-                    ->where('status', 'active')
-                    ->first();
-    
-                AnswerUser::updateOrCreate(
-                    [
-                        'user_id' => $userId,
-                        'question_id' => $questionId
-                    ],
-                    [
-                        'content' => $answerUser,
-                        'status' => 'active',
-                    ]
-                );
-                if ($quiz) {
-                    $percent = ($questionsDone / $quiz->questions_count) * 100;
-                    $progressQuiz = ProgressQuiz::where('quiz_id', $contentOldId)
-                        ->where('user_id', $userId)
+                if ($questionId) {
+                    $quiz = Quiz::withCount('questions')
+                        ->where('id', $contentOldId)
                         ->where('status', 'active')
                         ->first();
-    
-                    // if (!$progressQuiz || $progressQuiz->percent < 100) {
-                    ProgressQuiz::updateOrCreate(
+
+                    AnswerUser::updateOrCreate(
                         [
-                            'quiz_id' => $contentOldId,
                             'user_id' => $userId,
+                            'question_id' => $questionId
                         ],
                         [
-                            'questions_done' => $questionsDone,
-                            'percent' => $progressQuiz && $percent > ($progressQuiz->percent ?? 0)
-                                ? round($percent, 2)
-                                : ($progressQuiz->percent ?? round($percent, 2)),
+                            'content' => $answerUser,
                             'status' => 'active',
                         ]
                     );
-                    // }
+                    if ($quiz) {
+                        $percent = ($questionsDone / $quiz->questions_count) * 100;
+                        $progressQuiz = ProgressQuiz::where('quiz_id', $contentOldId)
+                            ->where('user_id', $userId)
+                            ->where('status', 'active')
+                            ->first();
+
+                        // if (!$progressQuiz || $progressQuiz->percent < 100) {
+                        ProgressQuiz::updateOrCreate(
+                            [
+                                'quiz_id' => $contentOldId,
+                                'user_id' => $userId,
+                            ],
+                            [
+                                'questions_done' => $questionsDone,
+                                'percent' => $progressQuiz && $percent > ($progressQuiz->percent ?? 0)
+                                    ? round($percent, 2)
+                                    : ($progressQuiz->percent ?? round($percent, 2)),
+                                'status' => 'active',
+                            ]
+                        );
+                        // }
+                    }
                 }
             }
         }
@@ -709,16 +711,16 @@ class StudyController extends Controller
                 ->where('id', $contentId)
                 ->where('status', 'active')
                 ->first();
-        
+
             if ($quiz) {
                 $progressQuiz = ProgressQuiz::where('quiz_id', $contentId)
                     ->where('user_id', $userId)
                     ->where('status', 'active')
                     ->first();
-        
+
                 $questionsDone = $progressQuiz->questions_done ?? 0;
                 $totalQuestions = $quiz->questions->count();
-        
+
                 if ($questionsDone >= $totalQuestions) {
                     // Lấy câu hỏi cuối cùng
                     $currentQuestion = $quiz->questions->last();
@@ -726,7 +728,7 @@ class StudyController extends Controller
                     // Lấy câu hỏi tiếp theo
                     $currentQuestion = $quiz->questions[$questionsDone] ?? null;
                 }
-        
+
                 // Kiểm tra và thêm `content` từ bảng liên quan
                 $currentQuestionContent = null;
                 if ($currentQuestion) {
@@ -734,14 +736,14 @@ class StudyController extends Controller
                         ->where('question_id', $currentQuestion->id)
                         ->where('status', 'active')
                         ->value('content'); // Lấy giá trị `content`
-        
+
                     // Thêm `content` vào câu hỏi hiện tại nếu có
                     $currentQuestionContent = array_merge(
                         $currentQuestion->toArray(),
                         ['answer_user' => $questionContent] // Thêm trường `content`
                     );
                 }
-        
+
                 $currentContent = array_merge(
                     $quiz->toArray(),
                     [
