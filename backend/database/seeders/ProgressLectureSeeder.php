@@ -48,19 +48,19 @@ class ProgressLectureSeeder extends Seeder
         foreach ($lectures as $lecture) {
             // Tạo progress cho một số người dùng ngẫu nhiên
             $assignedUsers = $faker->randomElements($userIds, $faker->numberBetween(1, count($userIds)));
-
+        
             foreach ($assignedUsers as $userId) {
-                // Random percent: 0, 50, 100
-                $percent = $faker->randomElement([0, 50, 100]);
-
-                // Tính learned dựa trên percent
-                $learned = $lecture->duration * ($percent / 100);
-
+                // Random learned từ 0 đến duration
+                $learned = $faker->numberBetween(0, $lecture->duration); // Giá trị float từ 0 đến duration
+                
+                // Tính percent dựa trên learned
+                $percent = ($learned / $lecture->duration) * 100;
+        
                 ProgressLecture::create([
                     'user_id' => $userId,
                     'lecture_id' => $lecture->id,
                     'learned' => $learned,
-                    'percent' => $percent,
+                    'percent' => round($percent, 2), // Làm tròn percent đến 2 chữ số thập phân
                     'status' => $faker->randomElement(['active']),
                     'created_by' => $faker->randomElement($userIds),
                     'updated_by' => $faker->optional()->randomElement($userIds),
@@ -71,6 +71,7 @@ class ProgressLectureSeeder extends Seeder
                 ]);
             }
         }
+        
 
         $this->command->info('ProgressLectureSeeder: Dữ liệu seed thành công.');
     }

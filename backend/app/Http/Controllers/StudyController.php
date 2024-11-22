@@ -274,10 +274,38 @@ class StudyController extends Controller
 
             return $section;
         });
+        $sections = $sections->map(function ($section) {
+            // Lọc lecture và quiz trong section_content
+            $lectures = $section['section_content']->where('content_section_type', 'lecture');
+            $quizzes = $section['section_content']->where('content_section_type', 'quiz');
+        
+            // Tổng số lecture và lecture hoàn thành
+            $contentCount = $lectures->count();
+            $contentDone = $lectures->where('percent', '>=', 100)->count();
+        
+            // Tổng số quiz và quiz hoàn thành
+            $quizCount = $quizzes->count();
+            $quizDone = $quizzes->where('percent', '>=', 100)->count();
+        
+            // Tổng cộng tất cả nội dung và hoàn thành
+            $totalCount = $contentCount + $quizCount; // Tổng số nội dung (lecture + quiz)
+            $totalDone = $contentDone + $quizDone;   // Tổng số nội dung hoàn thành
+        
+            // Gắn thông tin vào section
+            $section['content_count'] = $contentCount;
+            $section['content_done'] = $contentDone;
+            $section['quiz_count'] = $quizCount;
+            $section['quiz_done'] = $quizDone;
+            $section['total_count'] = $totalCount;
+            $section['total_done'] = $totalDone;
+        
+            return $section;
+        });
+        
 
         // Tổng hợp từ tất cả các section
-        $totalContentCount = $sections->sum('content_count'); // Tổng số lecture
-        $totalContentDone = $sections->sum('content_done');  // Tổng số lecture hoàn thành
+        $totalContentCount = $sections->sum('total_count'); // Tổng số lecture
+        $totalContentDone = $sections->sum('total_done');  // Tổng số lecture hoàn thành
 
         // Tính phần trăm tiến độ
         $progress = $totalContentCount > 0 ? ($totalContentDone / $totalContentCount) * 100 : 0;
