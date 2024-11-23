@@ -36,10 +36,10 @@ class LectureSeeder extends Seeder
 
         // Danh sách URL mẫu
         $videoUrls = [
-            'https://www.w3schools.com/html/mov_bbb.mp4',
+            'https://edunity.s3.amazonaws.com/category-image/KGHdw454hmIeLk0SJMlHK7NmzbRqxtfxlUR3xHUd.mp4',
         ];
         $pdfUrls = [
-            'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+            'https://edunity.s3.amazonaws.com/category-image/phWjG4plbyagFvWbWYpqewzXtUodBqummZPSGUsA.pdf',
         ];
 
         // Tạo 500 lectures
@@ -58,6 +58,9 @@ class LectureSeeder extends Seeder
                 ? $faker->randomElement($videoUrls)   // Chọn ngẫu nhiên video từ danh sách videoUrls
                 : $faker->randomElement($pdfUrls);    // Chọn ngẫu nhiên file PDF từ danh sách pdfUrls
 
+                $duration = $type === 'video'
+                ? 37   // Chọn ngẫu nhiên video từ danh sách videoUrls
+                : 4;
 
             // Tạo lecture
             Lecture::create([
@@ -65,7 +68,7 @@ class LectureSeeder extends Seeder
                 'type' => $type,                                             // Loại bài giảng (video hoặc file)
                 'title' => $faker->sentence(4),                              // Tiêu đề với 4 từ ngẫu nhiên
                 'content_link' => $contentLink,                              // Đường dẫn nội dung
-                'duration' => rand(100, 4800),                               // Thời lượng dựa theo loại nội dung
+                'duration' => $duration,                               // Thời lượng dựa theo loại nội dung
                 'order' => $orderForSection[$sectionId],                     // Thứ tự tăng dần trong section
                 'preview' => $faker->randomElement(['can', 'cant']),         // Trạng thái preview
                 'status' => $faker->randomElement(['active']),   // Trạng thái bài giảng
