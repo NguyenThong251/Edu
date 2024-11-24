@@ -14,6 +14,8 @@ import PayoutTeacher from '@/views/admin/Users/PayoutTeacher.vue'
 import SettingsTeacher from '@/views/admin/Users/SettingsTeacher.vue'
 import AcceptTeacher from '@/views/admin/Users/AcceptTeacher.vue'
 import Voucher from '@/views/admin/Voucher.vue'
+import Level from '@/views/admin/Level.vue'
+import Language from '@/views/admin/Language.vue'
 const admin = [
   {
     path: '/admin',
@@ -134,6 +136,18 @@ const admin = [
         name: 'admin.voucher',
         component: Voucher,
         meta: { requiresAuth: true, role: 'admin', title: 'Giảm giá  | Edunity' }
+      },
+      {
+        path: '/admin/level',
+        name: 'admin.level',
+        component: Level,
+        meta: { requiresAuth: true, role: 'admin', title: 'Trình độ  | Edunity' }
+      },
+      {
+        path: '/admin/language',
+        name: 'admin.language',
+        component: Language,
+        meta: { requiresAuth: true, role: 'admin', title: 'Ngôn ngữ  | Edunity' }
       }
     ]
   }

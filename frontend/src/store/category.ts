@@ -1,22 +1,26 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '@/services/axiosConfig'
-import { ElNotification } from 'element-plus'
-import type { TCategory } from '@/interfaces'
+import { ElMessage, ElNotification } from 'element-plus'
+import type { TCategory, TUpdateCate } from '@/interfaces'
 
 export const useCategoryStore = defineStore('category', () => {
   const state = ref({
     categories: [] as TCategory[], // Danh sách danh mục
     deletedCategories: [] as TCategory[], // Danh sách danh mục đã xóa mềm
     selectedCategory: null as TCategory | null, // Danh mục chi tiết
-    error: null as string | null // Thông báo lỗi
+    error: null as string | null, // Thông báo lỗi
+    total: 0 as number | 0
   })
 
   // Lấy danh sách danh mục
-  const fetchCategories = async () => {
+  const fetchCategories = async (params: any = {}) => {
     try {
-      const response = await api.get('/categories')
+      const response = await api.get('/auth/categories', { params })
+      // const response = await api.get('/categories')
       state.value.categories = response.data.data.data
+      state.value.total = response.data.data.total
+      console.log(response.data.data.data)
     } catch (error) {
       state.value.error = 'Không thể tải danh sách danh mục'
     }
@@ -25,45 +29,56 @@ export const useCategoryStore = defineStore('category', () => {
   // Tạo danh mục mới
   const createCategory = async (categoryData: FormData) => {
     try {
-      await api.post('/auth/categories', categoryData, {
+      const res = await api.post('/auth/categories', categoryData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       })
-
+      if (res.data.status === 'FAIL') {
+        ElMessage({
+          type: 'error',
+          message: res.data.error?.name?.[0] || 'Tạo danh mục không thành công! '
+        })
+      } else {
+        ElMessage({
+          type: 'success',
+          message: res.data.message
+        })
+      }
       await fetchCategories()
-
-      //   ElNotification({
-      //     title: 'Thành công',
-      //     message: 'Tạo danh mục mới thành công',
-      //     type: 'success'
-      //   })
     } catch (error) {
-      state.value.error = 'Không thể tạo danh mục mới'
-      //   ElNotification({
-      //     title: 'Thất bại',
-      //     message: 'Tạo danh mục mới thất bại',
-      //     type: 'error'
-      //   })
+      ElMessage({
+        type: 'error',
+        message: 'Tạo danh mục không thành công!'
+      })
     }
   }
 
   // Cập nhật danh mục
-  const updateCategory = async (categoryData: TCategory) => {
+  const updateCategory = async ({ id, formData }: { id: number | string; formData: FormData }) => {
     try {
-      await api.put(`/auth/categories/${categoryData.id}`, categoryData)
-      await fetchCategories()
-      ElNotification({
-        title: 'Thành công',
-        message: 'Cập nhật danh mục thành công',
-        type: 'success'
+      const res = await api.post(`/auth/categories/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       })
+      if (res.data.status === 'FAIL') {
+        ElMessage({
+          type: 'error',
+          message: res.data.error?.name?.[0] || 'Cập nhật không thành công'
+        })
+      } else {
+        ElMessage({
+          type: 'success',
+          message: res.data.message
+        })
+      }
+      await fetchCategories()
     } catch (error) {
       state.value.error = 'Không thể cập nhật danh mục'
-      ElNotification({
-        title: 'Thất bại',
-        message: 'Cập nhật danh mục thất bại',
-        type: 'error'
+      ElMessage({
+        type: 'error',
+        message: 'Cập nhật danh mục không thành công!'
       })
     }
   }
@@ -109,10 +124,10 @@ export const useCategoryStore = defineStore('category', () => {
   }
 
   // Lấy thông tin chi tiết danh mục
-  const fetchCategoryDetails = async (id: number) => {
+  const fetchCategoryDetails = async () => {
     try {
-      const response = await api.get(`/auth/categories/${id}`)
-      state.value.selectedCategory = response.data.data
+      const response = await api.get('/auth/categories&deleted=1')
+      state.value.selectedCategory = response.data.data.data
     } catch (error) {
       state.value.error = 'Không thể tải thông tin danh mục'
     }

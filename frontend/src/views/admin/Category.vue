@@ -1,16 +1,34 @@
 <template>
   <div class="p-4">
     <HeaderNavbar namePage="Danh mục">
-      <el-button type="primary" class="flex items-center gap-1" @click="openDialog">
-        <PlusIcon class="h-5 w-5 text-white cursor-pointer" />
-        Thêm Danh Mục
-      </el-button>
+      <div class="mb-4 flex  items-center gap-3">
+        <el-input class="w-48" v-model="filters.keyword" placeholder="Tìm kiếm" clearable @input="fetchCategories" />
+        <el-select class="w-48 " v-model="filters.status" placeholder="Chọn trạng thái" clearable
+          @change="fetchCategories">
+          <el-option label="Hoạt động" value="active" />
+          <el-option label="Không hoạt động" value="inactive" />
+        </el-select>
+        <div class="flex">
+          <el-button type="primary" class="flex items-center gap-1" @click="openDialog">
+            <PlusIcon class="h-5 w-5 text-white cursor-pointer" />
+            Thêm Danh Mục
+          </el-button>
+          <el-button class="flex items-center gap-1" type="success" @click="openDeletedCategoriesDialog">
+            <ArrowPathIcon class="h-5 w-5 text-white cursor-pointer" />Xem đã xóa
+          </el-button>
+        </div>
+      </div>
+
     </HeaderNavbar>
 
     <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-      <CardCategory v-for="(category, index) in categoryStore.state.categories" :key="index" :category="category" />
+      <CardCategory v-for="(category, index) in categoryStore.state.categories" :key="index"
+        :category="{ ...category, id: category.id ?? 0 }" />
     </div>
-
+    <div class="mt-4 flex justify-center">
+      <el-pagination v-model:current-page="pagination.currentPage" :page-size="pagination.perPage"
+        :total="pagination.total" layout="prev, pager, next" @current-change="handlePageChange" />
+    </div>
     <!-- Dialog Thêm Danh Mục -->
     <el-dialog v-model="dialogVisible" title="Thêm Danh Mục" width="50%">
       <form @submit.prevent="handleSubmit">
@@ -57,13 +75,24 @@
         </div>
       </form>
     </el-dialog>
+    <el-dialog v-model="openDeletedCategoriesDialog" title="Danh sách danh mục đã xóa">
+      <el-table :data="categoryStore.deletedCategories" style="width: 100%">
+        <el-table-column prop="name" label="Tên danh mục" />
+        <el-table-column prop="description" label="Mô tả" />
+        <el-table-column label="Hành động">
+          <template #default="{ row }">
+            <el-button type="success" @click="restoreCategory(row.id)">Khôi phục</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import HeaderNavbar from '@/components/admin/Headernavbar/HeaderNavbar.vue'
 import CardCategory from '@/components/admin/Card/CardCategory.vue'
-import { PlusIcon } from '@heroicons/vue/20/solid'
+import { ArrowPathIcon, PlusIcon } from '@heroicons/vue/20/solid'
 import { useCategory } from '@/composables/admin/useCategory'
 import { Plus } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
@@ -85,10 +114,44 @@ const {
   categoryForm,
   openDialog,
   handleSubmit,
+  handleUpdate,
   handleDeleteCategory,
   handleRemoveImage,
+  openDeletedCategoriesDialog,
   handleFileChange,
+  updateDialogVisible,
+  editCategory,
+  restoreCategory,
   // handlePictureCardPreview,
   fileList
 } = useCategory()
+const filters = reactive({
+  keyword: '',
+  status: '',
+});
+
+const pagination = reactive({
+  currentPage: 1,
+  perPage: 10,
+  total: 0,
+});
+
+const fetchCategories = async () => {
+  const params = {
+    per_page: pagination.perPage,
+    page: pagination.currentPage,
+    keyword: filters.keyword,
+    status: filters.status,
+    deleted: 0,
+  };
+  await categoryStore.fetchCategories(params);
+  pagination.total = categoryStore.state.total;
+};
+const handlePageChange = (page: number) => {
+  pagination.currentPage = page;
+  fetchCategories();
+};
+onMounted(() => {
+  fetchCategories();
+});
 </script>

@@ -28,6 +28,30 @@
                     <!-- Quizz -->
                     <div v-else-if="currentContent.current_content_type === 'quiz'"
                         class="min-h-[70vh] bg-white flex items-center justify-center">
+                        <div v-if="isReviewMode">
+                            <div class="">
+
+                                <h2 class="text-xl font-semibold mb-4 text-center">Ôn tập: {{ currentContent.title }}
+                                </h2>
+                                <div v-for="(question, index) in currentContent.questions" :key="question.id"
+                                    class="mb-4">
+                                    <p class="font-medium">Câu {{ index + 1 }}: {{ question.question }}</p>
+                                    <ul class="mt-2">
+                                        <li v-for="option in question.options" :key="option" class="px-4 py-2 rounded"
+                                            :class="{
+                                                'bg-green-200': option === question.answer, // Đáp án đúng
+                                                'bg-red-200': option === question.answer_user && option !== question.answer // Đáp án sai người dùng chọn
+                                            }">
+                                            {{ option }}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flex">
+
+                                <Button variant="primary" @click="handleExitReviewLesson()">Thoát ôn tập</Button>
+                            </div>
+                        </div>
                         <div v-if="currentContent.percent < 100"
                             class="bg-white p-4 rounded-lg shadow-md max-w-md w-full">
                             <h2 class="text-xl font-semibold mb-4 text-center">Bài tập: {{ currentContent.title }}</h2>
@@ -38,6 +62,7 @@
                             </div>
 
                             <p class="text-center mb-6">{{ currentQuestion.question }}</p>
+
 
                             <form class="space-y-4" @submit.prevent="checkAnswer">
                                 <label v-for="(option, index) in currentQuestion.options" :key="index"
@@ -54,17 +79,26 @@
                             </form>
                             <p v-if="feedbackMessage" class="text-center mt-4 text-red-500">{{ feedbackMessage }}</p>
                         </div>
+                        <!-- On tap -->
                         <!-- Nếu quiz đã hoàn thành -->
-                        <div v-else class="flex flex-col items-center">
+                        <div v-else-if="currentContent.percent >= 100 && !isReviewMode"
+                            class="flex flex-col items-center">
                             <canvas id="celebrationCanvas" class="w-full h-[300px]"></canvas>
-                            <p class="text-xl font-bold text-center text-indigo-600 mt-5">Chúc mừng bạn đã hoàn thành
+                            <p class="text-xl font-bold text-center text-indigo-600 mt-5">Chúc mừng bạn đã hoàn
+                                thành
                                 bài
                                 tập!</p>
-                            <Button variant="primary" class="mt-10" @click="handleNextLesson()">Bài tiếp theo</Button>
+                            <div class="mt-10 flex gap-5">
+
+                                <Button variant="primary" @click="handleReviewLesson()">Ôn tập</Button>
+                                <Button variant="primary" @click="handleRedoLesson()">Làm lại</Button>
+                                <Button variant="primary" @click="handleNextLesson()">Bài tiếp
+                                    theo</Button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <!-- <div class="bg-white rounded-lg my-5 p-2">
+                <div class="bg-white rounded-lg my-5 p-2">
                     <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
                         <el-tab-pane label="Tìm kiếm" name="first">
                             <UserSearch />
@@ -80,7 +114,7 @@
                             <UserFeedback />
                         </el-tab-pane>
                     </el-tabs>
-                </div> -->
+                </div>
             </div>
             <div class="lg:w-2/6 w-full">
                 <div class="bg-white rounded-lg shadow-lg p-5">
@@ -101,7 +135,8 @@
                                 <div class="px-4 !text-gray-900 flex gap-5 items-center justify-between leading-5">
                                     <h3 class="text-lg">{{ content.title }}</h3>
                                     <div class="flex gap-1" v-if="content.content_course_type === 'section'">
-                                        <span class="text-gray-500">{{ content.content_done }}/{{ content.content_count
+                                        <span class="text-gray-500">{{ content.content_done }}/{{
+                                            content.content_count
                                             }}
                                             Hoàn thành</span> •
                                         <span class="text-pink-500">{{ content.duration_display }}</span>
@@ -151,7 +186,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
 import { PlayCircleIcon, CheckCircleIcon as CheckOuline, QuestionMarkCircleIcon, DocumentIcon } from "@heroicons/vue/24/outline";
 import { useRoute } from 'vue-router';
 import { useCourseStore } from '@/store/course';
@@ -162,6 +197,8 @@ import UserQuestion from '@/components/user/mycourse/UserQuestion.vue';
 import UserNote from '@/components/user/mycourse/UserNote.vue';
 import UserFeedback from '@/components/user/mycourse/UserFeedback.vue';
 import { useQuizStore } from '@/store/quiz';
+import confetti from "canvas-confetti";
+import Button from '@/components/ui/button/Button.vue';
 
 import VuePdf from "vue-pdf-next";
 const route = useRoute();
@@ -189,8 +226,9 @@ const startLearning = () => {
             if (learned.value >= duration.value) {
                 updateLearned({ id: currentContent.value.id, learned: duration.value });
                 clearInterval(timer); // Dừng timer
+                handleNextLesson();
             }
-        }, 1000); // Mỗi giây tăng 1
+        }, 2000); // Mỗi giây tăng 1
     }
 };
 
@@ -207,7 +245,7 @@ const stopLearning = () => {
 
 // Theo dõi khi nội dung thay đổi
 watch(currentContent, (newContent, oldContent) => {
-    if (newContent?.type === "file" && duration.value > currentContent.value.learned) {
+    if (newContent?.type === "file" && duration.value > (currentContent.value?.learned || 0)) {
         startLearning();
     } else {
         stopLearning();
@@ -224,7 +262,6 @@ onMounted(async () => {
 });
 
 const handleChangeContent = async (lesson: any) => {
-    console.log(lesson)
     const data = {
         course_id: idCourse,
         content_type: lesson.content_section_type,
@@ -239,7 +276,6 @@ const handleChangeContent = async (lesson: any) => {
 };
 const updateLearned = async ({ id, learned }: { id: number; learned: number }) => {
     if (!currentContent.value) return;
-    // console.log(learned, id)
     const data = {
         course_id: idCourse,
         content_type: currentContent.value.current_content_type,
@@ -248,6 +284,7 @@ const updateLearned = async ({ id, learned }: { id: number; learned: number }) =
         content_old_type: currentContent.value?.current_content_type,
     }
     await changeContent(data);
+
 
 };
 
@@ -314,6 +351,28 @@ const checkAnswer = async () => {
         feedbackMessage.value = 'Câu trả lời không chính xác. Hãy thử lại!';
     }
 };
+const handleRedoLesson = async () => {
+    if (!currentContent.value) return;
+    try {
+        const data = {
+            course_id: idCourse,
+            content_type: "quiz",
+            content_id: currentContent.value.id,
+            content_old_type: "quiz",
+            content_old_id: currentContent.value.id,
+            redo_quiz: 1, // Reset quiz
+        };
+        await quizStore.handleRedo(data);
+        currentContent.value = currentContent;
+        currentQuestionIndex.value = 0; // Reset câu hỏi về câu đầu tiên
+        selectedAnswer.value = ''; // Xóa đáp án đã chọn
+        progressQuizz.value = 0; // Reset tiến độ
+        feedbackMessage.value = ''; // Xóa thông báo feedback
+    } catch (error) {
+        console.error("Error during redo quiz:", error);
+        feedbackMessage.value = "Không thể làm lại bài tập.";
+    }
+};
 
 // Hàm xử lý chuyển câu hỏi tiếp theo
 const nextQuestion = () => {
@@ -325,6 +384,7 @@ const nextQuestion = () => {
 
     } else {
         handleQuizCompletion(); // Hoàn thành quiz
+        handleNextLesson();
     }
 };
 // // Xử lý khi hoàn thành quiz
@@ -332,8 +392,6 @@ const handleQuizCompletion = () => {
     progressQuizz.value = 100; // Đảm bảo tiến trình đạt 100% khi hoàn thành
     feedbackMessage.value = 'Bạn đã hoàn thành bài tập!'; // Hiển thị thông báo
 };
-import confetti from "canvas-confetti";
-import Button from '@/components/ui/button/Button.vue';
 
 const startConfetti = () => {
     confetti({
@@ -349,6 +407,13 @@ watch(progressQuizz, (newValue) => {
         startConfetti();
     }
 });
+const isReviewMode = ref(false);
+const handleReviewLesson = () => {
+    isReviewMode.value = true;
+};
+const handleExitReviewLesson = () => {
+    isReviewMode.value = false;
+};
 </script>
 <style scoped>
 .pdf-viewer {

@@ -1,4 +1,10 @@
 export interface Tlevel {
-  id: string
+  id?: string
   name: string
+  status: 'active' | 'inactive'
+}
+export interface TCourseLevel {
+  id?: string
+  name: string
+  status: 'active' | 'inactive'
 }
