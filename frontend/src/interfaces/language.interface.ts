@@ -6,6 +6,7 @@ export interface TLanguage {
 }
 export interface LanguageState {
   languages: TLanguage[]
+  languagesCRUD: TLanguage[]
   deletedLanguages: TLanguage[]
   error: string | null
   total: number

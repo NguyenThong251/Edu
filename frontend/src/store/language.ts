@@ -7,6 +7,7 @@ import { ElMessage } from 'element-plus'
 export const useLanguageStore = defineStore('language', () => {
   const state = ref<LanguageState>({
     languages: [],
+    languagesCRUD: [],
     deletedLanguages: [],
     error: null,
     total: 0
@@ -21,10 +22,18 @@ export const useLanguageStore = defineStore('language', () => {
   //       state.value.error = 'Không thể tải danh sách ngôn ngữ!'
   //     }
   //   }
-  const fetchLanguages = async (params: any = {}) => {
+  const fetchLanguages = async () => {
+    try {
+      const response = await api.get('/languages')
+      state.value.languages = response.data.data
+    } catch (error) {
+      state.value.error = 'Không thể tải danh sách ngôn ngữ!'
+    }
+  }
+  const fetchLanguagesCURD = async (params: any = {}) => {
     try {
       const response = await api.get('/auth/list-languages-admin', { params })
-      state.value.languages = response.data.data.data
+      state.value.languagesCRUD = response.data.data.data
       state.value.total = response.data.data.total // Lưu tổng số lượng
     } catch (error) {
       state.value.error = 'Không thể tải danh sách ngôn ngữ!'
@@ -49,7 +58,7 @@ export const useLanguageStore = defineStore('language', () => {
       } else {
         ElMessage({ type: 'success', message: 'Tạo mới thành công!' })
       }
-      await fetchLanguages()
+      await fetchLanguagesCURD()
     } catch (error) {
       state.value.error = 'Không thể tạo mới ngôn ngữ!'
     }
@@ -59,7 +68,7 @@ export const useLanguageStore = defineStore('language', () => {
   const updateLanguage = async (languageData: TLanguage) => {
     try {
       await api.put(`/auth/languages/${languageData.id}`, languageData)
-      await fetchLanguages()
+      await fetchLanguagesCURD()
     } catch (error) {
       state.value.error = 'Không thể cập nhật ngôn ngữ!'
     }
@@ -69,7 +78,7 @@ export const useLanguageStore = defineStore('language', () => {
   const deleteLanguage = async (id: number) => {
     try {
       await api.delete(`/auth/languages/${id}`)
-      await fetchLanguages()
+      await fetchLanguagesCURD()
     } catch (error) {
       state.value.error = 'Không thể xóa ngôn ngữ!'
     }
@@ -79,7 +88,7 @@ export const useLanguageStore = defineStore('language', () => {
   const restoreLanguage = async (id: number) => {
     try {
       await api.get(`/auth/languages/restore/${id}`)
-      await fetchLanguages()
+      await fetchLanguagesCURD()
       await fetchDeletedLanguages()
     } catch (error) {
       state.value.error = 'Không thể khôi phục ngôn ngữ!'
@@ -88,6 +97,7 @@ export const useLanguageStore = defineStore('language', () => {
 
   return {
     state,
+    fetchLanguagesCURD,
     fetchLanguages,
     fetchDeletedLanguages,
     createLanguage,

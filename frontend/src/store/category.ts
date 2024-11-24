@@ -7,20 +7,20 @@ import type { TCategory, TUpdateCate } from '@/interfaces'
 export const useCategoryStore = defineStore('category', () => {
   const state = ref({
     categories: [] as TCategory[], // Danh sách danh mục
+    categoriesCURD: [] as TCategory[], // Danh sách danh mục
     deletedCategories: [] as TCategory[], // Danh sách danh mục đã xóa mềm
     selectedCategory: null as TCategory | null, // Danh mục chi tiết
     error: null as string | null, // Thông báo lỗi
     total: 0 as number | 0
   })
 
-  // Lấy danh sách danh mục
-  const fetchCategories = async (params: any = {}) => {
+  const fetchCategoriesCRUD = async (params: any = {}) => {
     try {
+      // console.log(params)
       const response = await api.get('/auth/categories', { params })
       // const response = await api.get('/categories')
-      state.value.categories = response.data.data.data
+      state.value.categoriesCURD = response.data.data.data
       state.value.total = response.data.data.total
-      console.log(response.data.data.data)
     } catch (error) {
       state.value.error = 'Không thể tải danh sách danh mục'
     }
@@ -45,7 +45,7 @@ export const useCategoryStore = defineStore('category', () => {
           message: res.data.message
         })
       }
-      await fetchCategories()
+      await fetchCategoriesCRUD()
     } catch (error) {
       ElMessage({
         type: 'error',
@@ -73,7 +73,7 @@ export const useCategoryStore = defineStore('category', () => {
           message: res.data.message
         })
       }
-      await fetchCategories()
+      await fetchCategoriesCRUD()
     } catch (error) {
       state.value.error = 'Không thể cập nhật danh mục'
       ElMessage({
@@ -87,9 +87,17 @@ export const useCategoryStore = defineStore('category', () => {
   const deleteCategory = async (id: string | number) => {
     try {
       await api.delete(`/auth/categories/${id}`)
-      await fetchCategories()
+      ElMessage({
+        type: 'success',
+        message: 'Xóa danh mục thành công!'
+      })
+      await fetchCategoriesCRUD()
     } catch (error) {
       state.value.error = 'Không thể xóa danh mục'
+      ElMessage({
+        type: 'error',
+        message: 'Xóa danh mục thất bại'
+      })
     }
   }
 
@@ -97,18 +105,17 @@ export const useCategoryStore = defineStore('category', () => {
   const restoreCategory = async (id: string | number) => {
     try {
       await api.get(`/auth/categories/restore/${id}`)
-      await fetchCategories()
-      ElNotification({
-        title: 'Thành công',
-        message: 'Khôi phục danh mục thành công',
-        type: 'success'
+      await fetchCategoriesCRUD()
+      await fetchDeletedCategories()
+      ElMessage({
+        type: 'success',
+        message: 'Khôi phục danh mục thành công!'
       })
     } catch (error) {
       state.value.error = 'Không thể khôi phục danh mục'
-      ElNotification({
-        title: 'Thất bại',
-        message: 'Khôi phục danh mục thất bại',
-        type: 'error'
+      ElMessage({
+        type: 'error',
+        message: 'Khôi phục danh mục thất bại'
       })
     }
   }
@@ -116,32 +123,33 @@ export const useCategoryStore = defineStore('category', () => {
   // Lấy danh sách danh mục đã xóa mềm
   const fetchDeletedCategories = async () => {
     try {
-      const response = await api.get('/auth/categories/deleted')
-      state.value.deletedCategories = response.data.data
+      const response = await api.get('/auth/categories?deleted=1')
+      state.value.deletedCategories = response.data.data.data
     } catch (error) {
       state.value.error = 'Không thể tải danh sách danh mục đã xóa'
     }
   }
 
   // Lấy thông tin chi tiết danh mục
-  const fetchCategoryDetails = async () => {
-    try {
-      const response = await api.get('/auth/categories&deleted=1')
-      state.value.selectedCategory = response.data.data.data
-    } catch (error) {
-      state.value.error = 'Không thể tải thông tin danh mục'
-    }
-  }
+  // const fetchCategoryDetails = async () => {
+  //   try {
+  //     const response = await api.get('/auth/categories&deleted=1')
+  //     state.value.selectedCategory = response.data.data.data
+  //   } catch (error) {
+  //     state.value.error = 'Không thể tải thông tin danh mục'
+  //   }
+  // }
 
   return {
     state,
-    fetchCategories,
+    // fetchCategories,
     createCategory,
     updateCategory,
     deleteCategory,
     restoreCategory,
     fetchDeletedCategories,
-    fetchCategoryDetails,
+    // fetchCategoryDetails,
+    fetchCategoriesCRUD,
     categories: computed(() => state.value.categories),
     deletedCategories: computed(() => state.value.deletedCategories),
     selectedCategory: computed(() => state.value.selectedCategory)

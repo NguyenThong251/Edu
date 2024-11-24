@@ -20,7 +20,7 @@
             </div>
         </div>
         <!-- Bảng hiển thị -->
-        <el-table :data="levelStore.state.courseLevels" class="mt-4">
+        <el-table :data="levelStore.state.courseLevelsCRUD" class="mt-4">
             <el-table-column prop="name" label="Tên" />
             <el-table-column class="" prop="status" label="Trạng thái" />
             <el-table-column label="Hành động">
@@ -120,7 +120,7 @@ const fetchLevel = async () => {
         status: filters.status,
         deleted: 0,
     };
-    await levelStore.fetchCourseLevels(params);
+    await levelStore.fetchCourseLevelsCURD(params);
     pagination.total = levelStore.state.total;
 };
 const handlePageChange = (page: number) => {

@@ -27,10 +27,6 @@ export function useCourseLevel(): UseCourseLevelReturnType {
   })
   const selectedId = ref<number | null>(null) // ID của item được chọn khi cập nhật
 
-  onMounted(async () => {
-    await levelStore.fetchCourseLevels()
-  })
-
   const openDrawer = () => {
     courseLevelForm.value = { name: '', status: 'active' }
     selectedId.value = null // Reset ID khi tạo mới
@@ -57,7 +53,7 @@ export function useCourseLevel(): UseCourseLevelReturnType {
       await levelStore.createCourseLevel(formData)
       drawerVisible.value = false
 
-      await levelStore.fetchCourseLevels()
+      await levelStore.fetchCourseLevelsCURD()
     } catch (error) {
       console.log(error)
     }

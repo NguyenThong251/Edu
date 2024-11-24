@@ -22,7 +22,7 @@
     </HeaderNavbar>
 
     <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-      <CardCategory v-for="(category, index) in categoryStore.state.categories" :key="index"
+      <CardCategory v-for="category in categoryStore.state.categoriesCURD" :key="category.id"
         :category="{ ...category, id: category.id ?? 0 }" />
     </div>
     <div class="mt-4 flex justify-center">
@@ -75,8 +75,8 @@
         </div>
       </form>
     </el-dialog>
-    <el-dialog v-model="openDeletedCategoriesDialog" title="Danh sách danh mục đã xóa">
-      <el-table :data="categoryStore.deletedCategories" style="width: 100%">
+    <el-dialog v-model="deletedCategoriesDialogVisible" title="Danh sách danh mục đã xóa">
+      <el-table :data="categoryStore.state.deletedCategories" style="width: 100%">
         <el-table-column prop="name" label="Tên danh mục" />
         <el-table-column prop="description" label="Mô tả" />
         <el-table-column label="Hành động">
@@ -118,6 +118,7 @@ const {
   handleDeleteCategory,
   handleRemoveImage,
   openDeletedCategoriesDialog,
+  deletedCategoriesDialogVisible,
   handleFileChange,
   updateDialogVisible,
   editCategory,
@@ -140,17 +141,18 @@ const fetchCategories = async () => {
   const params = {
     per_page: pagination.perPage,
     page: pagination.currentPage,
-    keyword: filters.keyword,
-    status: filters.status,
+    keyword: filters.keyword.trim(),
+    status: filters.status || null,
     deleted: 0,
   };
-  await categoryStore.fetchCategories(params);
-  pagination.total = categoryStore.state.total;
+  await categoryStore.fetchCategoriesCRUD(params);
+  pagination.total = categoryStore.state.total; // Cập nhật tổng số mục
 };
 const handlePageChange = (page: number) => {
   pagination.currentPage = page;
   fetchCategories();
 };
+
 onMounted(() => {
   fetchCategories();
 });

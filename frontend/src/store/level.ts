@@ -12,6 +12,7 @@ export interface CourseLevel {
 
 interface CourseLevelState {
   courseLevels: CourseLevel[]
+  courseLevelsCRUD: CourseLevel[]
   deletedCourseLevels: CourseLevel[]
   error: string | null
   total: number
@@ -20,15 +21,24 @@ interface CourseLevelState {
 export const useCourseLevelStore = defineStore('courseLevel', () => {
   const state = ref<CourseLevelState>({
     courseLevels: [],
+    courseLevelsCRUD: [],
     deletedCourseLevels: [],
     error: null,
     total: 0
   })
 
-  const fetchCourseLevels = async (params: any = {}) => {
+  const fetchCourseLevels = async () => {
+    try {
+      const response = await api.get('/course-levels')
+      state.value.courseLevels = response.data.data
+    } catch (error) {
+      state.value.error = 'Không thể tải danh sách cấp độ!'
+    }
+  }
+  const fetchCourseLevelsCURD = async (params: any = {}) => {
     try {
       const response = await api.get('/auth/list-course-levels-admin', { params })
-      state.value.courseLevels = response.data.data.data
+      state.value.courseLevelsCRUD = response.data.data.data
       state.value.total = response.data.data.total
     } catch (error) {
       state.value.error = 'Không thể tải danh sách cấp độ!'
@@ -52,7 +62,7 @@ export const useCourseLevelStore = defineStore('courseLevel', () => {
       } else {
         ElMessage({ type: 'success', message: 'Tạo mới thành công!' })
       }
-      await fetchCourseLevels()
+      await fetchCourseLevelsCURD()
     } catch (error) {
       state.value.error = 'Không thể tạo mới cấp độ!'
     }
@@ -66,7 +76,7 @@ export const useCourseLevelStore = defineStore('courseLevel', () => {
       } else {
         ElMessage({ type: 'success', message: 'Tạo mới thành công!' })
       }
-      await fetchCourseLevels()
+      await fetchCourseLevelsCURD()
     } catch (error) {
       state.value.error = 'Không thể cập nhật cấp độ!'
     }
@@ -75,7 +85,7 @@ export const useCourseLevelStore = defineStore('courseLevel', () => {
   const deleteCourseLevel = async (id: number) => {
     try {
       await api.delete(`/auth/course-levels/${id}`)
-      await fetchCourseLevels()
+      await fetchCourseLevelsCURD()
     } catch (error) {
       state.value.error = 'Không thể xóa cấp độ!'
     }
@@ -84,7 +94,7 @@ export const useCourseLevelStore = defineStore('courseLevel', () => {
   const restoreCourseLevel = async (id: number) => {
     try {
       await api.get(`/auth/course-levels/restore/${id}`)
-      await fetchCourseLevels()
+      await fetchCourseLevelsCURD()
       await fetchDeletedCourseLevels()
     } catch (error) {
       state.value.error = 'Không thể khôi phục cấp độ!'
@@ -95,6 +105,7 @@ export const useCourseLevelStore = defineStore('courseLevel', () => {
     state,
     fetchCourseLevels,
     fetchDeletedCourseLevels,
+    fetchCourseLevelsCURD,
     createCourseLevel,
     updateCourseLevel,
     deleteCourseLevel,

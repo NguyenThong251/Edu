@@ -15,10 +15,6 @@ export function useLanguage() {
   })
   const selectedId = ref<number | null>(null) // ID của language đang được chọn
 
-  onMounted(async () => {
-    await languageStore.fetchLanguages()
-  })
-
   const openDrawer = () => {
     languageForm.value = { name: '', description: '', status: 'active' }
     selectedId.value = null // Reset ID khi tạo mới

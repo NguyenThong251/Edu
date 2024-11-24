@@ -19,7 +19,7 @@
             </div>
         </div>
 
-        <el-table :data="languageStore.state.languages" class="mt-4">
+        <el-table :data="languageStore.state.languagesCRUD" class="mt-4">
             <el-table-column prop="name" label="Tên" />
             <el-table-column prop="description" label="Mô tả" />
             <el-table-column prop="status" label="Trạng thái" />
@@ -31,10 +31,7 @@
             </el-table-column>
         </el-table>
         <!-- Phân trang -->
-        <!-- <div class="mt-4 flex justify-center">
-            <el-pagination v-model:current-page="currentPage" :page-size="filters.per_page"
-                :total="languageStore.state.total" layout="prev, pager, next" @current-change="fetchLanguages" />
-        </div> -->
+
         <div class="mt-4 flex justify-center">
             <el-pagination v-model:current-page="pagination.currentPage" :page-size="pagination.perPage"
                 :total="pagination.total" layout="prev, pager, next" @current-change="handlePageChange" />
@@ -133,7 +130,7 @@ const fetchLanguages = async () => {
         status: filters.status,
         deleted: 0,
     };
-    await languageStore.fetchLanguages(params);
+    await languageStore.fetchLanguagesCURD(params);
     pagination.total = languageStore.state.total;
 };
 const handlePageChange = (page: number) => {

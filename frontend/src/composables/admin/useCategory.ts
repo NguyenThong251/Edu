@@ -19,9 +19,6 @@ export function useCategory() {
     status: 'active'
   })
   const fileList = ref<any[]>([])
-  onMounted(async () => {
-    await categoryStore.fetchCategories()
-  })
 
   const openDialog = () => {
     resetForm()
@@ -66,7 +63,6 @@ export function useCategory() {
       await categoryStore.createCategory(formData)
 
       dialogVisible.value = false
-      await categoryStore.fetchCategories()
     } catch (error) {
       console.log(error)
     }
@@ -154,16 +150,10 @@ export function useCategory() {
         type: 'warning'
       })
       await categoryStore.deleteCategory(id)
-      ElMessage({
-        type: 'success',
-        message: 'Xóa danh mục thành công!'
-      })
-      await categoryStore.fetchCategories()
-    } catch {
-      ElMessage({
-        type: 'info',
-        message: 'Hủy xóa danh mục'
-      })
+
+      await categoryStore.fetchCategoriesCRUD()
+    } catch (error) {
+      console.log(error)
     }
   }
   const handlePictureCardPreview = (file: any) => {
@@ -191,11 +181,8 @@ export function useCategory() {
           type: 'info'
         }
       )
+      deletedCategoriesDialogVisible.value = false
       await categoryStore.restoreCategory(id)
-      ElMessage({
-        type: 'success',
-        message: 'Khôi phục danh mục thành công!'
-      })
       await categoryStore.fetchDeletedCategories()
     } catch {
       ElMessage({
