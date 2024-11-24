@@ -7,49 +7,70 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 
 class CategoryController extends Controller
 {
     public function getListAdmin(Request $request)
     {
-        // Query để lấy danh sách Category, không kiểm tra trạng thái
+        // Query cơ bản lấy danh sách Category
         $categoriesQuery = Category::query();
 
-        // Lấy số lượng limit và thông tin phân trang từ request
-        $limit = $request->get('limit', null);
-        $perPage = $request->get('per_page', 10);
-        $currentPage = $request->get('page', 1);
-
-        // Nếu có limit thì giới hạn kết quả trước khi phân trang thủ công
-        if ($limit) {
-            // Lấy các kết quả giới hạn
-            $categories = $categoriesQuery->limit($limit)->get();
-
-            // Lấy tổng số lượng kết quả
-            $total = $categories->count();
-
-            // Phân trang thủ công cho kết quả đã giới hạn
-            $categories = $categories->forPage($currentPage, $perPage)->values();
-
-            $paginatedCategories = new \Illuminate\Pagination\LengthAwarePaginator(
-                $categories,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
-            );
-
-            // Chuyển đổi đối tượng phân trang sang mảng với tất cả các thuộc tính chi tiết
-            $paginationData = $paginatedCategories->toArray();
-
-            return formatResponse(STATUS_OK, $paginationData, '', __('messages.category_fetch_success'));
-        } else {
-            // Nếu không có limit, phân trang như bình thường
-            $categories = $categoriesQuery->paginate($perPage, ['*'], 'page', $currentPage);
-            return formatResponse(STATUS_OK, $categories, '', __('messages.category_fetch_success'));
+        // Lọc theo keyword (nếu có)
+        if ($request->has('keyword') && !empty($request->keyword)) {
+            $keyword = $request->keyword;
+        
+            $categoriesQuery->where(function ($query) use ($keyword) {
+                $query->where('name', 'like', '%' . $keyword . '%')
+                      ->orWhere('keyword', 'like', '%' . $keyword . '%');
+            });
         }
+        
+
+        // Lọc theo status (nếu có)
+        if ($request->has('status') && !is_null($request->status)) {
+            $categoriesQuery->where('status', $request->status);
+        }
+
+        // Sắp xếp theo `created_at` (mặc định là `desc`)
+        $order = $request->get('order', 'desc'); // Giá trị mặc định là desc
+        $categoriesQuery->orderBy('created_at', $order);
+
+        // Phân trang với per_page và page
+        $perPage = (int) $request->get('per_page', 10); // Số lượng bản ghi mỗi trang, mặc định 10
+        $page = (int) $request->get('page', 1); //
+
+        // Lấy danh sách đã phân trang
+        $categories = $categoriesQuery->get();
+
+        // Tổng số lượng bản ghi
+        $total = $categories->count();
+    
+        // Phân trang thủ công
+        $paginatedCategories = $categories->forPage($page, $perPage)->values();
+    
+        // Tạo đối tượng LengthAwarePaginator
+        $pagination = new LengthAwarePaginator(
+            $paginatedCategories, // Dữ liệu cho trang hiện tại
+            $total,               // Tổng số bản ghi
+            $perPage,             // Số lượng bản ghi mỗi trang
+            $page,                // Trang hiện tại
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(), // Đường dẫn chính
+                'query' => $request->query() // Lấy tất cả query parameters hiện tại
+            ]
+        );
+        $categories=$pagination->toArray();
+        // Trả về kết quả với đầy đủ thông tin filter, order và phân trang
+        return formatResponse(
+            STATUS_OK,
+            $categories,
+            '',
+            __('messages.category_fetch_success')
+        );
     }
+
 
 
 
@@ -247,8 +268,9 @@ class CategoryController extends Controller
         $category->save();
 
         $category->delete(); // Thực hiện soft delete
+        $category = Category::onlyTrashed()->find($id);
 
-        return formatResponse(STATUS_OK, '', '', __('messages.category_soft_delete_success'));
+        return formatResponse(STATUS_OK, $category, '', __('messages.category_soft_delete_success'));
     }
 
     public function restore($id)
@@ -274,7 +296,9 @@ class CategoryController extends Controller
         // Khôi phục danh mục
         $category->restore();
 
-        return formatResponse(STATUS_OK, '', '', __('messages.category_restore_success')); // Thông báo khôi phục thành công
+        $category = Category::find($id);
+
+        return formatResponse(STATUS_OK, $category, '', __('messages.category_restore_success')); // Thông báo khôi phục thành công
     }
 
     // Xóa cứng category
@@ -290,6 +314,6 @@ class CategoryController extends Controller
         // Xóa vĩnh viễn
         $category->forceDelete();
 
-        return formatResponse(STATUS_OK, '', '', __('messages.category_force_delete_success'));
+        return formatResponse(STATUS_OK, $category, '', __('messages.category_force_delete_success'));
     }
 }

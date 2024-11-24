@@ -114,8 +114,9 @@ class LanguageController extends Controller
         $language->deleted_by = auth()->id();
         $language->save();
         $language->delete();
+        $language = Language::onlyTrashed()->find($id);
 
-        return formatResponse(STATUS_OK, '', '', __('messages.language_soft_delete_success'));
+        return formatResponse(STATUS_OK, $language, '', __('messages.language_soft_delete_success'));
     }
 
     // Khôi phục ngôn ngữ bị xóa mềm
@@ -128,8 +129,8 @@ class LanguageController extends Controller
 
         $language->deleted_by = null;
         $language->restore();
-
-        return formatResponse(STATUS_OK, '', '', __('messages.language_restore_success'));
+        $language = Language::find($id);
+        return formatResponse(STATUS_OK, $language, '', __('messages.language_restore_success'));
     }
 
     // Xóa vĩnh viễn ngôn ngữ
@@ -142,6 +143,6 @@ class LanguageController extends Controller
 
         $language->forceDelete();
 
-        return formatResponse(STATUS_OK, '', '', __('messages.language_force_delete_success'));
+        return formatResponse(STATUS_OK, $language, '', __('messages.language_force_delete_success'));
     }
 }
