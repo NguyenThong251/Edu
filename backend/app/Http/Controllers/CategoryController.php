@@ -17,6 +17,14 @@ class CategoryController extends Controller
         // Query cơ bản lấy danh sách Category
         $categoriesQuery = Category::query();
 
+        if ($request->has('deleted') && $request->deleted == 1) {
+            // Lấy các category đã xóa
+            $categoriesQuery->onlyTrashed();
+        } else {
+            // Chỉ lấy các category chưa xóa (mặc định)
+            $categoriesQuery->whereNull('deleted_at');
+        }
+
         // Lọc theo keyword (nếu có)
         if ($request->has('keyword') && !empty($request->keyword)) {
             $keyword = $request->keyword;

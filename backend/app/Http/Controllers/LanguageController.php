@@ -6,9 +6,76 @@ use Illuminate\Http\Request;
 use App\Models\Language;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class LanguageController extends Controller
 {
+    public function getListAdmin(Request $request)
+    {
+        // Query cơ bản lấy danh sách Language
+        $languagesQuery = Language::query();
+
+        // Kiểm tra tham số `deleted`
+        if ($request->has('deleted') && $request->deleted == 1) {
+            // Lấy các language đã xóa
+            $languagesQuery->onlyTrashed();
+        } else {
+            // Chỉ lấy các language chưa xóa (mặc định)
+            $languagesQuery->whereNull('deleted_at');
+        }
+
+        // Lọc theo keyword (nếu có)
+        if ($request->has('keyword') && !empty($request->keyword)) {
+            $keyword = $request->keyword;
+            $languagesQuery->where('name', 'like', '%' . $keyword . '%');
+        }
+
+        // Lọc theo status (nếu có)
+        if ($request->has('status') && !is_null($request->status)) {
+            $languagesQuery->where('status', $request->status);
+        }
+
+        // Sắp xếp theo `created_at` (mặc định là `desc`)
+        $order = $request->get('order', 'desc'); // Giá trị mặc định là desc
+        $languagesQuery->orderBy('created_at', $order);
+
+        // Phân trang với per_page và page
+        $perPage = (int) $request->get('per_page', 10); // Số lượng bản ghi mỗi trang, mặc định 10
+        $page = (int) $request->get('page', 1); // Trang hiện tại, mặc định 1
+
+        // Lấy danh sách đã lọc
+        $languages = $languagesQuery->get();
+
+        // Tổng số lượng bản ghi
+        $total = $languages->count();
+
+        // Phân trang thủ công
+        $paginatedLanguages = $languages->forPage($page, $perPage)->values();
+
+        // Tạo đối tượng LengthAwarePaginator
+        $pagination = new LengthAwarePaginator(
+            $paginatedLanguages, // Dữ liệu cho trang hiện tại
+            $total,               // Tổng số bản ghi
+            $perPage,             // Số lượng bản ghi mỗi trang
+            $page,                // Trang hiện tại
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(), // Đường dẫn chính
+                'query' => $request->query() // Lấy tất cả query parameters hiện tại
+            ]
+        );
+
+        // Chuyển đổi dữ liệu phân trang thành mảng
+        $languages = $pagination->toArray();
+
+        // Trả về kết quả với đầy đủ thông tin filter, order và phân trang
+        return formatResponse(
+            STATUS_OK,
+            $languages,
+            '',
+            __('messages.language_fetch_success')
+        );
+    }
+
     // Lấy danh sách các ngôn ngữ
     public function index(Request $request)
     {
