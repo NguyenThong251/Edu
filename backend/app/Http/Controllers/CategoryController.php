@@ -16,7 +16,7 @@ class CategoryController extends Controller
     public function getListAdmin(Request $request)
     {
         // Query cơ bản lấy danh sách Category
-        $categoriesQuery = Category::query();
+        $categoriesQuery = Category::with('children'); // Load children (nếu có)
 
         if ($request->has('deleted') && $request->deleted == 1) {
             // Lấy các category đã xóa
@@ -29,13 +29,12 @@ class CategoryController extends Controller
         // Lọc theo keyword (nếu có)
         if ($request->has('keyword') && !empty($request->keyword)) {
             $keyword = $request->keyword;
-        
+
             $categoriesQuery->where(function ($query) use ($keyword) {
                 $query->where('name', 'like', '%' . $keyword . '%')
-                      ->orWhere('keyword', 'like', '%' . $keyword . '%');
+                    ->orWhere('keyword', 'like', '%' . $keyword . '%');
             });
         }
-        
 
         // Lọc theo status (nếu có)
         if ($request->has('status') && !is_null($request->status)) {
@@ -46,32 +45,11 @@ class CategoryController extends Controller
         $order = $request->get('order', 'desc'); // Giá trị mặc định là desc
         $categoriesQuery->orderBy('created_at', $order);
 
-        // Phân trang với per_page và page
-        $perPage = (int) $request->get('per_page', 10); // Số lượng bản ghi mỗi trang, mặc định 10
-        $page = (int) $request->get('page', 1); //
-
         // Lấy danh sách đã phân trang
-        $categories = $categoriesQuery->get();
+        $perPage = (int) $request->get('per_page', 10); // Số lượng bản ghi mỗi trang, mặc định 10
+        $categories = $categoriesQuery->paginate($perPage);
 
-        // Tổng số lượng bản ghi
-        $total = $categories->count();
-    
-        // Phân trang thủ công
-        $paginatedCategories = $categories->forPage($page, $perPage)->values();
-    
-        // Tạo đối tượng LengthAwarePaginator
-        $pagination = new LengthAwarePaginator(
-            $paginatedCategories, // Dữ liệu cho trang hiện tại
-            $total,               // Tổng số bản ghi
-            $perPage,             // Số lượng bản ghi mỗi trang
-            $page,                // Trang hiện tại
-            [
-                'path' => LengthAwarePaginator::resolveCurrentPath(), // Đường dẫn chính
-                'query' => $request->query() // Lấy tất cả query parameters hiện tại
-            ]
-        );
-        $categories=$pagination->toArray();
-        // Trả về kết quả với đầy đủ thông tin filter, order và phân trang
+        // Trả về danh sách phân trang với children
         return formatResponse(
             STATUS_OK,
             $categories,
@@ -79,6 +57,7 @@ class CategoryController extends Controller
             __('messages.category_fetch_success')
         );
     }
+
 
 
 
