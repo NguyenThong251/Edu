@@ -94,13 +94,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
             Route::get('list-course-levels-admin', [CourseLevelController::class, 'getListAdmin'])->name('courselevels.getListAdmin');
             Route::post('course-levels', [CourseLevelController::class, 'store'])->name('courselevels.store');
-            Route::post('course-levels/{id}', [CourseLevelController::class, 'update'])->name('courselevels.update');
+            Route::put('course-levels/{id}', [CourseLevelController::class, 'update'])->name('courselevels.update');
             Route::get('course-levels/restore/{id}', [CourseLevelController::class, 'restore'])->name('courselevels.restore');
             Route::delete('course-levels/{id}', [CourseLevelController::class, 'destroy'])->name('courselevels.destroy');
 
             Route::get('list-languages-admin', [LanguageController::class, 'getListAdmin'])->name('languages.getListAdmin');
             Route::post('languages', [LanguageController::class, 'store'])->name('languages.store');
-            Route::post('languages/{id}', [LanguageController::class, 'update'])->name('languages.update');
+            Route::put('languages/{id}', [LanguageController::class, 'update'])->name('languages.update');
             Route::get('languages/restore/{id}', [LanguageController::class, 'restore'])->name('languages.restore');
             Route::delete('languages/{id}', [LanguageController::class, 'destroy'])->name('languages.destroy');
 
