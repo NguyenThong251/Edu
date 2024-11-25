@@ -215,5 +215,5 @@ return [
     'address_update' => 'Địa chỉ phải là chuỗi.',
     'contactInfo_update' => 'Thông tin liên lạc phải là mảng.',
 
-
+    'user_has_blocked' => 'Tài khoản đã bị chặn!'
 ];
