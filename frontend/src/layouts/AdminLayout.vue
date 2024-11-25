@@ -5,14 +5,14 @@ import HeaderArea from '@/components/admin/Header/HeaderArea.vue';
 </script>
 <template>
   <!-- ========= Bắt đầu trang============ -->
-  <div class="container-admin">
+  <div class="flex flex-col h-[100vh]">
     <div class="p-3 flex gap-3 w-full h-full">
       <!-- ========= Bắt đầu Siderbar============ -->
       <SiderArea />
       <!-- ========= Kết thúc Siderbar============ -->
 
       <!-- ========= Nội dung các trang ============ -->
-      <main class="main-admin text-black dark:text-white">
+      <main class="overflow-y-auto border-1 shadow-xl w-full scroll-hidden text-black dark:text-white">
         <HeaderArea />
         <router-view></router-view>
       </main>
@@ -63,6 +63,18 @@ import HeaderArea from '@/components/admin/Header/HeaderArea.vue';
 .bg-meta-1 {
   --tw-bg-opacity: 1;
   background-color: rgb(220 53 69 / var(--tw-bg-opacity));
+}
+
+.scroll-hidden {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  display: none;
+  /* Safari and Chrome */
 }
 
 .before-tag::before {

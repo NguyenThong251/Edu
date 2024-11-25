@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white dark:bg-dark-sidebar rounded-lg dark:border group hover:duration-700">
+  <div class="bg-white  dark:bg-dark-sidebar rounded-lg dark:border group hover:duration-700">
     <div class="p-3 h-full flex flex-wrap justify-center">
       <div class="w-full relative">
         <img :src="imageUrl" class="w-full  h-[170px] object-cover rounded-t-md" alt="">

@@ -25,8 +25,8 @@
             <el-table-column class="" prop="status" label="Trạng thái" />
             <el-table-column label="Hành động">
                 <template #default="{ row }">
-                    <el-button type="text" @click="openUpdateDrawer(row)">Sửa</el-button>
-                    <el-button type="text" @click="handleDelete(row.id)">Xóa</el-button>
+                    <el-button @click="openUpdateDrawer(row)">Sửa</el-button>
+                    <el-button @click="handleDelete(row.id)">Xóa</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -73,7 +73,7 @@
                 <el-table-column prop="name" label="Tên" />
                 <el-table-column label="Hành động">
                     <template #default="{ row }">
-                        <el-button type="text" @click="restoreCourseLevel(row.id)">Khôi phục</el-button>
+                        <el-button @click="restoreCourseLevel(row.id)">Khôi phục</el-button>
                     </template>
                 </el-table-column>
             </el-table>

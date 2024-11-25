@@ -4,10 +4,12 @@ import logoMinimal from '@/assets/images/minimal-logo.svg'
 import SidebarItems from './SidebarItems.vue';
 import { computed, ref } from 'vue';
 import { WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon, TicketIcon } from '@heroicons/vue/24/outline';
-import { Cog8ToothIcon, UserCircleIcon } from '@heroicons/vue/20/solid';
+import { Cog8ToothIcon, InboxStackIcon, LanguageIcon, UserCircleIcon } from '@heroicons/vue/20/solid';
 import type { MenuGroup } from '@/interfaces/admin.interface';
 
 import { useSidebarStore } from '@/store/sidebar';
+import { useAuthStore } from '@/store/auth';
+import { storeToRefs } from 'pinia';
 
 const sidebarStore = useSidebarStore();
 const currentLogo = computed(() => {
@@ -16,10 +18,11 @@ const currentLogo = computed(() => {
 const sidebarClass = computed(() => {
   return sidebarStore.isSidebarOpen ? 'w-[90px]' : 'w-[290px]';
 });
-
+const authStore = useAuthStore()
+const { state } = storeToRefs(authStore)
+const userRole = state.value.user?.role
 const menuGroups = ref<MenuGroup[]>([
   {
-    name: 'MENU',
     menuItems: [
       {
         icon: HomeIcon,
@@ -120,97 +123,136 @@ const menuGroups = ref<MenuGroup[]>([
         icon: ChatBubbleLeftRightIcon,
         label: 'Tin nhắn',
         route: '/admin/message',
-      },
-      {
-        icon: EnvelopeIcon,
-        label: 'Tin tức',
-        route: '/admin/newletter',
-      },
+      }
+      ,
       {
         icon: TicketIcon,
         label: 'Mã giảm giá',
         route: '/admin/voucher',
-      },
-      // {
-      //   icon: DocumentTextIcon,
-      //   label: 'Bài viết',
-      //   route: '#',
-      //   children: [
-      //     {
-      //       label: 'Quản lý bài viết',
-      //       route: '/admin/blog/manager-blog'
-      //     },
-      //     {
-      //       label: 'Bài viết đang xử lý',
-      //       route: '/admin/blog/blog-pedding'
-      //     },
-      //     {
-      //       label: 'Doanh mục bài viết',
-      //       route: '/admin/blog/blog-category'
-      //     },
-      //     {
-      //       label: 'Cài đặt bài viết',
-      //       route: '/admin/blog/blog-settings'
-      //     },
-      //   ]
-      // },
-    ]
-  },
-  {
-    name: 'cài đặt',
-    menuItems: [
+      }
+      ,
       {
-        icon: Cog8ToothIcon,
-        label: 'Cài đặt hệ thống',
-        route: '#',
-        children: [
-          {
-            label: 'Cài đặt hệ thống',
-            route: '/admin/system-settings'
-          },
-          {
-            label: 'Cài đặt website',
-            route: '/admin/system-settings/website-settings'
-          },
-          {
-            label: 'Cài đặt thanh toán',
-            route: '/admin/system-settings/payment-settings'
-          },
-          {
-            label: 'Cài đặt ngôn ngữ',
-            route: '/admin/system-settings/language-settings'
-          },
-          {
-            label: 'Cài đặt SMTP',
-            route: '/admin/system-settings/smtp-settings'
-          },
-          {
-            label: 'Cài đặt chứng nhận',
-            route: '/admin/system-settings/certificate-settings'
-          },
-        ]
-      },
+        icon: LanguageIcon,
+        label: 'Ngôn ngữ',
+        route: '/admin/language',
+      }
+      ,
+      {
+        icon: InboxStackIcon,
+        label: 'Cấp độ',
+        route: '/admin/level',
+      }
+      ,
       {
         icon: UserCircleIcon,
         label: 'Thông tin cá nhân',
         route: '/admin/profile-settings'
       },
     ]
+  }
+
+])
+const menuGroupsTeacher = ref<MenuGroup[]>([
+  {
+    menuItems: [
+      {
+        icon: HomeIcon,
+        label: 'Bảng điều khiển',
+        route: '/teacher/dashboard'
+      },
+      {
+        icon: SquaresPlusIcon,
+        label: 'Danh mục',
+        route: '/teacher/category'
+      },
+      {
+        icon: ArchiveBoxIcon,
+        label: 'Khoá học',
+        route: '#',
+        children: [
+          {
+            label: 'Quản lý khoá học',
+            route: '/teacher/course/manager-course'
+          },
+          {
+            label: 'Thêm khoá học mới',
+            route: '/teacher/course/add-course'
+          },
+          {
+            label: 'Phiếu giảm giá',
+            route: '/teacher/course/manager-coupon'
+          },
+        ]
+      },
+      // {
+      //   icon: CubeIcon,
+      //   label: 'Quản lý đơn hàng',
+      //   route: '#',
+      //   children: [
+      //     {
+      //       label: 'Khoá học đã bán',
+      //       route: '/teacher/order/course-sold'
+      //     },
+      //     {
+      //       label: 'Lịch sử mua hàng',
+      //       route: '/teacher/order/history'
+      //     },
+      //   ]
+      // },
+      // {
+      //   icon: CreditCardIcon,
+      //   label: 'Thanh toán',
+      //   route: '#',
+      //   children: [
+      //     {
+      //       label: 'Rút tiền',
+      //       route: '/teacher/payment/teacher-revenue'
+      //     },
+      //     {
+      //       label: 'Cài đặt',
+      //       route: '/teacher/payment/history'
+      //     },
+      //   ]
+      // },
+      {
+        icon: UserGroupIcon,
+        label: 'Quản lí học viên',
+        route: '/teacher/student',
+      },
+      {
+        icon: ChatBubbleLeftRightIcon,
+        label: 'Tin nhắn',
+        route: '/teacher/message',
+      }
+
+    ]
+  },
+  {
+    menuItems: [
+      {
+        icon: UserCircleIcon,
+        label: 'Thông tin cá nhân',
+        route: '/teacher/profile-settings'
+      },
+    ]
 
   }
 ])
+const selectedMenuGroups = computed(() => {
+  return userRole === 'admin' ? menuGroups.value : menuGroupsTeacher.value;
+});
 </script>
 
 <template>
-  <aside class="shadow-xl z-[20]" :class="{
+  <aside class="sticky top-0 z-[20]" :class="{
     'ssm:hidden': !sidebarStore.isSidebarOpen,
   }">
     <div
-      class="w-[290px] h-full relative dark:bg-dark-sidebar bg-primary-sidebar rounded-[16px] shadow-sidebar transform duration-100"
+      class=" w-[250px] h-[97vh] max-h-screen relative dark:bg-dark-sidebar bg-primary-sidebar rounded-[16px] shadow-sidebar transform duration-100 overflow-y-auto scroll-hidden"
       :class="sidebarClass">
       <!-- SIDEBAR HEADER -->
-      <RouterLink to="/admin">
-        <img class="pl-5 pt-4 " :class="{ 'p-4': currentLogo == logoMinimal }" :src="currentLogo" alt="">
+      <RouterLink class="flex items-center justify-center" to="/admin">
+        <img class="pt-4 w-36  " :class="{ 'p-4': currentLogo == logoMinimal }" :src="currentLogo" alt="">
         <!-- <WindowIcon 
             class="hidden sm:block w-6 h-6 dark:hover:text-gray-200 text-gray-400"
         /> -->
@@ -222,10 +264,10 @@ const menuGroups = ref<MenuGroup[]>([
         :class="{ 'p-4': sidebarStore.isSidebarOpen, 'p-6': !sidebarStore.isSidebarOpen }">
         <!-- Sidebar Menu -->
         <nav>
-          <template v-for="menuGroup in menuGroups" :key="menuGroup.name">
+          <template v-for="menuGroup in selectedMenuGroups" :key="menuGroup.name">
             <div>
-              <h3 class="title text-base pl-4 pb-3 uppercase pt-6" :class="{ 'opacity-0': sidebarStore.isSidebarOpen }">
-                {{ menuGroup.name }}</h3>
+              <!-- <h3 class="title text-base pl-4 pb-3 uppercase pt-6" :class="{ 'opacity-0': sidebarStore.isSidebarOpen }">
+                {{ menuGroup.name }}</h3> -->
               <ul class="gap-1 flex flex-col">
                 <SidebarItems v-for="(menuItem, index) in menuGroup.menuItems" :item="menuItem" :key="index"
                   :index="index" />
@@ -234,10 +276,24 @@ const menuGroups = ref<MenuGroup[]>([
           </template>
         </nav>
         <!-- End Sidebar Menu -->
-        <div class="pt-7 pb-5 text-center text-sm text-zinc-400">
+        <div class="pt-7 text-center text-sm text-zinc-400">
           Create by Edunity 2024
         </div>
       </div>
     </div>
+
   </aside>
 </template>
+<style scoped>
+.scroll-hidden {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  display: none;
+  /* Safari and Chrome */
+}
+</style>

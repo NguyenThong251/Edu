@@ -1,16 +1,3 @@
-<script setup lang="ts">
-// import '@/assets/css/style.css'
-import { WindowIcon, ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/outline';
-import DarkModeSwitcher from '@/components/admin/Header/DarkModeSwitcher.vue';
-import DropdownMessage from '@/components/admin/Header/DropdownMessage.vue';
-import DropdownNotification from '@/components/admin/Header/DropdownNotification.vue';
-import DropdownUser from '@/components/admin/Header/DropdownUser.vue';
-
-import { useSidebarStore } from '@/store/sidebar';
-
-const sidebarStore = useSidebarStore();
-</script>
-
 <template>
   <header
     class=" bg-white dark:bg-dark-sidebar rounded-tl-[16px] text-black py-3 px-5 border-b shadow-bottom border-gray-400">
@@ -29,25 +16,32 @@ const sidebarStore = useSidebarStore();
       </div>
       <div class="flex items-center">
         <ul class="function flex gap-5 items-center">
-          <li>
-            <!-- Dark Mode Toggler -->
-            <DarkModeSwitcher />
-            <!-- Dark Mode Toggler -->
-          </li>
-          <!-- Notification Menu Area -->
+          <DarkModeSwitcher />
           <DropdownNotification />
-          <!-- Notification Menu Area -->
 
-          <!-- Message Menu Area -->
-          <DropdownMessage />
-          <!-- Message Menu Area -->
+          <div class="" v-if="state.token">
+            <UserProfile :dataUser="state.user" />
+          </div>
         </ul>
         <!-- User Area -->
-        <DropdownUser />
         <!-- User Area -->
       </div>
     </div>
   </header>
 </template>
+<script setup lang="ts">
+// import '@/assets/css/style.css'
+import { WindowIcon, ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/outline';
+import DarkModeSwitcher from '@/components/admin/Header/DarkModeSwitcher.vue';
+import DropdownMessage from '@/components/admin/Header/DropdownMessage.vue';
+import DropdownNotification from '@/components/admin/Header/DropdownNotification.vue';
+import DropdownUser from '@/components/admin/Header/DropdownUser.vue';
 
-<style scoped></style>
+import { useSidebarStore } from '@/store/sidebar';
+import { storeToRefs } from 'pinia';
+import { useAuthStore } from '@/store/auth';
+import UserProfile from '@/components/user/UserProfile.vue';
+const authStore = useAuthStore()
+const { state } = storeToRefs(authStore)
+const sidebarStore = useSidebarStore();
+</script>

@@ -25,16 +25,16 @@ const handleItemClick = () => {
 </script>
 <template>
   <li class="relative">
-    <RouterLink :to="props.item.route" class="gap-2 flex  hover:bg-slate-500 p-3 rounded-[5px] items-center relative"
-      :class="{
+    <RouterLink :to="props.item.route || '/'"
+      class="gap-2 flex  hover:bg-slate-500 py-2 px-3 rounded-[5px] items-center relative" :class="{
         'bg-slate-500': sidebarStore.page === item.label,
         'justify-center': sidebarStore.isSidebarOpen
       }" @click.prevent="handleItemClick">
-      <component :is="props.item.icon" class="w-6 h-6" :class="{
+      <component :is="props.item.icon" class="w-4 h-4" :class="{
         'w-7 h-7': sidebarStore.isSidebarOpen
       }" />
       <span :class="{ 'hidden': sidebarStore.isSidebarOpen }">{{ props.item.label }}</span>
-      <ChevronRightIcon v-if="props.item.children" class="h-5 w-5 right-2 absolute"
+      <ChevronRightIcon v-if="props.item.children" class="h-4 w-4 right-2 absolute"
         :class="{ 'rotate-90': sidebarStore.page === item.label, 'hidden': sidebarStore.isSidebarOpen }" />
     </RouterLink>
     <!-- Dropdown Menu Start -->

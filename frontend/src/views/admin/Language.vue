@@ -25,8 +25,8 @@
             <el-table-column prop="status" label="Trạng thái" />
             <el-table-column label="Hành động">
                 <template #default="{ row }">
-                    <el-button type="text" @click="openUpdateDrawer(row)">Sửa</el-button>
-                    <el-button type="text" @click="handleDelete(row.id)">Xóa</el-button>
+                    <el-button @click="openUpdateDrawer(row)">Sửa</el-button>
+                    <el-button @click="handleDelete(row.id)">Xóa</el-button>
                 </template>
             </el-table-column>
         </el-table>

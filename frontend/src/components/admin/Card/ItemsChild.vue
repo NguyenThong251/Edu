@@ -2,14 +2,14 @@
   <div
     class="hoverItem hover:bg-bg-primary dark:hover:text-black rounded-sm p-1 flex justify-between items-center hover:duration-300">
     <div class="flex gap-2 items-center">
-      <FontAwesomeIcon :icon="mappedIconChild" class="w-4" />
+      <!-- <FontAwesomeIcon :icon="mappedIconChild ? mappedIconChild : 'fa-question-circle'" class="w-4" /> -->
       <div class="text-sm">{{ child.name }}</div>
     </div>
     <div class="flex gap-2">
       <router-link @click="editCategory(child)" class=" overItemChild" to="#">
         <PencilSquareIcon class="w-4" />
       </router-link>
-      <router-link @click="handleDeleteCategory(child.id)" class=" overItemChild" to="#">
+      <router-link @click="handleDeleteCategory(child.id!)" class=" overItemChild" to="#">
         <TrashIcon class="w-4" />
       </router-link>
     </div>
