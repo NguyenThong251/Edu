@@ -15,44 +15,66 @@ class CategoryController extends Controller
 {
     public function getListAdmin(Request $request)
     {
-        // Query cơ bản lấy danh sách Category
-        $categoriesQuery = Category::with('children'); // Load children (nếu có)
+        // Query cơ bản
+        $categoriesQuery = Category::with('children');
 
+        // Lọc theo trạng thái xóa mềm
         if ($request->has('deleted') && $request->deleted == 1) {
-            // Lấy các category đã xóa
             $categoriesQuery->onlyTrashed();
-        } else {
-            // Chỉ lấy các category chưa xóa (mặc định)
-            $categoriesQuery->whereNull('deleted_at');
         }
 
-        // Lọc theo keyword (nếu có)
+        // Lọc theo từ khóa
         if ($request->has('keyword') && !empty($request->keyword)) {
             $keyword = $request->keyword;
-
             $categoriesQuery->where(function ($query) use ($keyword) {
-                $query->where('name', 'like', '%' . $keyword . '%')
-                    ->orWhere('keyword', 'like', '%' . $keyword . '%');
+                $query->where('name', 'like', "%$keyword%")
+                    ->orWhere('keyword', 'like', "%$keyword%");
             });
         }
 
-        // Lọc theo status (nếu có)
+        // Lọc theo trạng thái hoạt động
         if ($request->has('status') && !is_null($request->status)) {
             $categoriesQuery->where('status', $request->status);
         }
 
-        // Sắp xếp theo `created_at` (mặc định là `desc`)
-        $order = $request->get('order', 'desc'); // Giá trị mặc định là desc
-        $categoriesQuery->orderBy('created_at', $order);
+        // Lấy danh sách tất cả danh mục
+        $allCategories = $categoriesQuery->get();
 
-        // Lấy danh sách đã phân trang
-        $perPage = (int) $request->get('per_page', 10); // Số lượng bản ghi mỗi trang, mặc định 10
-        $categories = $categoriesQuery->paginate($perPage);
+        // Thu thập ID của danh mục con
+        $childCategoryIds = collect();
+        foreach ($allCategories as $category) {
+            if ($category->children) {
+                $childCategoryIds = $childCategoryIds->merge($category->children->pluck('id'));
+            }
+        }
 
-        // Trả về danh sách phân trang với children
+        // Loại bỏ các danh mục con khỏi danh sách chính
+        $filteredCategories = $allCategories->reject(function ($category) use ($childCategoryIds) {
+            return $childCategoryIds->contains($category->id);
+        });
+
+        // Phân trang danh sách đã lọc
+        $perPage = (int) $request->get('per_page', 10);
+        $currentPage = (int) $request->get('page', 1);
+        $total = $filteredCategories->count();
+
+        $paginatedCategories = $filteredCategories
+            ->slice(($currentPage - 1) * $perPage, $perPage)
+            ->values();
+
+        // Tạo dữ liệu phân trang
+        $paginated = [
+            'data' => $paginatedCategories,
+            'current_page' => $currentPage,
+            'last_page' => (int) ceil($total / $perPage),
+            'per_page' => $perPage,
+            'total' => $total,
+        ];
+
+        // Trả về kết quả
         return formatResponse(
             STATUS_OK,
-            $categories,
+            $paginated,
             '',
             __('messages.category_fetch_success')
         );
