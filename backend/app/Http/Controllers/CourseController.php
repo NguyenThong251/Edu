@@ -29,7 +29,7 @@ class CourseController extends Controller
     public function getListAdmin(Request $request)
     {
         // Query để lấy danh sách Course, không kiểm tra trạng thái
-        $coursesQuery = Course::with(['language', 'level', 'category']);
+        $coursesQuery = Course::with(['language', 'level', 'category', 'sections.lectures']);
 
         // Lấy số lượng limit và thông tin phân trang từ request
         $limit = $request->get('limit', null);
@@ -487,6 +487,19 @@ class CourseController extends Controller
 
             return formatResponse(STATUS_OK, $course, '', __('messages.course_update_success'));
     }
+    public function showOne($id) {
+    $user = auth()->user(); // Lấy user hiện tại từ auth
+    $course = Course::where('id', $id) // Lọc theo id khóa học
+        ->where('created_by', $user->id) // Lọc theo user đã tạo khóa học
+        ->with(['sections' => function ($query) {
+            $query->orderBy('sort', 'desc'); // Sắp xếp sections theo trường 'sort' giảm dần
+        }, 'sections.lectures'])
+        ->first(); // Lấy bản ghi đầu tiên
+    if (!$course) {
+        return formatResponse(STATUS_FAIL, '', '', __('messages.course_not_found'));
+    }
+    return formatResponse(STATUS_OK, $course, '', __('messages.course_found'));
+}
 
     // Xóa mềm khóa học
 

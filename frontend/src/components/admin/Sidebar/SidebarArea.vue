@@ -6,7 +6,6 @@ import { computed, ref } from 'vue';
 import { WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon, TicketIcon } from '@heroicons/vue/24/outline';
 import { Cog8ToothIcon, InboxStackIcon, LanguageIcon, UserCircleIcon } from '@heroicons/vue/20/solid';
 import type { MenuGroup } from '@/interfaces/admin.interface';
-
 import { useSidebarStore } from '@/store/sidebar';
 import { useAuthStore } from '@/store/auth';
 import { storeToRefs } from 'pinia';
@@ -27,7 +26,7 @@ const menuGroups = ref<MenuGroup[]>([
       {
         icon: HomeIcon,
         label: 'Bảng điều khiển',
-        route: '/admin/dashboard'
+        route: '/admin/dashboard',
       },
       {
         icon: SquaresPlusIcon,

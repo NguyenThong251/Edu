@@ -165,6 +165,19 @@ return [
     'voucher_usage_limit_reached' => 'Voucher usage limit reached.',
     'voucher_apply_success' => 'Voucher applied successfully.',
 
+    // SECTIONS
+    'sections_created_success' => 'sections created successfully.',
+    'sections_code_already_exists' => 'sections code already exists.',
+    'sections_creation_failed' => 'sections creation failed.',
+    'sections_not_found' => 'sections not found.',
+    'sections_updated_success' => 'sections updated successfully.',
+    'sections_deleted_success' => 'sections deleted successfully.',
+    'sections_restore_success' => 'sections restored successfully.',
+    'sections_has_expired' => 'sections has expired.',
+    'sections_usage_limit_reached' => 'sections usage limit reached.',
+    'sections_apply_success' => 'sections applied successfully.',
+    'section_not_found' => 'Section not found.',
+
     // ORDER
     'order_created_success' => 'Order created successfully..',
     'order_create_failed' => 'Failed to create order.',

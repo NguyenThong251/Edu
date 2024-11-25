@@ -27,16 +27,25 @@ class SectionSeeder extends Seeder
             return;
         }
         $userIds = User::pluck('id')->toArray();
-        // Tạo 100 section cho các khóa học
-        for ($i = 0; $i < 100; $i++) {
-            Section::create([
-                'course_id' => $faker->randomElement($courseIds), // Chọn ngẫu nhiên course_id từ mảng courseIds
-                'name' => $faker->sentence(2),                    // Tên section với 2 từ
-                'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
-                'deleted_by' => null,                              // Giá trị mặc định là null
-                'created_by' => $faker->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
-                'updated_by' => $faker->optional()->randomElement($userIds), // Người cập nhật ngẫu nhiên hoặc null
-            ]);
+         // Tạo 10 Section cho mỗi khóa học
+         foreach ($courseIds as $courseId) {
+            // Khởi tạo biến đếm cho `sort`
+            $sortOrder = 1;
+
+            // Tạo 10 section cho mỗi khóa học (bạn có thể thay đổi số lượng này)
+            for ($i = 0; $i < 10; $i++) {
+                Section::create([
+                    'course_id' => $courseId,                         // Gán `course_id` cho mỗi Section
+                    'name' => $faker->sentence(2),                    // Tên section với 2 từ
+                    'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
+                    'sort' => $sortOrder++,                            // Số thứ tự tăng dần
+                    'deleted_by' => null,                              // Giá trị mặc định là null
+                    'created_by' => $faker->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
+                    'updated_by' => $faker->optional()->randomElement($userIds), // Người cập nhật ngẫu nhiên hoặc null
+                ]);
+            }
         }
+        // Tạo 100 section cho các khóa học
+        
     }
 }

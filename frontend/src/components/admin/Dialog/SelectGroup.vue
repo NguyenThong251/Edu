@@ -1,13 +1,24 @@
 <script setup lang="ts">
-import type { SelectGroupProps, TBaseInputProps } from '@/interfaces/admin.interface';
-import { defineProps, defineEmits ,ref} from 'vue';
-const props = defineProps<SelectGroupProps>();
-const value = ref(''); 
-const emit = defineEmits(['update:modelValue']); // Phát sự kiện để cập nhật dữ liệu
+import { ref, watch, defineProps, defineEmits } from 'vue';
+import type { SelectGroupProps } from '@/interfaces/admin.interface';
 
+// Nhận các props từ component cha
+const props = defineProps<SelectGroupProps>();
+const emit = defineEmits(['update:modelValue']);
+
+// Khởi tạo giá trị 'value' trong component này (SelectGroup)
+const value = ref(props.modelValue);  // Truyền giá trị vào từ parent component thông qua 'modelValue'
+
+// Đồng bộ giá trị của 'value' khi 'category_id' thay đổi trong parent
+watch(() => props.modelValue, (newValue) => {
+  value.value = newValue;  // Cập nhật giá trị 'value' trong SelectGroup khi modelValue thay đổi
+});
+
+// Phát sự kiện khi giá trị thay đổi
 const handleChange = (selectedValue: string | number) => {
-  emit('update:modelValue', selectedValue); // Phát sự kiện khi dữ liệu thay đổi
+  emit('update:modelValue', selectedValue);  // Gửi giá trị thay đổi về parent
 };
+
 </script>
 <template>
   <div>
@@ -31,11 +42,11 @@ const handleChange = (selectedValue: string | number) => {
             </template>
               <el-option
                 v-for="item in props.optionsData"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
               >
-              <span>{{ item.label }}</span>
+              <span>{{ item.name }}</span>
               </el-option>
           </el-select>
         </div>

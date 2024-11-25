@@ -2,7 +2,7 @@
 import { defineProps } from 'vue';
 
 const props = defineProps<{
-  link?: string,
+  link?: string | undefined,
   title?: string,
   icon?: any
 }>();

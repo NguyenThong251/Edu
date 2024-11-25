@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('course_id');
             $table->string('name');
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('sort')->nullable();
             $table->softDeletes();
             $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
