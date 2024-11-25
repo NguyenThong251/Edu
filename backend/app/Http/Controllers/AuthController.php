@@ -273,6 +273,9 @@ class AuthController extends Controller
         if (!$user->email_verified) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.email_not_verified'));
         }
+        if ($user->status != USER::USER_ACTIVE) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.user_has_blocked'));
+        }
         $credentials = request(['email', 'password']);
         if (!$token = auth('api')->attempt($credentials)) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.password_incorrect'));
