@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\LectureController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\SectionController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -115,9 +117,27 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
             Route::post('courses', [CourseController::class, 'store'])->name('courses.store');
-            Route::post('courses/{id}', [CourseController::class, 'update'])->name('courses.update');
+            Route::get('courses/{id}', [CourseController::class, 'showOne'])->name('courses.showOne');
+            Route::put('courses/{id}', [CourseController::class, 'update'])->name('courses.update');
             Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
             Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
+
+            // // Route Chương
+            Route::controller(SectionController::class)->group(function () {
+                Route::get('section/{id}', 'showOne')->name('courses.showOne');
+                Route::post('section', 'store')->name('section.store');
+                Route::post('section/{id}', 'update')->name('section.update');
+                Route::delete('section/{id}', 'delete')->name('section.delete');
+                Route::post('section/sort', 'sort')->name('section.sort');
+            });
+
+            // // Lesson route
+            // Route::controller(LectureController::class)->group(function () {
+            //     Route::post('lesson/store', 'store')->name('lesson.store');
+            //     Route::post('lesson/update', 'update')->name('lesson.update');
+            //     Route::get('lesson/delete/{id}', 'delete')->name('lesson.delete');
+            //     Route::post('lesson/sort', 'sort')->name('lesson.sort');
+            // });
         });
 
         // Routes cho student

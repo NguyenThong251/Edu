@@ -1,10 +1,9 @@
 import { ref } from 'vue'
-import axios from 'axios'
-import Cookies from 'js-cookie'
 import type { TListCategories } from '@/interfaces/category.interface'
+import api from '@/services/axiosConfig'
 // import { myToken } from "@/interfaces/token";
 export default function useFetchCategories() {
-  const categories = ref<TListCategories[]>([])
+  const categories = ref([])
   const loading = ref<boolean>(true)
   const error = ref<string | null>(null)
 
@@ -17,9 +16,9 @@ export default function useFetchCategories() {
   // Hàm lấy danh sách danh mục
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/categories')
+      const response = await api.get('/categories')
       categories.value = response.data.data.data
-      console.log(response.data.data.data)
+      console.log('đây là ds danh mục:',response.data.data.data);
     } catch (error) {
       // error.value = 'Kết nối đến category không thành công nha'
       console.error(error)
@@ -31,15 +30,9 @@ export default function useFetchCategories() {
   // Hàm cập nhật status cho danh mục
   const updateStatus = async (categoryId: number, newStatus: string | undefined) => {
     try {
-      const response = await axios.patch(
-        `http://localhost:8000/api/auth/categories/${categoryId}/status`,
+      const response = await api.patch(
+        `/auth/categories/${categoryId}/status`,
         { status: newStatus }
-        // {
-        //   headers: {
-        //     Authorization: `Bearer ${userToken.value}`,
-        //     'Content-Type': 'application/json'
-        //   }
-        // }
       )
 
       if (response.status === 200) {

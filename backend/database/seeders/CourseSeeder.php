@@ -1,7 +1,7 @@
 <?php
 
 namespace Database\Seeders;
-
+use Illuminate\Support\Str;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
@@ -86,6 +86,7 @@ class CourseSeeder extends Seeder
         $faker = Faker::create();
 
         // Lấy tất cả ID từ bảng categories và course_levels
+        $userIds = User::pluck('id')->toArray();
         $categoryIds = Category::pluck('id')->toArray();
         $languageIds = Language::pluck('id')->toArray();
         $levelIds = CourseLevel::pluck('id')->toArray();
@@ -95,20 +96,37 @@ class CourseSeeder extends Seeder
             $this->command->info('Không có dữ liệu trong bảng categories hoặc course_levels hoặc language.');
             return;
         }
-        $userIds = User::pluck('id')->toArray();
+
+        
+        
         // Tạo 50 khóa học
         for ($i = 0; $i < 50; $i++) {
+            // Generate the price
+            $price = round($faker->numberBetween(1000000, 10000000) / 100000) * 100000;
+            // Randomly select sale type
+            $type_sale = $faker->randomElement(['percent', 'price']);
+    
+            // Calculate sale_value based on type_sale
+            if ($type_sale === 'percent') {
+                $sale_value = $faker->randomFloat(0, 0, 89);  // Random percentage between 0 and 89
+            } else {
+                // For price-based sale, ensure sale_value is less than the price
+                $sale_value = round($faker->numberBetween(500000, 5000000) / 50000) * 50000; 
+            }
+            $title = $faker->sentence(3);
+            $slug = Str::slug($title, '-');
             Course::create([
+                'slug' => $slug, // Tạo slug dựa vào title
                 'category_id' => $faker->randomElement($categoryIds), // Chọn ngẫu nhiên category_id từ mảng categoryIds
                 'level_id' => $faker->randomElement($levelIds), 
                 'language_id' => $faker->randomElement($languageIds),       // Chọn ngẫu nhiên level_id từ mảng levelIds
-                'title' => $faker->sentence(3),                      // Tạo tiêu đề với 3 từ
+                'title' => $title,                      // Tạo tiêu đề với 3 từ
                 'description' => $faker->paragraph(),                // Mô tả ngẫu nhiên
                 'short_description' => $faker->sentence(6),          // Mô tả ngắn ngẫu nhiên
                 'thumbnail' => $faker->randomElement($this->thumbnailUrls), // URL hình ảnh ngẫu nhiên
-                'price' => round($faker->numberBetween(1000000, 10000000) / 100000) * 100000,        // Giá ngẫu nhiên từ 100 đến 1000
-                'type_sale' => $faker->randomElement(['percent', 'price']), // Loại giảm giá ngẫu nhiên
-                'sale_value' => $faker->randomFloat(0, 0, 89),      // Giá trị giảm giá ngẫu nhiên
+                'price' => $price,        // Giá ngẫu nhiên từ 100 đến 1000
+                'type_sale' => $type_sale, // Loại giảm giá ngẫu nhiên
+                'sale_value' => $sale_value,      // Giá trị giảm giá ngẫu nhiên
                 'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
                 'deleted_by' => null,                                // Giá trị mặc định là null
                 'created_by' => $faker->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user

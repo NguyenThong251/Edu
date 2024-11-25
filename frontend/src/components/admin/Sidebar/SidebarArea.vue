@@ -12,6 +12,8 @@ import { storeToRefs } from 'pinia';
 const authStore = useAuthStore()
 const { state } = storeToRefs(authStore)
 const userRole = state.value.user?.role
+const userId = state.value.user?.id
+
 
 
 const sidebarStore = useSidebarStore();
@@ -315,16 +317,32 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
         :class="{ 'p-4': sidebarStore.isSidebarOpen, 'p-6': !sidebarStore.isSidebarOpen }">
         <!-- Sidebar Menu -->
         <nav>
-          <template v-for="menuGroup in menuGroups" :key="menuGroup.name">
-            <div>
-              <h3 class="title text-base pl-4 pb-3 uppercase pt-6" :class="{ 'opacity-0': sidebarStore.isSidebarOpen }">
-                {{ menuGroup.name }}</h3>
-              <ul class="gap-1 flex flex-col">
-                <SidebarItems v-for="(menuItem, index) in menuGroup.menuItems" :item="menuItem" :key="index"
-                  :index="index" />
-              </ul>
-            </div>
+          <template  v-if="userRole === 'admin'">
+            <template v-for="menuGroup in menuGroups" :key="menuGroup.name">
+              <div>
+                <h3 class="title text-base pl-4 pb-3 uppercase pt-6" :class="{ 'opacity-0': sidebarStore.isSidebarOpen }">
+                  {{ menuGroup.name }}</h3>
+                <ul class="gap-1 flex flex-col">
+                  <SidebarItems v-for="(menuItem, index) in menuGroup.menuItems" :item="menuItem" :key="index"
+                    :index="index" />
+                </ul>
+              </div>
+            </template>
           </template>
+          <!-- MenuTeacher -->
+          <template  v-if="userRole === 'instructor'">
+            <template v-for="menuGroup in menuGroupsTeacher" :key="menuGroup.name">
+              <div>
+                <h3 class="title text-base pl-4 pb-3 uppercase pt-6" :class="{ 'opacity-0': sidebarStore.isSidebarOpen }">
+                  {{ menuGroup.name }}</h3>
+                <ul class="gap-1 flex flex-col">
+                  <SidebarItems v-for="(menuItem, index) in menuGroup.menuItems" :item="menuItem" :key="index"
+                    :index="index" />
+                </ul>
+              </div>
+            </template>
+          </template>
+
         </nav>
         <!-- End Sidebar Menu -->
         <div class="pt-7 pb-5 text-center text-sm text-zinc-400">

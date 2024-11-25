@@ -13,7 +13,7 @@ export interface TCategory {
 // ====== ADMIN CATEGORY ======
 
 export interface TListCategories {
-  id?: number
+  id?: number| string
   image?: string
   icon: any
   name: string

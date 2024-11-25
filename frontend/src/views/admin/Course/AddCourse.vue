@@ -1,37 +1,3 @@
-<script setup lang="ts">
-import ButtonPrimary from '@/components/admin/Button/ButtonPrimary.vue';
-import CkeditorGroup from '@/components/admin/Dialog/CkeditorGroup.vue';
-import DescriptionGroup from '@/components/admin/Dialog/DescriptionGroup.vue';
-import InputGroup from '@/components/admin/Dialog/InputGroup.vue';
-import RadioGroup from '@/components/admin/Dialog/RadioGroup.vue';
-import SelectGroup from '@/components/admin/Dialog/SelectGroup.vue';
-import UploadGroup from '@/components/admin/Dialog/UploadGroup.vue';
-import HeaderNavbar from '@/components/admin/Headernavbar/HeaderNavbar.vue';
-import { useSidebarStore } from '@/store/sidebar';
-import { onMounted, ref } from 'vue'
-import useAddCourse from '@/composables/admin/course/useAddCourse';
-
-import useFetchCategories from '@/composables/admin/category/useCardCategory';
-import type { TListCategories } from '@/interfaces/category.interface';
-import ButtonPrimarySm from '@/components/admin/Button/ButtonPrimarySm.vue';
-import SubmitButtonPrimary from '@/components/admin/Button/SubmitButtonPrimary.vue';
-const { formDataAddCourse, courseLevels, languages, submitForm } = useAddCourse();
-const { categories, fetchCategories } = useFetchCategories();
-const parentCategories = ref([]);
-
-// Lọc danh mục có parent_id là null
-onMounted(async () => {
-  await fetchCategories();
-  parentCategories.value = categories.value.filter((category: TListCategories) => category.parent_id === null);
-});
-const sidebarStore = useSidebarStore()
-
-
-// Biến cho phần "Có phí" và "Miễn phí"
-const paid = ref('1')
-const radio2 = ref('1')
-
-</script>
 <template>
   <div class="p-4">
     <HeaderNavbar
@@ -56,22 +22,24 @@ const radio2 = ref('1')
             v-model="formDataAddCourse.short_description"
             @input="console.log('Mô tả ngắn (không bắt buộc):', formDataAddCourse.short_description)"
             />
-            <!-- <CkeditorGroup
-            label="Mô tả"
-            :modelValue="formDataAddCourse.description"
-            @input="console.log('Mô tả (không bắt buộc):', formDataAddCourse.description)"
-            /> -->
-            <RadioGroup
+            
+            <CkeditorGroup
+              label="Mô tả"
+              v-model="formDataAddCourse.description"
+              @update:modelValue="updateDescription"
+            />
+            
+            <!-- <RadioGroup
             label="Chọn"
             required="*"
             >
             <div class="mb-2 ml-4">
-              <el-radio-group class="grid" v-model="radio2">
-                <el-radio value ="1" >Kích hoạt</el-radio>
-                <el-radio value ="2" >Không kích hoạt</el-radio>
+              <el-radio-group class="grid" v-model="formDataAddCourse.status">
+                <el-radio value ="active" >Kích hoạt</el-radio>
+                <el-radio value ="inactive" >Không kích hoạt</el-radio>
               </el-radio-group>
             </div>
-            </RadioGroup>
+            </RadioGroup> -->
           </div>
           <div class="">
             <SelectGroup
@@ -80,7 +48,6 @@ const radio2 = ref('1')
             label="Danh mục"
             :optionsData="parentCategories.map(category => ({ label: category.name, value: category.id }))"
             v-model="formDataAddCourse.category_id"
-            @change="() => console.log('Danh mục đã chọn:', formDataAddCourse.category_id)"
           />
 
           <SelectGroup
@@ -118,29 +85,35 @@ const radio2 = ref('1')
             inputPlaceHoder="Nhập giá của khoá học"
             v-model="formDataAddCourse.price"
             />
+            <div v-show="checked2" class="relative">
+              <el-tooltip
+                class="box-item"
+                effect="dark"
+                content="Chuyển sang phần trăm"
+                placement="top"
+              >
+                <ArrowPathIcon class="w-5 absolute top-0 left-[200px] bold color-primary"/>
+              </el-tooltip>
               <InputGroup
-            label="Giá giảm (đơn vị vnđ)"
-            required="*"
-            inputPlaceHoder="Nhập giá giảm của khoá học"
-
-            />
-            <div class="mt-1">
-              <el-checkbox v-model="checked2" label="Click nếu khoá học này có sử dụng mã giảm giá" size="large" />
+              label="Giá giảm (đơn vị vnđ)"
+              required="*"
+              inputPlaceHoder="Nhập giá giảm của khoá học"
+              v-model="formDataAddCourse.sale_value"
+              />
             </div>
-            <InputGroup
-            label="Giá khoá học đã giảm (đơn vị vnđ)"
-            required="*"
-            inputPlaceHoder="Nhập giá của khoá học đã giảm"
-            />
+            <div class="mt-1">
+              <el-checkbox v-model="checked2" label="Click nếu khoá học này có giảm giá" size="large" />
+            </div>
           </template>
           <UploadGroup
             label="Tải lên hình ảnh thumbnail"
             inputId="upload"
             :imageUrl = "imageUrl"
-          :handlePreviewImg="handlePreviewImg"
+            :handlePreviewImg="handlePreviewImg"
             />
           </div>
         </div>
+        <!-- <input v-model="formDataAddCourse.created_by" type="hidden" name=""> -->
         <div class="flex justify-end p-10">
           <SubmitButtonPrimary
           title="Xác nhận"
@@ -150,4 +123,53 @@ const radio2 = ref('1')
     </div>
   </div>
 </template>
+<script setup lang="ts">
+import ButtonPrimary from '@/components/admin/Button/ButtonPrimary.vue';
+import CkeditorGroup from '@/components/admin/Dialog/CkeditorGroup.vue';
+import DescriptionGroup from '@/components/admin/Dialog/DescriptionGroup.vue';
+import InputGroup from '@/components/admin/Dialog/InputGroup.vue';
+import RadioGroup from '@/components/admin/Dialog/RadioGroup.vue';
+import SelectGroup from '@/components/admin/Dialog/SelectGroup.vue';
+import UploadGroup from '@/components/admin/Dialog/UploadGroup.vue';
+import HeaderNavbar from '@/components/admin/Headernavbar/HeaderNavbar.vue';
+import { useSidebarStore } from '@/store/sidebar';
+import { onMounted, ref } from 'vue'
+import useCourse from '@/composables/admin/useCourse';
+import useFetchCategories from '@/composables/admin/category/useCardCategory';
+import type { TListCategories } from '@/interfaces/category.interface';
+import ButtonPrimarySm from '@/components/admin/Button/ButtonPrimarySm.vue';
+import SubmitButtonPrimary from '@/components/admin/Button/SubmitButtonPrimary.vue';
+import { ArrowPathIcon } from '@heroicons/vue/24/outline';
 
+
+
+const { formDataAddCourse, courseLevels, fetchCourseLevels, fetchLanguages, languages, submitForm , handlePreviewImg, imageUrl} = useCourse();
+const { categories, fetchCategories } = useFetchCategories();
+const parentCategories = ref([]);
+
+// Lọc danh mục có parent_id là null
+onMounted(async() => {
+  await fetchCategories();
+  fetchCourseLevels()
+  fetchLanguages()
+  parentCategories.value = categories.value.filter((category: TListCategories) => category.parent_id === null);
+});
+const sidebarStore = useSidebarStore()
+
+
+//ck editor
+
+const updateDescription = (newDescription: string) => {
+  formDataAddCourse.value.description = newDescription;
+};
+//ck editor
+
+
+
+
+// Biến cho phần "Có phí" và "Miễn phí"
+const paid = ref('1')
+const radio2 = ref('1')
+const checked2 = ref(false)
+
+</script>

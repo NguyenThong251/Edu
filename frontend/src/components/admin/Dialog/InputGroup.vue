@@ -14,7 +14,13 @@ const handleInput = (event: Event) => {
       <p class="text-red-600 dark:text-red-500">{{ required }}</p>
     </label>
     <div class="relative mt-1 rounded-md shadow-sm" :class="customsClassChild2">
-      <input type="text" :name="inputId" :id="inputId" :placeholder="inputPlaceHoder" @input="handleInput"
+      <input 
+      type="text" 
+      :name="inputId" 
+      :id="inputId" 
+      :placeholder="inputPlaceHoder" 
+      @input="handleInput"
+      :value="modelValue"
         class="input-style" />
     </div>
   </div>

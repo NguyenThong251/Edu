@@ -28,12 +28,7 @@ export const useShowCourse = () => {
       }
     } catch (err: unknown) {
       // Chỉ định kiểu unknown cho err
-      if (axios.isAxiosError(err)) {
-        // Kiểm tra nếu là lỗi Axios
-        error.value = err.response ? err.response.data : err.message // Lưu thông tin lỗi
-      } else {
-        error.value = 'Đã xảy ra lỗi không xác định'
-      }
+      
       console.error('Lỗi fetch dữ liệu course:', error.value)
     } finally {
       isLoading.value = false

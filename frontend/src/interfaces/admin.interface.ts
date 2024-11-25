@@ -27,19 +27,19 @@ export interface TBaseInputProps {
   label: string;
   inputId?: string;
   inputPlaceHoder?: string;
-  modelValue?: string; 
+  modelValue?: string|number; 
   required?: string;
   customsClass?: string;
   customsClassChild?: string;
   customsClassChild2?: string;
 }
 export interface SelectGroupProps extends TBaseInputProps { 
-  value: string | number;
-  optionsData: Option[];
+  value?: string | number;
+  optionsData?: Option[] ;
 }
-interface Option {
-  value: any;
-  label: string;
+export interface Option {
+  id: number| string;
+  name: string;
 }
 
 export interface InputGroupProps extends TBaseInputProps {
@@ -52,6 +52,8 @@ export interface UploadGroupProps extends TBaseInputProps {
 }
 
 export interface RadioGroupProps extends TBaseInputProps {
+  inputId?: string; // Đặt là optional nếu bạn không cần bắt buộc
+  inputPlaceHoder?: string; // Đặt là optional nếu bạn không cần bắt buộc
 }
 export interface InputItemsProps extends TBaseInputProps {
   icon: any;
@@ -64,7 +66,9 @@ export interface ContentGroupProps extends TBaseInputProps {
 
 export interface DescriptionGroupProps extends ContentGroupProps {}
 
-export interface CkeditorGroupProps extends ContentGroupProps {}
+export interface CkeditorGroupProps extends ContentGroupProps {
+  modelValue: string;
+}
 
 
 // ====== END INTERFACE FORM INPUT DIALOG ======

@@ -24,7 +24,7 @@ const props = defineProps<{
         <slot>
         </slot>
       </div>
-        <div class="flex mt-5">
+        <div class="flex mt-5 right-0">
           <SubmitButtonPrimary
           title="Xác nhận"
           />
