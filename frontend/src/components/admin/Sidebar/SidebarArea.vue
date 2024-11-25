@@ -75,49 +75,49 @@ const menuGroups = ref<MenuGroup[]>([
       {
         icon: UserGroupIcon,
         label: 'Người dùng',
-        route: '#',
-        children: [
-          {
-            label: 'Giáo viên',
-            route: '#',
-            children: [
-              {
-                label: 'Quản lý giáo viên',
-                route: '/admin/user/user-teacher/user-manager-teacher',
-              },
-              {
-                label: 'Thêm giáo viên',
-                route: '/admin/user/user-teacher/user-add-teacher',
-              },
-              {
-                label: 'Thanh toán',
-                route: '/admin/user/user-teacher/payout',
-              },
-              {
-                label: 'Cài đặt thanh toán',
-                route: '/admin/user/user-teacher/payout-settings',
-              },
-              {
-                label: 'Phê duyệt',
-                route: '/admin/user/user-teacher/accept',
-              },
-            ]
-          },
-          {
-            label: 'Học viên',
-            route: '#',
-            children: [
-              {
-                label: 'Quản lý học viên',
-                route: '/admin/user/user-student/user-manager-student',
-              },
-              {
-                label: 'Thêm học viên',
-                route: '/admin/user/user-student/user-add-student',
-              },
-            ]
-          },
-        ]
+        route: 'user',
+        // children: [
+        //   {
+        //     label: 'Giáo viên',
+        //     route: '#',
+        //     children: [
+        //       {
+        //         label: 'Quản lý giáo viên',
+        //         route: '/admin/user/user-teacher/user-manager-teacher',
+        //       },
+        //       {
+        //         label: 'Thêm giáo viên',
+        //         route: '/admin/user/user-teacher/user-add-teacher',
+        //       },
+        //       {
+        //         label: 'Thanh toán',
+        //         route: '/admin/user/user-teacher/payout',
+        //       },
+        //       {
+        //         label: 'Cài đặt thanh toán',
+        //         route: '/admin/user/user-teacher/payout-settings',
+        //       },
+        //       {
+        //         label: 'Phê duyệt',
+        //         route: '/admin/user/user-teacher/accept',
+        //       },
+        //     ]
+        //   },
+        //   {
+        //     label: 'Học viên',
+        //     route: '#',
+        //     children: [
+        //       {
+        //         label: 'Quản lý học viên',
+        //         route: '/admin/user/user-student/user-manager-student',
+        //       },
+        //       {
+        //         label: 'Thêm học viên',
+        //         route: '/admin/user/user-student/user-add-student',
+        //       },
+        //     ]
+        //   },
+        // ]
       },
       {
         icon: ChatBubbleLeftRightIcon,

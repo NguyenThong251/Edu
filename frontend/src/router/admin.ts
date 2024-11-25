@@ -16,6 +16,7 @@ import AcceptTeacher from '@/views/admin/Users/AcceptTeacher.vue'
 import Voucher from '@/views/admin/Voucher.vue'
 import Level from '@/views/admin/Level.vue'
 import Language from '@/views/admin/Language.vue'
+import User from '@/views/admin/User.vue'
 const admin = [
   {
     path: '/admin',
@@ -152,7 +153,7 @@ const admin = [
       {
         path: '/admin/user',
         name: 'admin.user',
-        component: Language,
+        component: User,
         meta: { requiresAuth: true, role: 'admin', title: 'Người dùng | Edunity' }
       }
     ]

@@ -9,6 +9,7 @@ import { ElNotification } from 'element-plus'
 export const useAuthStore = defineStore('auth', () => {
   const state = ref<TAuthState>({
     user: null,
+    allUser: [],
     token: Cookies.get('token_user_edu') || null,
     loading: false,
     error: null
@@ -149,6 +150,14 @@ export const useAuthStore = defineStore('auth', () => {
   //         logout(); // Nếu không lấy được thông tin người dùng, thực hiện logout
   //     }
   // }
+  const fetchAllUser = async () => {
+    try {
+      const res = await api.get('/auth/get-all-user')
+      state.value.allUser = res.data.data
+    } catch (error) {
+      console.log(error)
+    }
+  }
   return {
     state,
     login,
@@ -159,7 +168,8 @@ export const useAuthStore = defineStore('auth', () => {
     resetPass,
     getGoogleSignInUrl,
     handleGoogleCallback,
-    uploadProfileImage
+    uploadProfileImage,
+    fetchAllUser
     // fetchCurrentUser
     // fetchUserData
   }

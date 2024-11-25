@@ -1,5 +1,5 @@
 export interface TUserAuth {
-  id: number;
+  id: number
   first_name: string
   last_name: string
   email: string
@@ -31,6 +31,7 @@ export interface TUpdateUser {
 
 export interface TAuthState {
   user: TUserAuth | null
+  allUser: TUserAuth[]
   token: string | null
   loading: boolean | null
   error: string | null
