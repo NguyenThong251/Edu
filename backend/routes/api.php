@@ -64,11 +64,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('update-profile', [AuthController::class, 'updateProfile']);
         Route::post('upload-image', [AuthController::class, 'uploadImage']);
-        //admin
-        Route::post('admin-update-user', [AuthController::class, 'adminUpdateUser']);
-        Route::delete('delete-user/{id}', [AuthController::class, 'deleteUser']);
-        Route::post('restore-user/{id}', [AuthController::class, 'restoreUser']);
-        Route::post('force-delete-user/{id}', [AuthController::class, 'forceDeleteUser']);
         //wishlist
         Route::post('wishlist', [ManageController::class, 'addToWishlist']);
         Route::get('wishlist', [ManageController::class, 'getWishlist']);
@@ -131,6 +126,16 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('/payout/requests', [PayoutController::class, 'listPayoutRequests']);
             //get all user
             Route::get('/get-all-user', [AuthController::class, 'getAllUser']);
+            Route::post('/create-user', [AuthController::class, 'adminCreateUser']);
+            Route::get('/get-detail-user/{id}', [AuthController::class, 'getDetailUser']);
+
+            Route::post('admin-update-user', [AuthController::class, 'adminUpdateUser']);
+            Route::delete('delete-user/{id}', [AuthController::class, 'deleteUser']);
+            Route::post('restore-user/{id}', [AuthController::class, 'restoreUser']);
+            Route::post('force-delete-user/{id}', [AuthController::class, 'forceDeleteUser']);
+            Route::post('block/unblock-user/{id}', [AuthController::class, 'blockOrUnlockUser']);
+
+
         });
 
         // Routes cho instructor
