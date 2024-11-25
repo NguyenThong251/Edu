@@ -321,6 +321,7 @@ class ManageController extends Controller
             'closing_price' => $closing_price,
         ], '', __('messages.getUsers'));
     }
+
     public function getOrderDetail($orderId)
     {
         $order = Order::with(['student', 'orderItems.course'])->findOrFail($orderId);
@@ -414,15 +415,59 @@ class ManageController extends Controller
 
     public function getWishlist()
     {
-        $userId = Auth::id();
-        $wishlistItems = Wishlist::where('user_id', $userId)
-            ->with(['course' => function ($query) {
-                $query->select('id', 'title', 'thumbnail', 'price', 'created_by');
-            }])->get();
-        return formatResponse(STATUS_OK, $wishlistItems, '', 'Lấy danh sách khóa học thành công');
+        try {
+            $userId = Auth::id();
+            $wishlistItems = Wishlist::where('user_id', $userId)->with([
+                'course' => function ($query) {
+                    $query->with([
+                        'category',
+                        'level',
+                        'language',
+                        'creator:id,first_name,last_name',
+                        'sections.lectures',
+                        'reviews'
+                    ])->withCount('reviews')
+                        ->withAvg('reviews', 'rating');
+                }])->get();
+            // Xử lý format dữ liệu nếu cần
+            $formattedWishlist = $wishlistItems->map(function ($wishlistItem) {
+                $course = $wishlistItem->course;
+                if ($course) {
+                    $lectures_count = $course->sections->sum(fn($section) => $section->lectures->count());
+                    $total_duration = $course->sections->sum(fn($section) => $section->lectures->sum('duration'));
+                    return [
+                        'wishlist_id' => $wishlistItem->id,
+                        'course' => [
+                            'id' => $course->id,
+                            'title' => $course->title,
+                            'old_price' => round($course->price, 0),
+                            'current_price' => round(
+                                $course->type_sale === 'price' ? $course->price - $course->sale_value : $course->price * (1 - $course->sale_value / 100),
+                                0
+                            ),
+                            'thumbnail' => $course->thumbnail,
+                            'level' => $course->level->name ?? null,
+                            'language' => $course->language->name ?? null,
+                            'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
+                                ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
+                                : ''),
+                            'lectures_count' => $lectures_count,
+                            'total_duration' => round($total_duration / 60 / 60, 1), // Đổi từ giây sang giờ
+                            'rating_avg' => round($course->reviews_avg_rating, 2) ?? 0,
+                            'reviews_count' => $course->reviews_count ?? 0,
+                            'status' => $course->status,
+                        ]
+                    ];
+                }
+                return null;
+            })->filter(); // Loại bỏ các mục null
+            return formatResponse(STATUS_OK, $formattedWishlist, '', 'Lấy danh sách khóa học thành công');
+        } catch (\Exception $e) {
+            return formatResponse(STATUS_FAIL, [], $e->getMessage(), 'Lỗi khi lấy danh sách khóa học yêu thích.');
+        }
     }
 
-    public function deletWishlist(Request $request)
+    function deletWishlist(Request $request)
     {
         $userId = Auth::id();
         $validator = Validator::make(

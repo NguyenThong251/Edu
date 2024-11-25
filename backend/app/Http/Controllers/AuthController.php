@@ -499,6 +499,36 @@ class AuthController extends Controller
     }
 
 
+    public function getAllUser(Request $request)
+    {
+        $status = $request->query('status', 'active');
+        $role = $request->query('role', null); // Không có role thì lấy tất cả
+        $perPage = $request->query('perPage', 10);
+        $page = $request->query('page', 1);
+        $sort_by = $request->query('sort_by', 'created_at');
+        $sort_order = $request->query('sort_order', 'desc');
+
+        $query = User::query();
+        if ($status) {
+            $query->where('status', $status);
+        }
+        if ($role) {
+            $query->where('role', $role);
+        }
+        $query->orderBy($sort_by, $sort_order);
+        $users = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json(['status' => 'OK', 'data' => $users->items(),
+            'pagination' => [
+                'total' => $users->total(),
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+            ],
+        ]);
+    }
+
+
     protected function respondWithToken($token, $refreshToken)
     {
         return response()->json([

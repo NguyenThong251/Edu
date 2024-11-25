@@ -129,6 +129,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/payout/process/{id}', [PayoutController::class, 'processPayout']);
             // Liệt kê các yêu cầu rút tiền
             Route::get('/payout/requests', [PayoutController::class, 'listPayoutRequests']);
+            //get all user
+            Route::get('/get-all-user', [AuthController::class, 'getAllUser']);
         });
 
         // Routes cho instructor
