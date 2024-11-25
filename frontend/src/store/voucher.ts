@@ -21,7 +21,7 @@ export const useVoucherStore = defineStore('voucher', () => {
   const fetchVouchers = async () => {
     try {
       const response = await api.get('/auth/vouchers')
-      state.value.vouchers = response.data.data
+      state.value.vouchers = response.data.data.data
     } catch (error) {
       state.value.error = 'Không thể tải danh sách vouchers'
     }

@@ -12,7 +12,7 @@
                         <div class="rounded-2xl w-full overflow-hidden">
                             <vue-plyr>
                                 <video controls preload="metadata" @pause="handlePause" @ended="handleVideoEnd"
-                                    ref="videoElement">
+                                    @timeupdate="handleTimeUpdate" ref="videoElement">
                                     <source :src="currentContent.content_link" type="video/mp4" />
                                     Trình duyệt của bạn không hỗ trợ video.
                                 </video>
@@ -99,7 +99,7 @@
                     </div>
                 </div>
                 <div class="bg-white rounded-lg my-5 p-2">
-                    <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+                    <el-tabs v-model="activeName" class="demo-tabs">
                         <el-tab-pane label="Tìm kiếm" name="first">
                             <UserSearch />
                         </el-tab-pane>
@@ -108,7 +108,10 @@
                         </el-tab-pane>
                         <el-tab-pane label="Ghi chú" name="third">
 
-                            <UserNote />
+                            <UserNote :course_id="idCourse || 0" :section_id="currentContent.section_id || 0"
+                                :lecture_id="currentContent.id || 0" :lecture_title="currentContent.title || ''"
+                                :currentTime="videoCurrentTime || 0" />
+                            <!-- :section_id="currentContent" :lecture_id="" :lecture_title=""  -->
                         </el-tab-pane>
                         <el-tab-pane label="Đánh giá" name="fourth">
                             <UserFeedback />
@@ -137,7 +140,7 @@
                                     <div class="flex gap-1" v-if="content.content_course_type === 'section'">
                                         <span class="text-gray-500">{{ content.content_done }}/{{
                                             content.content_count
-                                            }}
+                                        }}
                                             Hoàn thành</span> •
                                         <span class="text-pink-500">{{ content.duration_display }}</span>
                                     </div>
@@ -207,7 +210,7 @@ const courseStore = useCourseStore();
 const quizStore = useQuizStore();
 const { studyCourse, currentContent, allContent, progress } = storeToRefs(courseStore);
 const { fetchStudyCourse, changeContent } = courseStore;
-
+const activeName = ref("first")
 const videoElement = ref<HTMLVideoElement | null>(null);
 // PDF
 const pdfViewerRef = ref(null);
@@ -215,7 +218,7 @@ const learned = ref(0); // Biến lưu số giây đã học
 const isLearning = ref(false); // Trạng thái đang học
 const duration = computed(() => currentContent.value?.duration || 0); // Thời lượng học
 let timer: any = null; // Biến để lưu setInterval
-
+const videoCurrentTime = ref(0);
 const startLearning = () => {
     if (!isLearning.value && currentContent.value.type === "file") {
         isLearning.value = true;
@@ -231,7 +234,6 @@ const startLearning = () => {
         }, 2000); // Mỗi giây tăng 1
     }
 };
-
 // Khi rời khỏi tài liệu hoặc chuyển bài học, dừng tính thời gian
 const stopLearning = () => {
     isLearning.value = false;
@@ -240,7 +242,11 @@ const stopLearning = () => {
         timer = null;
     }
 };
-
+const handleTimeUpdate = () => {
+    if (videoElement.value) {
+        videoCurrentTime.value = Math.floor(videoElement.value.currentTime); // Cập nhật thời gian hiện tại
+    }
+};
 
 
 // Theo dõi khi nội dung thay đổi
@@ -271,6 +277,7 @@ const handleChangeContent = async (lesson: any) => {
         content_old_id: currentContent.value?.id || 0
     }
     await changeContent(data);
+    videoCurrentTime.value = 0
     timer = null;
 
 };
@@ -310,7 +317,7 @@ const handleNextLesson = async () => {
     const currentSection = allContent.value.find(section =>
         section.section_content.some((lesson: any) => lesson.id === currentContent.value.id)
     );
-    console.log(currentSection)
+    videoCurrentTime.value = 0
     const sectionLessons = currentSection.section_content;
     const currentIndex = sectionLessons.findIndex((lesson: TLesson) => lesson.id === currentContent.value?.id);
     const nextLesson = sectionLessons[currentIndex + 1];

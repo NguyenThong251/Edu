@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/services/axiosConfig'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
-interface Note {
-  id?: number
+interface TNote {
+  // id?: number
   course_id: number
   section_id: number
   lecture_id: number
@@ -15,8 +15,8 @@ interface Note {
 
 export const useNotesStore = defineStore('notes', () => {
   const state = ref({
-    notes: [] as Note[], // Danh sách note
-    noteDetail: null as Note | null, // Chi tiết một note
+    notes: [] as TNote[], // Danh sách note
+    noteDetail: null as TNote | null, // Chi tiết một note
     loading: false,
     error: null as string | null
   })
@@ -48,7 +48,7 @@ export const useNotesStore = defineStore('notes', () => {
   }
 
   // Tạo note
-  const createNote = async (noteData: Note) => {
+  const createNote = async (noteData: TNote) => {
     try {
       const response = await api.post('/auth/notes', noteData)
       ElMessage.success('Tạo ghi chú thành công!')
@@ -60,7 +60,7 @@ export const useNotesStore = defineStore('notes', () => {
   }
 
   // Cập nhật note
-  const updateNote = async (id: number, noteData: Note) => {
+  const updateNote = async (id: number, noteData: TNote) => {
     try {
       const response = await api.post(`/auth/notes/update/${id}`, noteData)
       ElMessage.success('Cập nhật ghi chú thành công!')
@@ -74,6 +74,11 @@ export const useNotesStore = defineStore('notes', () => {
   // Xóa note
   const deleteNote = async (id: number, course_id: number) => {
     try {
+      await ElMessageBox.confirm('Bạn có chắc chắn muốn xóa ghi chú này không?', 'Xác nhận', {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy',
+        type: 'warning'
+      })
       await api.post(`/auth/notes/delete/${id}`)
       ElMessage.success('Xóa ghi chú thành công!')
       await fetchNotes(course_id) // Refresh danh sách

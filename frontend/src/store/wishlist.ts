@@ -44,7 +44,19 @@ export const useWishlistStore = defineStore('wishlist', () => {
   const fetchWishlist = async () => {
     try {
       const response = await api.get('/auth/wishlist')
-      wishlist.value = response.data.data || []
+      // wishlist.value = response.data.data.course || []
+      wishlist.value = response.data.data.map((item: any) => ({
+        wishlist_id: item.id, // ID của wishlist (nếu cần)
+        id: item.course.id, // ID của course
+        title: item.course.title, // Tên khóa học
+        thumbnail: item.course.thumbnail, // Hình ảnh
+        creator: item.course.creator, // Người tạo khóa học
+        tag: item.course.tag, // Tag khóa học
+        lectures_count: item.course.lectures_count, // Số bài giảng
+        level: item.course.level, // Trình độ khóa học
+        current_price: item.course.current_price, // Giá hiện tại
+        old_price: item.course.old_price // Giá cũ
+      }))
     } catch (err) {
       error.value = 'Không thể tải danh sách yêu thích'
     }

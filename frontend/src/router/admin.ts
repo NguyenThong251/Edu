@@ -148,6 +148,12 @@ const admin = [
         name: 'admin.language',
         component: Language,
         meta: { requiresAuth: true, role: 'admin', title: 'Ngôn ngữ  | Edunity' }
+      },
+      {
+        path: '/admin/user',
+        name: 'admin.user',
+        component: Language,
+        meta: { requiresAuth: true, role: 'admin', title: 'Người dùng | Edunity' }
       }
     ]
   }

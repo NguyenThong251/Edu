@@ -96,7 +96,7 @@ const toggleWishlist = (id: number) => {
         ElNotification({
             title: 'Thông báo',
             message: 'Đã xóa vào mục yêu thích',
-            type: 'error',
+            type: 'success',
             duration: 1000
         })
     } else {
