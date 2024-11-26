@@ -627,6 +627,8 @@ class StudyController extends Controller
 
         // Lấy course_id từ request
         $courseId = $request->input('course_id');
+        $contentKeyword='';
+        $contentKeyword = $request->input('content_keyword');
 
         // Kiểm tra xem user đã mua khóa học chưa
         $orderItem = OrderItem::where('course_id', $courseId)
@@ -823,7 +825,7 @@ class StudyController extends Controller
         }
 
         // Lấy dữ liệu tổng quan
-        $data = $this->getAllContent($userId, $courseId);
+        $data = $this->getAllContent($userId, $courseId, $contentKeyword);
         $allContent = $data['allContent'];
         $totalContentCount = $data['total_lecture_count'];
         $totalContentDone = $data['total_lecture_done'];
