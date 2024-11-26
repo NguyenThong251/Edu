@@ -13,6 +13,7 @@ use App\Models\Review;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
@@ -84,62 +85,62 @@ class AdminController extends Controller
             $endDate = $request->input('end_date');     // Ngày kết thúc
             $filter = $request->input('filter', 'day'); // Lọc theo ngày, tháng, năm
 
-            // Xử lý các tham số
-            $startDate = $startDate ? Carbon::parse($startDate) : Carbon::now()->subMonth()->startOfDay();
-            $endDate = $endDate ? Carbon::parse($endDate) : Carbon::now()->endOfDay();
+            // Xử lý các tham số và thiết lập khoảng thời gian
+            $startDate = $startDate ? Carbon::parse($startDate)->startOfDay() : Carbon::now()->subMonth()->startOfDay();
+            $endDate = $endDate ? Carbon::parse($endDate)->endOfDay() : Carbon::now()->endOfDay();
 
-            // Xác định khoảng thời gian dựa trên filter
-            if ($filter === 'month') {
-                $period = $startDate->monthsUntil($endDate);
-            } elseif ($filter === 'year') {
-                $period = $startDate->yearsUntil($endDate);
-            } else { // default là 'day'
-                $period = $startDate->daysUntil($endDate);
+            // Xác định định dạng và tạo khoảng thời gian dựa trên filter
+            switch ($filter) {
+                case 'month':
+                    $format = '%Y-%m';
+                    $groupByFormat = "DATE_FORMAT(created_at, '{$format}') as period";
+                    $carbonFormat = 'Y-m';
+                    $step = '1 month';
+                    break;
+                case 'year':
+                    $format = '%Y';
+                    $groupByFormat = "DATE_FORMAT(created_at, '{$format}') as period";
+                    $carbonFormat = 'Y';
+                    $step = '1 year';
+                    break;
+                case 'day':
+                default:
+                    $format = '%Y-%m-%d';
+                    $groupByFormat = "DATE_FORMAT(created_at, '{$format}') as period";
+                    $carbonFormat = 'Y-m-d';
+                    $step = '1 day';
+                    break;
             }
 
+            // Tạo khoảng thời gian sử dụng CarbonPeriod
+            $period = CarbonPeriod::create($startDate, $step, $endDate);
+
             // Lấy dữ liệu doanh thu từ bảng orders
-            $revenueData = Order::select(
-                DB::raw($filter === 'month' ? "DATE_FORMAT(created_at, '%Y-%m')" : ($filter === 'year' ? "DATE_FORMAT(created_at, '%Y')" : "DATE(created_at)")),
-                DB::raw("SUM(total_price) as revenue"),
-                DB::raw("COUNT(id) as total_sales")
-            )
+            $revenueData = Order::selectRaw("{$groupByFormat}, SUM(total_price) as revenue, COUNT(id) as total_sales")
                 ->where('payment_status', 'paid')
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->groupBy(DB::raw($filter === 'month' ? "DATE_FORMAT(created_at, '%Y-%m')" : ($filter === 'year' ? "DATE_FORMAT(created_at, '%Y')" : "DATE(created_at)")))
-                ->orderBy('created_at', 'asc')
+                ->groupBy('period')
+                ->orderBy('period', 'asc') // Đảm bảo ORDER BY cùng với GROUP BY
                 ->get();
 
-            // Chuyển dữ liệu thành dạng mảng [ngày/tháng/năm => doanh thu]
-            $data = $revenueData->keyBy(function ($item) use ($filter) {
-                return $filter === 'month' ? $item->created_at : ($filter === 'year' ? $item->created_at : $item->created_at);
-            })->map(function ($item) {
-                return [
-                    'revenue' => (float)$item->revenue,
-                    'total_sales' => (int)$item->total_sales,
-                ];
-            });
+            // Chuyển dữ liệu thành dạng mảng [period => ['revenue' => ..., 'total_sales' => ...]]
+            $data = $revenueData->pluck('revenue', 'period')->toArray();
+            $sales = $revenueData->pluck('total_sales', 'period')->toArray();
 
-            // Chuẩn bị dữ liệu kết quả với các khoảng thời gian không có doanh thu hiển thị 0
+
             $result = [];
             foreach ($period as $date) {
-                if ($filter === 'month') {
-                    $formattedDate = $date->format('Y-m');
-                } elseif ($filter === 'year') {
-                    $formattedDate = $date->format('Y');
-                } else { // 'day'
-                    $formattedDate = $date->format('Y-m-d');
-                }
-
+                $formattedDate = $date->format($carbonFormat);
                 $result[] = [
-                    'date' => $formattedDate,
-                    'revenue' => isset($data[$formattedDate]) ? $data[$formattedDate]['revenue'] : 0,
-                    'total_sales' => isset($data[$formattedDate]) ? $data[$formattedDate]['total_sales'] : 0,
+                    'period' => $formattedDate,
+                    'revenue' => isset($data[$formattedDate]) ? (float)$data[$formattedDate] : 0,
+                    'total_sales' => isset($sales[$formattedDate]) ? (int)$sales[$formattedDate] : 0,
                 ];
             }
 
             // Tính tổng revenue và tổng sale
-            $totalRevenue = $revenueData->sum('revenue');
-            $totalSales = $revenueData->sum('total_sales');
+            $totalRevenue = array_sum($data);
+            $totalSales = array_sum($sales);
 
             return response()->json([
                 'status' => 'OK',
@@ -149,7 +150,7 @@ class AdminController extends Controller
                 'code' => 200
             ], 200);
         } catch (\Exception $e) {
-            // Xử lý lỗi
+
             return response()->json([
                 'status' => 'Error',
                 'message' => $e->getMessage(),
@@ -173,25 +174,31 @@ class AdminController extends Controller
             // Xác định định dạng và tạo khoảng thời gian dựa trên filter
             switch ($filter) {
                 case 'month':
-                    $format = 'Y-m';
-                    $period = CarbonPeriod::create($startDate, '1 month', $endDate);
+                    $format = '%Y-%m';
+                    $groupByFormat = "DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '" . config('app.timezone') . "'), '{$format}') as period";
+                    $carbonFormat = 'Y-m';
+                    $step = '1 month';
                     break;
                 case 'year':
-                    $format = 'Y';
-                    $period = CarbonPeriod::create($startDate, '1 year', $endDate);
+                    $format = '%Y';
+                    $groupByFormat = "DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '" . config('app.timezone') . "'), '{$format}') as period";
+                    $carbonFormat = 'Y';
+                    $step = '1 year';
                     break;
                 case 'day':
                 default:
-                    $format = 'Y-m-d';
-                    $period = CarbonPeriod::create($startDate, '1 day', $endDate);
+                    $format = '%Y-%m-%d';
+                    $groupByFormat = "DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '" . config('app.timezone') . "'), '{$format}') as period";
+                    $carbonFormat = 'Y-m-d';
+                    $step = '1 day';
                     break;
             }
 
+            // Tạo khoảng thời gian sử dụng CarbonPeriod
+            $period = CarbonPeriod::create($startDate, $step, $endDate);
+
             // Lấy dữ liệu đăng ký người dùng
-            $registrationData = User::select(
-                DB::raw("DATE_FORMAT(created_at, '{$format}') as period"),
-                DB::raw("COUNT(id) as registrations")
-            )
+            $registrationData = User::selectRaw("DATE_FORMAT(created_at, '{$format}') as period, COUNT(id) as registrations")
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->groupBy('period')
                 ->orderBy('period', 'asc')
@@ -203,13 +210,13 @@ class AdminController extends Controller
             // Chuẩn bị dữ liệu kết quả với các khoảng thời gian không có đăng ký hiển thị 0
             $result = [];
             foreach ($period as $date) {
-                $formattedDate = $date->format($format);
+                $formattedDate = $date->format($carbonFormat);
+                $registrations = isset($data[$formattedDate]) ? (int)$data[$formattedDate] : 0;
                 $result[] = [
                     'period' => $formattedDate,
-                    'registrations' => isset($data[$formattedDate]) ? (int) $data[$formattedDate] : 0,
+                    'registrations' => $registrations,
                 ];
             }
-
             // Tính tổng đăng ký
             $totalRegistrations = array_sum($data);
 
@@ -227,7 +234,6 @@ class AdminController extends Controller
             ], 500);
         }
     }
-
 
     public function getOrderLineChartData(Request $request)
     {

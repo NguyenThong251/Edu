@@ -503,20 +503,33 @@ class AuthController extends Controller
 
     public function getAllUser(Request $request)
     {
+        // Query cơ bản lấy danh sách User
         $userQuery = User::query();
+        // Kiểm tra tham số `deleted`
+        if ($request->has('deleted') && $request->deleted == 1) {
+            // Lấy các  đã xóa
+            $userQuery->onlyTrashed();
+        } else {
+            // Chỉ lấy các  chưa xóa (mặc định)
+            $userQuery->whereNull('deleted_at');
+        }
 
+        // Kiểm tra tham số `status`
         if ($request->has('status') && !is_null($request->status)) {
             $userQuery->where('status', $request->status);
         }
 
+        // Kiểm tra tham số `role`
         if ($request->has('role') && !is_null($request->role)) {
             $userQuery->where('role', $request->role);
         }
 
+        // Lọc theo email (nếu có)
         if ($request->has('email') && !empty($request->email)) {
             $userQuery->where('email', 'like', '%' . $request->email . '%');
         }
 
+        // Lọc theo keyword tìm kiếm trong tên
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $userQuery->where(function ($q) use ($search) {
@@ -532,8 +545,8 @@ class AuthController extends Controller
         $userQuery->orderBy($orderBy, $orderDirection);
 
         // Phân trang với `per_page` và `page`
-        $perPage = (int) $request->get('per_page', 10); // Mặc định là 10 bản ghi mỗi trang
-        $page = (int) $request->get('page', 1); // Trang hiện tại, mặc định là 1
+        $perPage = (int)$request->get('per_page', 10); // Mặc định là 10 bản ghi mỗi trang
+        $page = (int)$request->get('page', 1); // Trang hiện tại, mặc định là 1
 
         // Lấy danh sách đã lọc
         $users = $userQuery->get();
