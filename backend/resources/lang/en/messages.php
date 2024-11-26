@@ -214,4 +214,5 @@ return [
     'address_update' => 'Address must be a string',
     'contactInfo_update' => 'Contact info must be array.',
 
+    'user_has_blocked' => 'Account has been blocked.',
 ];

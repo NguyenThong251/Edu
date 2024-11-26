@@ -3,6 +3,8 @@
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentMethodController;
+use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -52,17 +54,16 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     //google
     Route::post('/get-google-sign-in-url', [AuthController::class, 'getGoogleSignInUrl']);
     Route::get('/google/call-back', [AuthController::class, 'loginGoogleCallback']);
+    //callback connect stripe
+    Route::get('/payment-methods/stripe/callback', [PaymentMethodController::class, 'handleStripeCallback'])->name('payment_methods.stripe.callback');
+    Route::post('/payout/stripe/webhook', [PayoutController::class, 'handleWebhook']);
+
     //Logged in
     Route::middleware(['jwt'])->group(function () {
         Route::get('profile', [AuthController::class, 'profile']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('update-profile', [AuthController::class, 'updateProfile']);
         Route::post('upload-image', [AuthController::class, 'uploadImage']);
-        //admin
-        Route::post('admin-update-user', [AuthController::class, 'adminUpdateUser']);
-        Route::delete('delete-user/{id}', [AuthController::class, 'deleteUser']);
-        Route::post('restore-user/{id}', [AuthController::class, 'restoreUser']);
-        Route::post('force-delete-user/{id}', [AuthController::class, 'forceDeleteUser']);
         //wishlist
         Route::post('wishlist', [ManageController::class, 'addToWishlist']);
         Route::get('wishlist', [ManageController::class, 'getWishlist']);
@@ -118,6 +119,23 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 Route::post('/restore', [VoucherController::class, 'restoreVoucher']);
                 Route::put('/{id}', [VoucherController::class, 'update']);
             });
+
+            // admin Xử lý rút tiền stripe
+            Route::post('/payout/process/{id}', [PayoutController::class, 'processPayout']);
+            // Liệt kê các yêu cầu rút tiền
+            Route::get('/payout/requests', [PayoutController::class, 'listPayoutRequests']);
+            //get all user
+            Route::get('/get-all-user', [AuthController::class, 'getAllUser']);
+            Route::post('/create-user', [AuthController::class, 'adminCreateUser']);
+            Route::get('/get-detail-user/{id}', [AuthController::class, 'getDetailUser']);
+
+            Route::post('admin-update-user', [AuthController::class, 'adminUpdateUser']);
+            Route::delete('delete-user/{id}', [AuthController::class, 'deleteUser']);
+            Route::post('restore-user/{id}', [AuthController::class, 'restoreUser']);
+            Route::post('force-delete-user/{id}', [AuthController::class, 'forceDeleteUser']);
+            Route::post('block/unblock-user/{id}', [AuthController::class, 'blockOrUnlockUser']);
+
+
         });
 
         // Routes cho instructor
@@ -138,6 +156,16 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('instructor/line-chart', [InstructorController::class, 'getLineChartData']);
             Route::get('instructor/course-statistics', [InstructorController::class, 'getCourseStatistics']);
 
+            // Liên kết Stripe
+            Route::get('/payment-methods/stripe/link', [PaymentMethodController::class, 'linkStripe'])->name('payment_methods.stripe.link');
+            // Liệt kê các phương thức thanh toán
+            Route::get('/payment-methods', [PaymentMethodController::class, 'listPaymentMethods']);
+            // Thêm phương thức thanh toán khác
+            Route::post('/add-payment-methods', [PaymentMethodController::class, 'addPaymentMethod']);
+            // Xóa phương thức thanh toán
+            Route::delete('/payment-methods/{id}', [PaymentMethodController::class, 'deletePaymentMethod']);
+            // Yêu cầu rút tiền
+            Route::post('/payout/request', [PayoutController::class, 'requestPayout']);
         });
 
         // Routes cho student
@@ -160,12 +188,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/notes', [NoteController::class, 'store']); // Tạo mới ghi chú
             Route::post('/notes/update/{id}', [NoteController::class, 'update']); // Cập nhật ghi chú
             Route::post('/notes/delete/{id}', [NoteController::class, 'destroy']); // Xóa ghi chú
-
-
-
-            // Các route dành cho student có thể thêm tại đây
-
-            // ...
 
             // Cart
             Route::prefix('cart')->group(function () {

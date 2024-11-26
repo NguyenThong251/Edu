@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Jobs\SendEmailForgotPassword;
 use App\Jobs\SendEmailVerification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -273,6 +274,9 @@ class AuthController extends Controller
         if (!$user->email_verified) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.email_not_verified'));
         }
+        if ($user->status != USER::USER_ACTIVE) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.user_has_blocked'));
+        }
         $credentials = request(['email', 'password']);
         if (!$token = auth('api')->attempt($credentials)) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.password_incorrect'));
@@ -495,6 +499,103 @@ class AuthController extends Controller
         return formatResponse(STATUS_FAIL, '', '', 'Cập nhật hình ảnh thất bại', CODE_BAD);
     }
 
+
+    public function getAllUser(Request $request)
+    {
+        $status = $request->query('status', 'active');
+        $email = $request->query('email', null);
+        $role = $request->query('role', null);
+        $perPage = $request->query('perPage', 10);
+        $page = $request->query('page', 1);
+        $sort_by = $request->query('sort_by', 'created_at');
+        $sort_order = $request->query('sort_order', 'desc');
+        $search = $request->query('search', null);
+
+        $query = User::query();
+        if ($status) {
+            $query->where('status', $status);
+        }
+        if ($role) {
+            $query->where('role', $role);
+        }
+        if ($email) {
+            $query->where('email', $email);
+        }
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'LIKE', "%{$search}%")->orWhere('last_name', 'LIKE', "%{$search}%");
+            });
+        }
+        $query->orderBy($sort_by, $sort_order);
+        $users = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json(['status' => 'OK', 'data' => $users->items(),
+            'pagination' => [
+                'total' => $users->total(),
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+            ],
+        ]);
+    }
+
+    public function adminCreateUser(Request $request)
+    {
+        // Xác thực dữ liệu đầu vào
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:50',
+            'last_name' => 'required|string|max:50',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'role' => 'required|in:admin,instructor,student',
+            'status' => 'nullable|in:active,inactive',
+            'email_verified' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'FAIL', 'errors' => $validator->errors(),], 422);
+        }
+        $currentUser = Auth::user();
+        $user = User::create([
+            'first_name' => $request->input('first_name'),
+            'last_name' => $request->input('last_name'),
+            'email' => $request->input('email'),
+            'password' => Hash::make($request->input('password')),
+            'role' => $request->input('role'),
+            'status' => $request->input('status', 'inactive'),
+            'email_verified' => $request->input('email_verified', false),
+            'created_by' => $currentUser->id,
+        ]);
+        return response()->json(['status' => 'OK', 'message' => 'User created successfully.', 'data' => $user,], 201);
+    }
+
+    public function getDetailUser($id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['status' => 'FAIL', 'message' => 'User not found.',], 404);
+        }
+        return response()->json(['status' => 'success', 'data' => $user,], 200);
+    }
+
+    public function blockOrUnlockUser($id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['status' => 'FAIL', 'message' => 'User not found.',], 404);
+        }
+        if ($user->status === 'inactive') {
+            $user->status = 'active';
+            $user->save();
+            return response()->json(['status' => 'OK', 'message' => 'User has been unlocked successfully.', 'data' => $user], 200);
+        }
+        if ($user->status === 'active') {
+            $user->status = 'inactive';
+            $user->save();
+            return response()->json(['status' => 'OK', 'message' => 'User has been blocked successfully.', 'data' => $user], 200);
+        }
+        return response()->json(['status' => 'FAIL', 'message' => 'Unable to change user status.'], 400);
+    }
 
     protected function respondWithToken($token, $refreshToken)
     {
