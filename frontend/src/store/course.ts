@@ -7,7 +7,7 @@ import type { TChangeContent, TLesson } from '@/interfaces/ui.interface'
 
 export const useCourseStore = defineStore('courseStore', () => {
   // State
-  const course = ref<TCardCourse>()
+  const course = ref<any>()
   const isLoading = ref<boolean>(false)
   const error = ref<string | null>(null)
   const myCourses = ref<TCardMyCourse[]>([])
