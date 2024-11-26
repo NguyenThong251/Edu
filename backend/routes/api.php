@@ -21,6 +21,7 @@ use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\LectureController;
 use App\Http\Controllers\StudyController;
 use App\Http\Controllers\InstructorController;
+use App\Http\Controllers\QuestionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -156,6 +157,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('lectures/{id}', [LectureController::class, 'update'])->name('lectures.update');
             Route::get('lectures/restore/{id}', [LectureController::class, 'restore'])->name('lectures.restore');
             Route::delete('lectures/{id}', [LectureController::class, 'destroy'])->name('lectures.destroy');
+
+            Route::post('questions', [QuestionController::class, 'store'])->name('questions.store');
+            Route::get('questions/{id}', [QuestionController::class, 'editForm'])->name('questions.editForm');
+            Route::put('questions/{id}', [QuestionController::class, 'update'])->name('questions.update');
+            Route::get('questions/restore/{id}', [QuestionController::class, 'restore'])->name('questions.restore');
+            Route::delete('questions/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+            Route::delete('questions/permanent-delete/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
 
             Route::get('instructor/course', [InstructorController::class, 'getListCourses']);
             Route::get('instructor/report', [InstructorController::class, 'getReport']);
