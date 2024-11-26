@@ -1,3 +1,4 @@
+import type { TSection } from '@/interfaces'
 import api from '@/services/axiosConfig'
 
 import { ElNotification, ElMessage, ElMessageBox } from 'element-plus'
@@ -16,9 +17,9 @@ export default function useCourse() {
   const courseId = ref<string|number | null>(null)
 
    // computed property để tự động cập nhật slug khi title thay đổi
-   const SlugAdd = computed(() => {
-    return formDataAddCourse.value.title.replace(/\s+/g, '-');
-  });
+  //  const SlugAdd = computed(() => {
+  //   return formDataAddCourse.value.title.replace(/\s+/g, '-');
+  // });
   // State để lưu dữ liệu form của khóa học
   const formDataAddCourse = ref({
     title: '',
@@ -37,7 +38,7 @@ export default function useCourse() {
 
   // State để lưu danh sách cấp độ và ngôn ngữ
   const courseLevels = ref([])
-  const section = ref([])
+  const section = ref<TSection[]>([])
   const languages = ref([])
   const loading = ref(false)
   const error = ref(null)
@@ -93,9 +94,9 @@ export default function useCourse() {
         }
       }
 
-      // In dữ liệu form trước khi tạo FormData
+      // In dữ liệu form   trước khi tạo FormData
       console.log('Dữ liệu form trước khi tạo FormData:', formDataAddCourse.value)
-
+      formDataAddCourse.value.slug = formDataAddCourse.value.title.replace(/\s+/g, '-');
       const response = await api.post('/auth/courses/', formData, {
         // headers: {
         //   'Content-Type': 'multipart/form-data'
@@ -140,36 +141,29 @@ export default function useCourse() {
   }
 
 
-    // Lấy dữ liệu khóa học khi component mount
-    const fetchCourseData = async () => {
-      try {
-        loading.value = true
-        courseId.value = route.params.id as string // Lấy ID từ URL
-        
-        const response = await api.get(`/auth/courses/${courseId.value}`)
-        if (response.data.status === 'OK') {
-          // Gán dữ liệu của khóa học vào form
-          formDataEditCourse.value = response.data.data;
-          section.value = response.data.data.sections;
-          console.log("log course",response.data.data);
-        } else {
-          ElNotification({
-            title: 'Lỗi',
-            message: response.data.message || 'Lỗi khi tải dữ liệu khóa học.',
-            type: 'error'
-          })
-        }
-      } catch (err) {
-        ElNotification({
-          title: 'Lỗi',
-          message: 'Không thể tải dữ liệu khóa học',
-          type: 'error'
-        })
-      } finally {
-        loading.value = false
+  // Lấy dữ liệu khóa học khi component mount
+  const fetchCourseData = async () => {
+    try {
+      loading.value = true;
+      courseId.value = route.params.id as string; // Lấy ID từ URL
+  
+      const response = await api.get(`/auth/courses/${courseId.value}`);
+      if (response.data.status === 'OK') {
+        formDataEditCourse.value = response.data.data;
+        section.value = response.data.data.sections;
       }
+    } catch (err) {
+      ElNotification({
+        title: 'Lỗi',
+        message: 'Không thể tải dữ liệu khóa học',
+        type: 'error',
+      });
+    } finally {
+      loading.value = false;
     }
-
+  };
+  
+  
   //EDIT Course
 
   const formDataEditCourse = ref({
@@ -187,13 +181,12 @@ export default function useCourse() {
     thumbnail: null,
   })
    // computed property để tự động cập nhật slug khi title thay đổi
-   const SlugEdit = computed(() => {
-    return formDataEditCourse.value.title.replace(/\s+/g, '-');
-  });
+  //  const SlugEdit = computed(() => {
+  //   return formDataEditCourse.value.title.replace(/\s+/g, '-');
+  // });
 
   // Form chỉnh sửa khoá học
   const submitFormEdit = async () => {
-    
     try {
       loading.value = true
       const formDataEdit = new FormData();
@@ -203,10 +196,10 @@ export default function useCourse() {
           formDataEdit.append(key, formDataEditCourse.value[key]);
         }
       }
-      formDataEditCourse.value.slug = SlugEdit.value;
+      // formDataEditCourse.value.slug = SlugEdit.value;
       // In dữ liệu form trước khi tạo FormData
       console.log('Dữ liệu form trước khi chỉnh sửa FormEditData:', formDataEditCourse.value)
-
+      formDataEditCourse.value.slug = formDataEditCourse.value.title.replace(/\s+/g, '-');
       const response = await api.put('/auth/courses/', formDataEdit, {
         // headers: {
         //   'Content-Type': 'multipart/form-data'
@@ -240,7 +233,7 @@ export default function useCourse() {
   }
 
   // Gán slug đã tính toán vào formDataAddCourse
-  formDataAddCourse.value.slug = SlugAdd.value;
+  // formDataAddCourse.value.slug = SlugAdd.value;
 
 
   // SECTIONS
@@ -314,32 +307,34 @@ export default function useCourse() {
   }
     
   
-  const handleEditSection = async (id: number | string) => { 
-    console.log('dữ liệu log trc khi chỉnh sửa:', id, formDataEditSection.value);
+  const handleEditSection = async (id: number | string) => {
+    console.log('Dữ liệu trc khi chỉnh sửa:', id, formDataEditSection.value);
     try {
-       // Kiểm tra nếu formDataEditSection có dữ liệu hợp lệ
-    if (!formDataEditSection.value.name || !formDataEditSection.value.id) {
-      ElNotification({
-        title: 'Lỗi',
-        message: 'Dữ liệu chỉnh sửa không hợp lệ',
-        type: 'error',
-      });
-      return;
-    }
-      // Gửi yêu cầu API để lấy dữ liệu của section
+      if (!formDataEditSection.value.name || !formDataEditSection.value.id) {
+        ElNotification({
+          title: 'Lỗi',
+          message: 'Dữ liệu chỉnh sửa không hợp lệ',
+          type: 'error',
+        });
+        return;
+      }
+  
       const response = await api.post(`/auth/section/${id}`, formDataEditSection.value);
       console.log('log dữ liệu sau khi chỉnh sửa:', response);
       
       if (response.data.status === 'OK') {
-        // Cập nhật dữ liệu vào formDataEditSection để hiển thị trong form
-        formDataEditSection.value = { ...response.data.data };
+        // Đảm bảo rằng chỉ thay đổi dữ liệu khi thực sự cần thiết
+        if (formDataEditSection.value.id !== response.data.data.id) {
+          formDataEditSection.value = { ...response.data.data }; // Cập nhật formDataEditSection chỉ khi cần thiết
+        }
         ElNotification({
           title: 'Thành công',
           message: 'Đã tải dữ liệu chỉnh sửa',
           type: 'success',
         });
-        // Đóng dialog sau khi chỉnh sửa thành công
-      dialogEditSection.value = false;  // Đóng dialog
+  
+        dialogEditSection.value = false; // Đóng dialog sau khi chỉnh sửa thành công
+  
       } else {
         ElNotification({
           title: 'Lỗi',
@@ -354,8 +349,8 @@ export default function useCourse() {
         type: 'error',
       });
     }
-  }
-
+  };
+  
   // Delete sections
 
   const handleDeleteSection = async (id: number | string) => {
@@ -393,12 +388,43 @@ export default function useCourse() {
         message: 'Hủy xóa chương'
       });
     });
-};
+  };
+  
+    // Sort section
+    const handleSortSection = async (sortedSection: TSection): Promise<void> => {
+      try {
+        console.log('Dữ liệu đã sắp xếp:', sortedSection);
+        // Gửi mảng đã sắp xếp lên backend
+        const response = await api.post('/section/sort', { sortedSection });
+        if (response.data.status === 'OK') {
+          ElNotification({
+            title: 'Thành công',
+            message: 'Sắp xếp chương thành công!',
+            type: 'success'
+          });
+        } else {
+          ElNotification({
+            title: 'Thất bại',
+            message: 'Sắp xếp chương không thành công!',
+            type: 'error'
+          });
+        }
+      } catch (error) {
+        ElNotification({
+          title: 'Lỗi',
+          message: 'Có lỗi xảy ra khi sắp xếp chương!',
+          type: 'error'
+        });
+      }
+    };
+  
+    // End sort section
+
   // END SECTIONS
 
 
   onMounted(() => {
-    fetchCourseData()
+      fetchCourseData();
   })
 
   return {
@@ -420,6 +446,7 @@ export default function useCourse() {
     fetchCourseData,
     handleDeleteSection,
     handleEditSection,
+    handleSortSection,
     courseId,
     loading,
     section,

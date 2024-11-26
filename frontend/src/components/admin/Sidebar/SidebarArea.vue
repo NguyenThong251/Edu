@@ -177,10 +177,6 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
             label: 'Thêm khoá học mới',
             route: '/teacher/course/add-course'
           },
-          {
-            label: 'Phiếu giảm giá',
-            route: '/teacher/course/manager-coupon'
-          },
         ]
       },
       // {

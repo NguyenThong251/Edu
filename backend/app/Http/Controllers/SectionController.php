@@ -74,13 +74,20 @@ class SectionController extends Controller
         return formatResponse(STATUS_OK, '', '', __('messages.sections_deleted_success'));
     }
 
-    // public function sort(Request $request)
-    // {
-    //     $sections = json_decode($request->itemJSON);
-    //     foreach ($sections as $key => $value) {
-    //         $updater = $key + 1;
-    //         Section::where('id', $value)->update(['sort' => $updater]);
-    //     }
-    // }
+    public function sort(Request $request)
+    {
+        $sortedSections = $request->input('sortedSections');
+        
+        // Giả sử bạn có một model `Section`, cập nhật thứ tự cho từng phần tử
+        foreach ($sortedSections as $index => $section) {
+            // Cập nhật thứ tự của các phần tử
+            Section::where('id', $section['id'])->update(['sort' => $index + 1]);
+        }
+
+        return response()->json([
+            'status' => 'OK',
+            'message' => 'Dữ liệu đã được sắp xếp thành công'
+        ]);
+    }
 }
 

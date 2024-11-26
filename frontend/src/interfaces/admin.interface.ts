@@ -32,7 +32,7 @@ export interface TBaseInputProps {
   customsClassChild2?: string
 }
 export interface SelectGroupProps extends TBaseInputProps {
-  value: string | number
+  // value: string | number
   optionsData: Option[]
 }
 interface Option {
@@ -47,8 +47,11 @@ export interface UploadGroupProps extends TBaseInputProps {
   handlePreviewImg: (event: any) => void
 }
 
-export interface RadioGroupProps extends TBaseInputProps {}
-export interface InputItemsProps extends TBaseInputProps {
+export interface RadioGroupProps extends TBaseInputProps {
+
+
+}
+export interface InputItemsProps extends Omit<TBaseInputProps, 'label'> {
   icon: any
   link?: string
 }

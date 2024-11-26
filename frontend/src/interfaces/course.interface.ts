@@ -56,3 +56,15 @@ export interface TCourseFilters {
   sort_order?: string
   language_ids?: number[]
 }
+export interface TSection {
+  id?: number | string
+  course_id?: number[]
+  name?: string
+  sort?: number | string
+  lectures?: TLectures[]
+}
+
+export interface TLectures {
+  id?: number | string
+  title?: string
+}

@@ -133,21 +133,24 @@ import HeaderNavbar from '@/components/admin/Headernavbar/HeaderNavbar.vue';
 import { useSidebarStore } from '@/store/sidebar';
 import { onMounted, ref } from 'vue'
 import useCourse from '@/composables/admin/useCourse';
-import useFetchCategories from '@/composables/admin/category/useCardCategory';
+// import useFetchCategories from '@/composables/admin/category/useCardCategory';
 import type { TListCategories } from '@/interfaces/category.interface';
 import ButtonPrimarySm from '@/components/admin/Button/ButtonPrimarySm.vue';
 import SubmitButtonPrimary from '@/components/admin/Button/SubmitButtonPrimary.vue';
 import { ArrowPathIcon } from '@heroicons/vue/24/outline';
-
+import { useCategoryStore } from '@/store/category';
 
 
 const { formDataAddCourse, courseLevels, fetchCourseLevels, fetchLanguages, languages, submitForm , handlePreviewImg, imageUrl} = useCourse();
-const { categories, fetchCategories } = useFetchCategories();
+// const { categories, fetchCategories } = useFetchCategories();
+
+const {categories, fetchCategoriesCRUD} = useCategoryStore()
+
 const parentCategories = ref([]);
 
 // Lọc danh mục có parent_id là null
 onMounted(async() => {
-  await fetchCategories();
+  await fetchCategoriesCRUD();
   fetchCourseLevels()
   fetchLanguages()
   parentCategories.value = categories.value.filter((category: TListCategories) => category.parent_id === null);
