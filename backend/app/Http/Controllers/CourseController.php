@@ -73,7 +73,7 @@ class CourseController extends Controller
     }
 
 
-    public function search(Request $request)
+    public function search(Request $request, $instructorId='', $courseId='')
     {
         // Lấy các tham số lọc từ request
 
@@ -110,10 +110,19 @@ class CourseController extends Controller
 
         // Query khóa học với điều kiện lọc
         $limit = $request->limit ?? 10;
-        $query = Course::with(['category', 'level', 'creator:id,last_name,first_name', 'sections.lectures', 'reviews'])
+        if($instructorId && $courseId){
+            $query = Course::with(['category', 'level', 'creator:id,last_name,first_name', 'sections.lectures', 'reviews'])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
+            ->where('created_by', $instructorId)
+            ->where('id', '!=', $courseId)
+            ->where('status', 'active');
+        }else{
+            $query = Course::with(['category', 'level', 'creator:id,last_name,first_name', 'sections.lectures', 'reviews'])
             ->withCount('reviews')
             ->withAvg('reviews', 'rating')
             ->where('status', 'active');
+        }
         // // Áp dụng các bộ lọc
         if ($category_ids) {
             // Chia nhỏ danh sách category_id thành mảng
@@ -522,6 +531,9 @@ class CourseController extends Controller
         });
         $study = new StudyController;
         // Chuẩn bị dữ liệu trả về
+        $data = $this->search($request, $course->creator->id, $id)->getData(); // Lấy dữ liệu dạng object
+        $orderCourse = json_decode(json_encode($data), true)['data']['data'];
+
         $course_data = [
             'id' => $course->id,
             'title' => $course->title,
@@ -548,10 +560,7 @@ class CourseController extends Controller
             'total_reviews' => $total_reviews,
             'preview_videos' => $preview_videos,
             'course_contents' => $study->getAllContent(0, $id, '')['allContent'],
-            'order_course_of_instructor' => Course::where('created_by', $course->creator->id)
-                ->where('status', 'active')
-                ->take(10)
-                ->get(),
+            'order_course_of_instructor' => $orderCourse,
             'instructor' => $instructor,
             'status' => $course->status,
             'reviews' => [
