@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\OrderController;
@@ -128,12 +129,17 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('/get-all-user', [AuthController::class, 'getAllUser']);
             Route::post('/create-user', [AuthController::class, 'adminCreateUser']);
             Route::get('/get-detail-user/{id}', [AuthController::class, 'getDetailUser']);
-
             Route::post('admin-update-user', [AuthController::class, 'adminUpdateUser']);
             Route::delete('delete-user/{id}', [AuthController::class, 'deleteUser']);
             Route::post('restore-user/{id}', [AuthController::class, 'restoreUser']);
             Route::post('force-delete-user/{id}', [AuthController::class, 'forceDeleteUser']);
             Route::post('block/unblock-user/{id}', [AuthController::class, 'blockOrUnlockUser']);
+
+            //admin report
+            Route::get('admin/get-report', [AdminController::class, 'getAdminReport']);
+            Route::get('admin/get-line-chart/revenue', [AdminController::class, 'getAdminLineChartData']);
+            Route::get('admin/get-line-chart/user', [AdminController::class, 'getUserRegistrationLineChart']);
+            Route::get('admin/get-line-chart/order', [AdminController::class, 'getOrderLineChartData']);
 
 
         });

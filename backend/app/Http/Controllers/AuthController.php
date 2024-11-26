@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Jobs\SendEmailForgotPassword;
 use App\Jobs\SendEmailVerification;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -502,41 +503,69 @@ class AuthController extends Controller
 
     public function getAllUser(Request $request)
     {
-        $status = $request->query('status', 'active');
-        $email = $request->query('email', null);
-        $role = $request->query('role', null);
-        $perPage = $request->query('perPage', 10);
-        $page = $request->query('page', 1);
-        $sort_by = $request->query('sort_by', 'created_at');
-        $sort_order = $request->query('sort_order', 'desc');
-        $search = $request->query('search', null);
+        $userQuery = User::query();
 
-        $query = User::query();
-        if ($status) {
-            $query->where('status', $status);
+        if ($request->has('status') && !is_null($request->status)) {
+            $userQuery->where('status', $request->status);
         }
-        if ($role) {
-            $query->where('role', $role);
+
+        if ($request->has('role') && !is_null($request->role)) {
+            $userQuery->where('role', $request->role);
         }
-        if ($email) {
-            $query->where('email', $email);
+
+        if ($request->has('email') && !empty($request->email)) {
+            $userQuery->where('email', 'like', '%' . $request->email . '%');
         }
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'LIKE', "%{$search}%")->orWhere('last_name', 'LIKE', "%{$search}%");
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $userQuery->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', '%' . $search . '%')
+                    ->orWhere('last_name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
             });
         }
-        $query->orderBy($sort_by, $sort_order);
-        $users = $query->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json(['status' => 'OK', 'data' => $users->items(),
-            'pagination' => [
-                'total' => $users->total(),
-                'current_page' => $users->currentPage(),
-                'last_page' => $users->lastPage(),
-                'per_page' => $users->perPage(),
-            ],
-        ]);
+        // Sắp xếp theo `created_at` hoặc bất kỳ trường nào được cung cấp
+        $orderBy = $request->get('order_by', 'created_at'); // Trường sắp xếp (mặc định là `created_at`)
+        $orderDirection = $request->get('order_direction', 'desc'); // Hướng sắp xếp (mặc định là `desc`)
+        $userQuery->orderBy($orderBy, $orderDirection);
+
+        // Phân trang với `per_page` và `page`
+        $perPage = (int) $request->get('per_page', 10); // Mặc định là 10 bản ghi mỗi trang
+        $page = (int) $request->get('page', 1); // Trang hiện tại, mặc định là 1
+
+        // Lấy danh sách đã lọc
+        $users = $userQuery->get();
+
+        // Tổng số bản ghi
+        $total = $users->count();
+
+        // Phân trang thủ công
+        $paginatedUsers = $users->forPage($page, $perPage)->values();
+
+        // Tạo đối tượng LengthAwarePaginator cho phân trang
+        $pagination = new LengthAwarePaginator(
+            $paginatedUsers, // Dữ liệu của trang hiện tại
+            $total,          // Tổng số bản ghi
+            $perPage,        // Số lượng bản ghi mỗi trang
+            $page,           // Trang hiện tại
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(), // Đường dẫn chính
+                'query' => $request->query() // Tham số query hiện tại
+            ]
+        );
+
+        // Chuyển đổi dữ liệu phân trang thành mảng
+        $users = $pagination->toArray();
+
+        // Trả về kết quả với đầy đủ thông tin lọc, phân trang và thông điệp
+        return formatResponse(
+            STATUS_OK,
+            $users, // Dữ liệu người dùng đã phân trang
+            '',
+            __('messages.user_fetch_success') // Thông điệp thành công
+        );
     }
 
     public function adminCreateUser(Request $request)

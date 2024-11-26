@@ -131,10 +131,9 @@ class InstructorController extends Controller
         $startDate = $startDate ? Carbon::parse($startDate) : Carbon::now()->startOfMonth();
         $endDate = $endDate ? Carbon::parse($endDate) : Carbon::now()->endOfMonth();
 
-        // Khởi tạo khoảng thời gian
         $period = $filter === 'month'
-            ? $startDate->monthsUntil($endDate) // Khoảng theo tháng
-            : $startDate->daysUntil($endDate);  // Khoảng theo ngày
+            ? $startDate->monthsUntil($endDate)
+            : $startDate->daysUntil($endDate);
 
         // Lấy dữ liệu doanh thu
         $revenueData = OrderItem::select(
