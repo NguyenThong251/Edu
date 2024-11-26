@@ -181,6 +181,22 @@ return [
     'no_courses_found' => 'No courses found.',
     'courses_retrieved_successfully' => 'Courses retrieved successfully.',
 
+    // Question
+    'question_fetch_success' => 'Questions fetched successfully.',
+    'question_create_success' => 'Question created successfully.',
+    'question_update_success' => 'Question updated successfully.',
+    'question_soft_delete_success' => 'Question soft deleted successfully.',
+    'question_restore_success' => 'Question restored successfully.',
+    'question_force_delete_success' => 'Question permanently deleted successfully.',
+    'question_not_found' => 'Question not found.',
+    'quiz_required' => 'Quiz is required.',
+    'quiz_not_found' => 'Quiz not found.',
+    'question_required' => 'Question is required.',
+    'options_required' => 'Options are required.',
+    'answer_required' => 'Answer is required.',
+    'question_edit_form_success' => 'Question details fetched for editing successfully.',
+
+
 
     // CART
     'cart_items_fetched' => 'List of courses in cart retrieved successfully.',

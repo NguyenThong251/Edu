@@ -547,7 +547,7 @@ class CourseController extends Controller
             'average_rating' => $average_rating,
             'total_reviews' => $total_reviews,
             'preview_videos' => $preview_videos,
-            'course_contents' => $study->getAllContent(0, $id, "")['allContent'],
+            'course_contents' => $study->getAllContent(0, $id, '')['allContent'],
             'order_course_of_instructor' => Course::where('created_by', $course->creator->id)
                 ->where('status', 'active')
                 ->take(10)
