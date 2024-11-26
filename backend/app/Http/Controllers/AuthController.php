@@ -7,11 +7,13 @@ use App\Models\User;
 use App\Jobs\SendEmailForgotPassword;
 use App\Jobs\SendEmailVerification;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Laravel\Socialite\Facades\Socialite;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
@@ -396,35 +398,55 @@ class AuthController extends Controller
         return formatResponse(STATUS_OK, $user, '', __('messages.update_success'));
     }
 
-    public function adminUpdateUser()
+    public function adminUpdateUser(Request $request)
     {
-        $validator = Validator::make(request()->all(), [
-            'user_id' => 'required|integer',
-            'username' => 'string|max:50|unique:users',
-            'email' => 'string|email|max:100|unique:users',
-            'password' => 'string|min:8',
-            'role' => 'in:admin,instructor,student',
-            'status' => 'in:active,inactive',
+        // Xác thực dữ liệu đầu vào
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|integer|exists:users,id',
+            'first_name' => 'sometimes|string|max:50',
+            'last_name' => 'sometimes|string|max:50',
+            'email' => [
+                'sometimes',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($request->input('user_id')),
+            ],
+            'role' => 'sometimes|in:admin,instructor,student',
+            'status' => 'sometimes|in:active,inactive',
         ]);
-
+        //        , [
+        //        'user_id.required' => 'User ID là bắt buộc.',
+        //        'user_id.integer' => 'User ID phải là số nguyên.',
+        //        'user_id.exists' => 'Người dùng không tồn tại.',
+        //        'first_name.string' => 'First name phải là chuỗi.',
+        //        'first_name.max' => 'First name không được vượt quá 50 ký tự.',
+        //        'last_name.string' => 'Last name phải là chuỗi.',
+        //        'last_name.max' => 'Last name không được vượt quá 50 ký tự.',
+        //        'email.email' => 'Email không hợp lệ.',
+        //        'email.max' => 'Email không được vượt quá 255 ký tự.',
+        //        'email.unique' => 'Email đã được sử dụng.',
+        //        'role.in' => 'Role không hợp lệ.',
+        //        'status.in' => 'Status không hợp lệ.',
+        //    ]
+        // Kiểm tra nếu validation thất bại
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Xác thực thất bại');
         }
-        $data = request()->all();
 
-        $user = User::where('id', $data['user_id'])->first();
+        // Lấy dữ liệu cần cập nhật, loại bỏ password nếu có
+        $data = $request->only(['first_name', 'last_name', 'email', 'role', 'status']);
+
+        $user = User::find($request->input('user_id'));
         if (!$user) {
             return formatResponse(STATUS_FAIL, '', '', 'Tài khoản không tồn tại');
         }
 
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make(request()->input('password'));
-        }
-
-        if (!$user->update($data)) {
+        if ($user->update($data)) {
+            return formatResponse(STATUS_OK, $user, '', 'Cập nhật thông tin thành công');
+        } else {
             return formatResponse(STATUS_FAIL, '', '', 'Cập nhật thông tin thất bại');
         }
-        return formatResponse(STATUS_OK, $user, '', 'Cập nhật thông tin thành công');
     }
 
 
@@ -452,7 +474,7 @@ class AuthController extends Controller
         }
         if ($user->trashed()) {
             $user->restore();
-            // $user->is_deleted = User::STATUS_DEFAULT;
+            //            $user->is_deleted = User::STATUS_DEFAULT;
             $user->save();
             return formatResponse(STATUS_OK, $user, '', 'Khôi phục thành công');
         }
@@ -591,8 +613,8 @@ class AuthController extends Controller
         $userQuery->orderBy($orderBy, $orderDirection);
 
         // Phân trang với `per_page` và `page`
-        $perPage = (int) $request->get('per_page', 10); // Mặc định là 10 bản ghi mỗi trang
-        $page = (int) $request->get('page', 1); // Trang hiện tại, mặc định là 1
+        $perPage = (int)$request->get('per_page', 10); // Mặc định là 10 bản ghi mỗi trang
+        $page = (int)$request->get('page', 1); // Trang hiện tại, mặc định là 1
 
         // Lấy danh sách đã lọc
         $users = $userQuery->get();
