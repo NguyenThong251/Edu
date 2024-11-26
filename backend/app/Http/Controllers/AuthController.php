@@ -17,6 +17,8 @@ use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Exception;
+use Illuminate\Pagination\LengthAwarePaginator;
+
 use function Termwind\render;
 
 
@@ -24,7 +26,8 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api',
+        $this->middleware(
+            'auth:api',
             [
                 'except' => [
                     'login',
@@ -38,7 +41,8 @@ class AuthController extends Controller
                     'updateProfile',
                     'checkTokenResetPassword'
                 ]
-            ]);
+            ]
+        );
     }
 
     public function register()
@@ -138,8 +142,8 @@ class AuthController extends Controller
                 }
                 $redirectUrl = env('URL_DOMAIN') . "/google/call-back/{$token}";
                 return redirect($redirectUrl);
-//                $refreshToken = $this->createRefreshToken();
-//                return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
+                //                $refreshToken = $this->createRefreshToken();
+                //                return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
             }
 
             $user = User::create(
@@ -159,11 +163,11 @@ class AuthController extends Controller
             if (!$token = auth('api')->login($user)) {
                 return formatResponse(STATUS_FAIL, '', '', __('messages.create_token_failed'), CODE_FAIL);
             }
-//            $refreshToken = $this->createRefreshToken();
+            //            $refreshToken = $this->createRefreshToken();
             SendEmailWelcome::dispatch($user);
             $redirectUrl = env('URL_DOMAIN') . "/google/call-back/{$token}";
             return redirect($redirectUrl);
-//            return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
+            //            return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
         } catch (\Exception $exception) {
             return formatResponse(STATUS_FAIL, '', $exception, __('messages.login_google_success'), CODE_BAD);
         }
@@ -309,7 +313,7 @@ class AuthController extends Controller
             $decode = JWTAuth::getJWTProvider()->decode($refresh_token);
 
             // Invalidate current access token
-//            auth('api')->invalidate();
+            //            auth('api')->invalidate();
 
             $user = User::find($decode['user_id']);
             if (!$user) {
@@ -319,9 +323,15 @@ class AuthController extends Controller
             $token = auth('api')->login($user);
             $refreshToken = $this->createRefreshToken();
 
-            return formatResponse(STATUS_OK, $user, '', 'Refresh access token thành công', CODE_OK, $token,
-                $refreshToken);
-
+            return formatResponse(
+                STATUS_OK,
+                $user,
+                '',
+                'Refresh access token thành công',
+                CODE_OK,
+                $token,
+                $refreshToken
+            );
         } catch (TokenExpiredException $e) {
             return formatResponse(STATUS_FAIL, '', '', 'Refresh token đã hết hạn');
         } catch (TokenInvalidException $e) {
@@ -427,12 +437,11 @@ class AuthController extends Controller
         }
 
         if ($user->delete()) {
-            $user->is_deleted = User::STATUS_DELETED;
+            // $user->is_deleted = User::STATUS_DELETED;
             $user->save();
             return formatResponse(STATUS_OK, '', '', 'Xóa tài khoản thành công');
         }
         return formatResponse(STATUS_FAIL, '', '', 'Xóa tài khoản thất bại');
-
     }
 
     public function restoreUser($id)
@@ -500,45 +509,123 @@ class AuthController extends Controller
     }
 
 
+    // public function getAllUser(Request $request)
+    // {
+    //     $status = $request->query('status', 'active');
+    //     $email = $request->query('email', null);
+    //     $role = $request->query('role', null);
+    //     $perPage = $request->query('perPage', 10);
+    //     $page = $request->query('page', 1);
+    //     $sort_by = $request->query('sort_by', 'created_at');
+    //     $sort_order = $request->query('sort_order', 'desc');
+    //     $search = $request->query('search', null);
+
+    //     $query = User::query();
+    //     if ($status) {
+    //         $query->where('status', $status);
+    //     }
+    //     if ($role) {
+    //         $query->where('role', $role);
+    //     }
+    //     if ($email) {
+    //         $query->where('email', $email);
+    //     }
+    //     if ($search) {
+    //         $query->where(function ($q) use ($search) {
+    //             $q->where('first_name', 'LIKE', "%{$search}%")->orWhere('last_name', 'LIKE', "%{$search}%");
+    //         });
+    //     }
+    //     $query->orderBy($sort_by, $sort_order);
+    //     $users = $query->paginate($perPage, ['*'], 'page', $page);
+
+    //     return response()->json(['status' => 'OK', 'data' => $users->items(),
+    //         'pagination' => [
+    //             'total' => $users->total(),
+    //             'current_page' => $users->currentPage(),
+    //             'last_page' => $users->lastPage(),
+    //             'per_page' => $users->perPage(),
+    //         ],
+    //     ]);
+    // }
     public function getAllUser(Request $request)
     {
-        $status = $request->query('status', 'active');
-        $email = $request->query('email', null);
-        $role = $request->query('role', null);
-        $perPage = $request->query('perPage', 10);
-        $page = $request->query('page', 1);
-        $sort_by = $request->query('sort_by', 'created_at');
-        $sort_order = $request->query('sort_order', 'desc');
-        $search = $request->query('search', null);
+        // Query cơ bản lấy danh sách User
+        $userQuery = User::query();
+        // Kiểm tra tham số `deleted`
+        if ($request->has('deleted') && $request->deleted == 1) {
+            // Lấy các  đã xóa
+            $userQuery->onlyTrashed();
+        } else {
+            // Chỉ lấy các  chưa xóa (mặc định)
+            $userQuery->whereNull('deleted_at');
+        }
 
-        $query = User::query();
-        if ($status) {
-            $query->where('status', $status);
+        // Kiểm tra tham số `status`
+        if ($request->has('status') && !is_null($request->status)) {
+            $userQuery->where('status', $request->status);
         }
-        if ($role) {
-            $query->where('role', $role);
+
+        // Kiểm tra tham số `role`
+        if ($request->has('role') && !is_null($request->role)) {
+            $userQuery->where('role', $request->role);
         }
-        if ($email) {
-            $query->where('email', $email);
+
+        // Lọc theo email (nếu có)
+        if ($request->has('email') && !empty($request->email)) {
+            $userQuery->where('email', 'like', '%' . $request->email . '%');
         }
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'LIKE', "%{$search}%")->orWhere('last_name', 'LIKE', "%{$search}%");
+
+        // Lọc theo keyword tìm kiếm trong tên
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $userQuery->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', '%' . $search . '%')
+                    ->orWhere('last_name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
             });
         }
-        $query->orderBy($sort_by, $sort_order);
-        $users = $query->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json(['status' => 'OK', 'data' => $users->items(),
-            'pagination' => [
-                'total' => $users->total(),
-                'current_page' => $users->currentPage(),
-                'last_page' => $users->lastPage(),
-                'per_page' => $users->perPage(),
-            ],
-        ]);
+        // Sắp xếp theo `created_at` hoặc bất kỳ trường nào được cung cấp
+        $orderBy = $request->get('order_by', 'created_at'); // Trường sắp xếp (mặc định là `created_at`)
+        $orderDirection = $request->get('order_direction', 'desc'); // Hướng sắp xếp (mặc định là `desc`)
+        $userQuery->orderBy($orderBy, $orderDirection);
+
+        // Phân trang với `per_page` và `page`
+        $perPage = (int) $request->get('per_page', 10); // Mặc định là 10 bản ghi mỗi trang
+        $page = (int) $request->get('page', 1); // Trang hiện tại, mặc định là 1
+
+        // Lấy danh sách đã lọc
+        $users = $userQuery->get();
+
+        // Tổng số bản ghi
+        $total = $users->count();
+
+        // Phân trang thủ công
+        $paginatedUsers = $users->forPage($page, $perPage)->values();
+
+        // Tạo đối tượng LengthAwarePaginator cho phân trang
+        $pagination = new LengthAwarePaginator(
+            $paginatedUsers, // Dữ liệu của trang hiện tại
+            $total,          // Tổng số bản ghi
+            $perPage,        // Số lượng bản ghi mỗi trang
+            $page,           // Trang hiện tại
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(), // Đường dẫn chính
+                'query' => $request->query() // Tham số query hiện tại
+            ]
+        );
+
+        // Chuyển đổi dữ liệu phân trang thành mảng
+        $users = $pagination->toArray();
+
+        // Trả về kết quả với đầy đủ thông tin lọc, phân trang và thông điệp
+        return formatResponse(
+            STATUS_OK,
+            $users, // Dữ liệu người dùng đã phân trang
+            '',
+            __('messages.user_fetch_success') // Thông điệp thành công
+        );
     }
-
     public function adminCreateUser(Request $request)
     {
         // Xác thực dữ liệu đầu vào
@@ -606,6 +693,4 @@ class AuthController extends Controller
             'expires_in' => auth('api')->factory()->getTTL() * 60
         ]);
     }
-
-
 }
