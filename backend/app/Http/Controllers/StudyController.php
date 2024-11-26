@@ -136,7 +136,7 @@ class StudyController extends Controller
 
 
 
-    public function getAllContent($userId, $courseId)
+    public function getAllContent($userId, $courseId, $contentKeyword)
     {
         $sections = Section::where('course_id', $courseId)
             ->where('status', 'active')
@@ -312,6 +312,42 @@ class StudyController extends Controller
 
         // Gộp tất cả nội dung (section và quiz)
         $allContent = $sections->sortBy('order')->values();
+        $allContent = $allContent->map(function ($section) use ($contentKeyword) {
+            // Nếu $contentKeyword rỗng hoặc null, trả về toàn bộ section
+            if (empty($contentKeyword)) {
+                return $section;
+            }
+        
+            // Kiểm tra từ khóa có khớp với tiêu đề section không
+            $sectionMatches = stripos($section['title'], $contentKeyword) !== false;
+        
+            // Lọc lecture và quiz trong section_content dựa trên từ khóa
+            $filteredLectures = $section['section_content']->filter(function ($content) use ($contentKeyword) {
+                return stripos($content['title'], $contentKeyword) !== false;
+            });
+        
+            // Nếu từ khóa khớp với tiêu đề section, trả về toàn bộ section
+            if ($sectionMatches) {
+                return $section; // Trả về toàn bộ section và nội dung bên trong
+            }
+        
+            // Nếu từ khóa khớp với nội dung lecture hoặc quiz
+            if ($filteredLectures->isNotEmpty()) {
+                // Trả về section, nhưng chỉ giữ các nội dung khớp
+                return [
+                    'id' => $section['id'],
+                    'title' => $section['title'],
+                    'order' => $section['order'],
+                    'content_course_type' => $section['content_course_type'],
+                    'section_content' => $filteredLectures->values(), // Nội dung khớp
+                ];
+            }
+        
+            // Nếu không có gì khớp, bỏ qua section này (trả về null)
+            return null;
+        })->filter(); // Lọc bỏ các giá trị null
+         // Lọc bỏ các giá trị null
+        
 
         // Chuẩn bị dữ liệu trả về
         $responseData = [
@@ -360,6 +396,8 @@ class StudyController extends Controller
 
         // Lấy course_id từ request
         $courseId = $request->input('course_id');
+        $contentKeyword='';
+        $contentKeyword = $request->input('content_keyword');
 
         // Kiểm tra xem user đã mua khóa học chưa
         $orderItem = OrderItem::where('course_id', $courseId)
@@ -383,7 +421,7 @@ class StudyController extends Controller
         }
 
         $userId = $currentUser->id;
-        $data = $this->getAllContent($userId, $courseId);
+        $data = $this->getAllContent($userId, $courseId, $contentKeyword);
         $allContent = $data['allContent'];
         $totalContentCount = $data['total_lecture_count'];
         $totalContentDone = $data['total_lecture_done'];
