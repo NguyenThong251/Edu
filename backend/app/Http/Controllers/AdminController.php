@@ -238,53 +238,65 @@ class AdminController extends Controller
     public function getOrderLineChartData(Request $request)
     {
         try {
+            // Lấy các tham số từ request
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
-            $filter = $request->input('filter', 'day');
+            $filter = $request->input('filter', 'day'); // 'day', 'month', 'year'
 
-            $startDate = $startDate ? Carbon::parse($startDate) : Carbon::now()->subMonth()->startOfDay();
-            $endDate = $endDate ? Carbon::parse($endDate) : Carbon::now()->endOfDay();
+            // Xử lý các tham số và thiết lập khoảng thời gian
+            $startDate = $startDate ? Carbon::parse($startDate)->startOfDay() : Carbon::now()->subMonth()->startOfDay();
+            $endDate = $endDate ? Carbon::parse($endDate)->endOfDay() : Carbon::now()->endOfDay();
 
-            if ($filter === 'month') {
-                $period = $startDate->monthsUntil($endDate);
-                $format = 'Y-m';
-            } elseif ($filter === 'year') {
-                $period = $startDate->yearsUntil($endDate);
-                $format = 'Y';
-            } else { // 'day'
-                $period = $startDate->daysUntil($endDate);
-                $format = 'Y-m-d';
+            // Xác định định dạng và tạo khoảng thời gian dựa trên filter
+            switch ($filter) {
+                case 'month':
+                    $format = '%Y-%m';
+                    $groupByFormat = "DATE_FORMAT(created_at, '{$format}') as period";
+                    $carbonFormat = 'Y-m';
+                    $step = '1 month';
+                    break;
+                case 'year':
+                    $format = '%Y';
+                    $groupByFormat = "DATE_FORMAT(created_at, '{$format}') as period";
+                    $carbonFormat = 'Y';
+                    $step = '1 year';
+                    break;
+                case 'day':
+                default:
+                    $format = '%Y-%m-%d';
+                    $groupByFormat = "DATE_FORMAT(created_at, '{$format}') as period";
+                    $carbonFormat = 'Y-m-d';
+                    $step = '1 day';
+                    break;
             }
 
-            // Lấy dữ liệu đơn hàng
-            $orderData = Order::select(
-                DB::raw("DATE_FORMAT(created_at, '{$format}') as period"),
-                DB::raw("COUNT(id) as orders")
-            )
+            // Tạo khoảng thời gian sử dụng CarbonPeriod
+            $period = CarbonPeriod::create($startDate, $step, $endDate);
+
+            // Lấy dữ liệu đơn hàng đã thanh toán
+            $orderData = Order::selectRaw("{$groupByFormat}, COUNT(id) as orders")
+                ->where('payment_status', 'paid') // Chỉ lấy đơn hàng đã thanh toán
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->groupBy('period')
                 ->orderBy('period', 'asc')
                 ->get();
 
             // Chuyển dữ liệu thành dạng mảng [period => orders]
-            $data = $orderData->keyBy('period')->map(function ($item) {
-                return [
-                    'orders' => $item->orders,
-                ];
-            });
+            $data = $orderData->pluck('orders', 'period')->toArray();
+
 
             // Chuẩn bị dữ liệu kết quả với các khoảng thời gian không có đơn hàng hiển thị 0
             $result = [];
             foreach ($period as $date) {
-                $formattedDate = $date->format($format);
+                $formattedDate = $date->format($carbonFormat);
+                $registrations = isset($data[$formattedDate]) ? (int) $data[$formattedDate] : 0;
                 $result[] = [
                     'period' => $formattedDate,
-                    'orders' => $data->get($formattedDate)['orders'] ?? 0,
+                    'orders' => $registrations,
                 ];
             }
-
             // Tính tổng đơn hàng
-            $totalOrders = $orderData->sum('orders');
+            $totalOrders = array_sum($data);
 
             return response()->json([
                 'status' => 'OK',
@@ -293,6 +305,7 @@ class AdminController extends Controller
                 'code' => 200
             ], 200);
         } catch (\Exception $e) {
+
             return response()->json([
                 'status' => 'Error',
                 'message' => $e->getMessage(),
