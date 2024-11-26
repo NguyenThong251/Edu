@@ -452,7 +452,7 @@ class AuthController extends Controller
         }
         if ($user->trashed()) {
             $user->restore();
-            $user->is_deleted = User::STATUS_DEFAULT;
+            // $user->is_deleted = User::STATUS_DEFAULT;
             $user->save();
             return formatResponse(STATUS_OK, $user, '', 'Khôi phục thành công');
         }
