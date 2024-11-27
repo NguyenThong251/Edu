@@ -389,7 +389,8 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
-        $data = request()->except(['role', 'email_verified', 'reset_token', 'status']);
+        // $data = request()->except(['role', 'email_verified', 'reset_token', 'status']);
+        $data = request()->except(['email_verified', 'reset_token', 'status']);
         if (isset($data['password'])) {
             $data['password'] = Hash::make(request()->input('password'));
         }
