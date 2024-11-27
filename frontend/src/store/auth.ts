@@ -204,6 +204,36 @@ export const useAuthStore = defineStore('auth', () => {
       console.log(error)
     }
   }
+  const updateProfile = async (data: TUpdateUser) => {
+    state.value.loading = true
+    state.value.error = null
+
+    try {
+      const response = await api.post('auth/update-profile', data)
+      return response.data
+    } catch (err: any) {
+      state.value.error = err.response?.data?.message || 'Cập nhật thất bại'
+      throw err
+    } finally {
+      state.value.loading = false
+    }
+  }
+  const updateProfileTeacher = async (data: string) => {
+    state.value.loading = true
+    state.value.error = null
+    const role = {
+      role: data
+    }
+    try {
+      const response = await api.post('auth/update-profile', role)
+      return response.data
+    } catch (err: any) {
+      state.value.error = err.response?.data?.message || 'Cập nhật thất bại'
+      throw err
+    } finally {
+      state.value.loading = false
+    }
+  }
   const createUserAdmin = async (userData: TUpdateUserAdmin) => {
     try {
       const res = await api.post('/auth/create-user', userData)
@@ -279,7 +309,9 @@ export const useAuthStore = defineStore('auth', () => {
     createUserAdmin,
     updateUserAdmin,
     restoreUser,
-    isActiveUser
+    isActiveUser,
+    updateProfile,
+    updateProfileTeacher
     // fetchCurrentUser
     // fetchUserData
   }

@@ -14,6 +14,7 @@ export const useCourseStore = defineStore('courseStore', () => {
   // study
   const currentContent = ref<any>({})
   const allContent = ref<any[]>([])
+  const courseStudySearch = ref<any[]>([])
   const progress = ref(0)
   const activeNames = ref(['0'])
   const studyCourse = ref<any>(null)
@@ -107,10 +108,24 @@ export const useCourseStore = defineStore('courseStore', () => {
     }
   }
 
+  const searchLetureStudy = async (course_id: number, content_keyword: string) => {
+    try {
+      const response = await api.get('/auth/change-content', {
+        params: {
+          course_id: course_id,
+          content_keyword: content_keyword
+        }
+      })
+      courseStudySearch.value = response.data.data.allContent
+    } catch (error) {
+      console.error('Error changing content:', error)
+    }
+  }
   // Getter
   const getCourse = () => course.value
   fetchMyCourse()
   return {
+    courseStudySearch,
     studyCourse,
     course,
     myCourses,
@@ -124,6 +139,7 @@ export const useCourseStore = defineStore('courseStore', () => {
     fetchMyCourse,
     fetchStudyCourse,
     changeContent,
-    fetchMyCourseFilter
+    fetchMyCourseFilter,
+    searchLetureStudy
   }
 })

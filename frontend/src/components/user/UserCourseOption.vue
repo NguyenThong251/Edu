@@ -21,7 +21,13 @@
                     <div v-for="section in chapter.section_content" :key="section.id"
                         class="cursor-pointer flex justify-between items-center px-6 py-3 bg-gray-50 hover:bg-gray-100 transition">
                         <div class="flex items-center gap-3">
-                            <PlayCircleIcon class="h-6 w-6 text-indigo-500" />
+                            <div class="" v-if="section.type === 'video'">
+                                <PlayCircleIcon class="h-6 w-6 text-indigo-500" />
+                            </div>
+                            <div class="" v-else>
+                                <DocumentIcon class="h-6 w-6 text-indigo-500" />
+                            </div>
+
                             <div>
                                 <h4 class="text-gray-800 font-medium" :class="{ 'text-indigo-600': section.learned }">
                                     {{ section.title }}
@@ -29,9 +35,9 @@
                                 <span class="text-gray-500 text-sm">{{ section.duration_display }}</span>
                             </div>
                         </div>
-                        <span v-if="section.percent" class="text-sm text-gray-600">
+                        <!-- <span v-if="section.percent" class="text-sm text-gray-600">
                             {{ section.percent }}% hoàn thành
-                        </span>
+                        </span> -->
                     </div>
                 </el-collapse-item>
             </el-collapse>
@@ -41,7 +47,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { PlayCircleIcon } from '@heroicons/vue/20/solid';
+import { DocumentIcon, PlayCircleIcon } from '@heroicons/vue/24/outline';
 
 // Props nhận từ cha
 defineProps<{
@@ -54,6 +60,7 @@ defineProps<{
         section_content: Array<{
             id: number;
             title: string;
+            type: string;
             duration_display: string;
             learned: boolean | null;
             percent: number | null;

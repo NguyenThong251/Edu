@@ -54,7 +54,7 @@ router.beforeEach(async (to, from, next) => {
         message: 'Bạn không có quyền try cập!',
         type: 'warning'
       })
-    } else if (to.meta.role === 'teacher' && !['teacher', 'admin'].includes(userRole)) {
+    } else if (to.meta.role === 'instructor' && !['instructor', 'admin'].includes(userRole)) {
       ElNotification({
         title: 'Cảnh báo',
         message: 'Bạn không có quyền try cập!',

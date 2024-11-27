@@ -5,7 +5,7 @@ export interface TUserAuth {
   email: string
   password: string
   avatar?: string
-  role: 'student' | 'admin' | 'teacher'
+  role: 'student' | 'admin' | 'instructor'
   biography?: string
   contact_info: {
     website?: string
@@ -27,6 +27,7 @@ export interface TUpdateUser {
   }
   gender?: string
   date_of_birth?: string
+  role?: string
 }
 export interface TUpdateUserAdmin {
   id?: number

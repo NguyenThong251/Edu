@@ -65,7 +65,7 @@
                             <div class="text-2xl font-bold">{{ formatPrice(course.current_price) }}</div>
                             <del v-if="course.old_price" class="text-lg text-gray-400">{{
                                 formatPrice(course.old_price)
-                                }}</del>
+                            }}</del>
                         </div>
                         <div class="w-1/3">
 
@@ -108,25 +108,42 @@
     <el-dialog v-model="outerVisible" class="!bg-gray-900  !rounded-lg " width="600">
         <div class="flex flex-col gap-3">
             <span class="text-white text-lg">Xem trước khóa học</span>
-            <h3 class="text-white text-xl font-medium">Learn Figma - UI/UX Design Essential Training</h3>
+            <h3 class="text-white text-xl font-medium">{{ course.title }}</h3>
         </div>
         <div class="mt-5 flex flex-col gap-5">
             <div class="rounded-lg overflow-hidden">
-                <VideoCourse src="https://cdn.theguardian.tv/webM/2015/07/20/150716YesMen_synd_768k_vp8.webm" />
+                <vue-plyr>
+                    <video ref="videoElement">
+                        <source :src="currentVideoLink" type="video/mp4" />
+                        Trình duyệt của bạn không hỗ trợ video.
+                    </video>
+                </vue-plyr>
             </div>
             <h3 class="text-lg font-medium text-white">Video mẫu miễn phí </h3>
-            <ul class="flex flex-col">
+            <!-- <ul class="flex flex-col">
                 <VideoFreeItem image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg" title="Giới thiệu"
                     duration="03:57" :isActive="true" />
                 <VideoFreeItem image="https://img-c.udemycdn.com/course/240x135/4993276_3452.jpg" title="Giới thiệu"
                     duration="03:57" :isActive="false" />
-            </ul>
+            </ul> -->
+            <div class="mt-5 flex flex-col gap-5">
+                <ul>
+                    <li v-for="(video, index) in course.preview_videos" :key="index" @click="setActiveVideo(index)"
+                        :class="['cursor-pointer flex justify-between items-center p-3', activeVideoIndex === index ? 'bg-gray-600' : '']">
+                        <div class="flex items-center gap-3">
+                            <img class="w-50 h-12 rounded-md" :src="course.thumbnail" alt="Video Thumbnail">
+                            <PlayCircleIcon class="h-6 w-6 text-white" />
+                            <span class="text-white">{{ video.title }}</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
     </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import Breadcrumb from '@/components/ui/breadcrumb/Breadcrumb.vue';
 import Button from '@/components/ui/button/Button.vue';
 import UserCourseDescribe from '@/components/user/UserCourseDescribe.vue';
@@ -147,7 +164,17 @@ const activeTab = ref('description');
 const outerVisible = ref(false);
 const route = useRoute();
 const id = route.params.id ? String(route.params.id) : null;
+const activeVideoIndex = ref(0); // Video đầu tiên mặc định được chọn
 
+// Lấy thông tin video hiện tại dựa trên chỉ số
+const currentVideoLink = computed(() => {
+    return course.value.preview_videos[activeVideoIndex.value]?.content_link || '';
+});
+
+// Đổi video đang active
+const setActiveVideo = (index: number) => {
+    activeVideoIndex.value = index;
+};
 const courseStore = useCourseStore();
 const { course } = storeToRefs(courseStore);
 const { handleAddToCart } = useCart();

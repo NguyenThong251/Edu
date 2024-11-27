@@ -101,7 +101,7 @@
                 <div class="bg-white rounded-lg my-5 p-2">
                     <el-tabs v-model="activeName" class="demo-tabs">
                         <el-tab-pane label="Tìm kiếm" name="first">
-                            <UserSearch />
+                            <UserSearch :course_id="idCourse || 0" />
                         </el-tab-pane>
                         <el-tab-pane label="Hỏi đáp" name="second">
                             <UserQuestion />
