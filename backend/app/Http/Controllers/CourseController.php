@@ -347,14 +347,16 @@ class CourseController extends Controller
             return $carry + $section->lectures->where('status', 'active')->sum('duration');
         }));
 
-        $preview_videos = Lecture::where('status', 'active')
+        $preview_videos = Lecture::select('title', 'content_link')
+            ->where('status', 'active')
             ->whereHas('section', function ($query) use ($course) {
                 $query->where('course_id', $course->id)
                     ->where('preview', 'can')
                     ->where('status', 'active');
             })
             ->where('type', 'video')
-            ->pluck('content_link');
+            ->get();
+
 
         // Thống kê instructor
         $creatorId = $course->creator->id;
