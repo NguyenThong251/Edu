@@ -355,6 +355,7 @@ class AuthController extends Controller
             'email' => 'string|email|max:100|unique:users,email,' . $user->id,
             'phone_number' => 'regex:/^[0-9]+$/',
             'address' => 'string',
+            'biography' => 'string',
             'contact_info' => 'array',
             'gender' => 'nullable|string|in:male,female,unknown',
             'date_of_birth' => 'nullable|date',
