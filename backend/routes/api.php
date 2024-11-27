@@ -192,6 +192,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/auth/upload-chat-image', [ChatController::class, 'uploadChatImage']);
             Route::delete('/auth/delete-chat-image', [ChatController::class, 'deleteChatImage']);
 
+            Route::get('/search-content', [StudyController::class, 'searchContent']);
             Route::get('/study-course', [StudyController::class, 'studyCourse']);
             Route::get('/change-content', [StudyController::class, 'changeContent']);
             Route::get('/get-user-courses', [StudyController::class, 'getUserCourses']);
