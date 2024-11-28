@@ -98,8 +98,13 @@
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
 import CardCourseComment from '@/components/ui/card/CardCourseComment.vue';
+import { useReviewsStore } from '@/store/review';
 import { MagnifyingGlassIcon, StarIcon as StarIconSolid } from '@heroicons/vue/20/solid';
 import { StarIcon as StarIconOutline } from '@heroicons/vue/24/outline';
+import { storeToRefs } from 'pinia';
+const useReviewStore = useReviewsStore()
+const { state } = storeToRefs(useReviewStore)
+const { fetchReviews } = useReviewStore
 
 </script>
 

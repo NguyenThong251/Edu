@@ -1,4 +1,4 @@
-<template>
+3<template>
     <div>
         <!-- STAR REVIEW -->
         <div class="flex flex-col gap-5">

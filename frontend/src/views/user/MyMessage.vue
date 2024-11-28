@@ -221,6 +221,7 @@ const setupBroadcasting = () => {
 const fetchMessages = async (receiverId: number) => {
     try {
         const response = await api.get(`/auth/message/private/${receiverId}`);
+        console.log(response.data)
         messages.value = response.data.data;
         scrollToBottom();
     } catch (error) {

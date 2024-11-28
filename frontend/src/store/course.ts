@@ -8,6 +8,7 @@ import type { TChangeContent, TLesson } from '@/interfaces/ui.interface'
 export const useCourseStore = defineStore('courseStore', () => {
   // State
   const course = ref<any>()
+  const listCourseAdmin = ref<any>()
   const isLoading = ref<boolean>(false)
   const error = ref<string | null>(null)
   const myCourses = ref<TCardMyCourse[]>([])
@@ -121,10 +122,21 @@ export const useCourseStore = defineStore('courseStore', () => {
       console.error('Error changing content:', error)
     }
   }
+
+  // Teacher
+  const fetchTecherCourse = async (params: any = {}) => {
+    try {
+      const response = await api.get('auth/instructor/course', { params })
+      listCourseAdmin.value = response.data.data
+    } catch (error) {
+      console.error(error)
+    }
+  }
   // Getter
   const getCourse = () => course.value
   fetchMyCourse()
   return {
+    listCourseAdmin,
     courseStudySearch,
     studyCourse,
     course,
@@ -140,6 +152,7 @@ export const useCourseStore = defineStore('courseStore', () => {
     fetchStudyCourse,
     changeContent,
     fetchMyCourseFilter,
-    searchLetureStudy
+    searchLetureStudy,
+    fetchTecherCourse
   }
 })
