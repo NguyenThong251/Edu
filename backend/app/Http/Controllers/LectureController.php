@@ -48,37 +48,23 @@ class LectureController extends Controller
     {
         $user = auth()->user();
 
-        // Kiểm tra nếu là instructor thì section phải thuộc sở hữu của họ
-        if ($user->role === 'instructor') {
-            $section = \App\Models\Section::where('id', $request->section_id)
-                ->where('created_by', $user->id)
-                ->first();
-
-            if (!$section) {
-                return formatResponse(
-                    STATUS_FAIL,
-                    '',
-                    __('messages.section_not_owned'),
-                    __('messages.unauthorized_action')
-                );
-            }
-        }
-
         $validator = Validator::make($request->all(), [
             'section_id' => 'required|exists:sections,id',
             'type' => 'required|in:video,file',
             'title' => 'required|string|max:255',
-            'content' => 'required|file|mimes:mp4,pdf|max:20480',
+            'content' => [
+                'required',
+                'file',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->type === 'video' && (!$value->isValid() || $value->getMimeType() !== 'video/mp4' || $value->getSize() > 2048 * 1024 * 1024)) {
+                        $fail(__('messages.content_video_invalid'));
+                    } elseif ($request->type === 'file' && (!$value->isValid() || $value->getMimeType() !== 'application/pdf' || $value->getSize() > 50 * 1024 * 1024)) {
+                        $fail(__('messages.content_file_invalid'));
+                    }
+                },
+            ],
             'preview' => 'required|in:can,cant',
             'status' => 'required|in:active,inactive',
-            'order' => [
-                'required',
-                'integer',
-                'min:0',
-                Rule::unique('lectures')->where(function ($query) use ($request) {
-                    return $query->where('section_id', $request->section_id);
-                })
-            ],
         ], [
             'section_id.required' => __('messages.section_id_required'),
             'section_id.exists' => __('messages.section_id_invalid'),
@@ -88,37 +74,37 @@ class LectureController extends Controller
             'title.max' => __('messages.title_max'),
             'content.required' => __('messages.content_required'),
             'content.file' => __('messages.content_file'),
-            'content.mimes' => __('messages.content_mimes'),
-            'content.max' => __('messages.content_max'),
             'preview.required' => __('messages.preview_required'),
             'preview.in' => __('messages.preview_invalid'),
             'status.required' => __('messages.status_required'),
             'status.in' => __('messages.status_invalid'),
-            'order.required' => __('messages.order_required'),
-            'order.unique' => __('messages.order_unique'),
+            'content_video_invalid' => __('messages.content_video_invalid'),
+            'content_file_invalid' => __('messages.content_file_invalid'),
         ]);
 
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
-
-        $contentPath = $this->uploadContent($request);
+        $content = $request->file('content');
+        
 
         $lecture = new Lecture();
+        if ($request->type === 'video') {
+            $lecture->duration = $this->getVideoDuration($content);
+        } else {
+            $lecture->duration = $this->getPdfPageCount($content);
+        }
+        return $lecture->duration;
         $lecture->section_id = $request->section_id;
         $lecture->type = $request->type;
         $lecture->title = $request->title;
+        $contentPath = $this->uploadContent($request);
         $lecture->content_link = $contentPath;
 
-        if ($request->type === 'video') {
-            $lecture->duration = $this->getVideoDuration($contentPath);
-        } else {
-            $lecture->duration = $this->getPdfPageCount($contentPath);
-        }
+        
 
         $lecture->preview = $request->preview;
         $lecture->status = $request->status;
-        $lecture->order = $request->order;
         $lecture->created_by = $user->id;
         $lecture->save();
 
@@ -144,21 +130,36 @@ class LectureController extends Controller
     }
 
 
-    private function getVideoDuration($path)
+    private function getVideoDuration($content)
     {
-        $ffmpeg = FFMpeg::create();
-        $video = $ffmpeg->open(Storage::path($path));
-        $duration = $video->getStreams()->videos()->first()->get('duration');
-        return (int) $duration;
+        $filePath = $content->getPathname();
+        
+        // Chạy FFmpeg để lấy thời gian video (duration)
+        $cmd = "ffmpeg -i {$filePath} 2>&1"; // Lệnh này sẽ in thông tin metadata của video
+        $output = shell_exec($cmd);
+
+        // Tìm thời gian trong output
+        if (preg_match('/Duration: (\d+):(\d+):(\d+\.\d+)/', $output, $matches)) {
+            $hours = (int)$matches[1];
+            $minutes = (int)$matches[2];
+            $seconds = (float)$matches[3];
+
+            // Chuyển đổi thời gian thành giây
+            return ($hours * 3600) + ($minutes * 60) + $seconds;
+        }
+
+        throw new \Exception(__('messages.video_duration_error'));
     }
 
-    private function getPdfPageCount($path)
+
+
+
+    private function getPdfPageCount($content)
     {
         $pdf = new \setasign\Fpdi\Fpdi();
-        $file = Storage::path($path);
+        $file = $content->getPathname();
         $pdf->setSourceFile($file);
-        $pageCount = $pdf->setSourceFile($file);
-        return $pageCount;
+        return $pdf->setSourceFile($file);
     }
 
 
