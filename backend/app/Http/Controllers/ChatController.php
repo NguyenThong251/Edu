@@ -164,5 +164,4 @@ class ChatController extends Controller
 
         return formatResponse(STATUS_FAIL, '', '', 'Image not found', CODE_NOT_FOUND);
     }
-
 }
