@@ -27,7 +27,7 @@ const menuGroups = ref<MenuGroup[]>([
       {
         icon: HomeIcon,
         label: 'Bảng điều khiển',
-        route: '/admin/dashboard'
+        route: '/admin'
       },
       {
         icon: SquaresPlusIcon,
@@ -194,9 +194,14 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
   {
     menuItems: [
       {
+        icon: LockClosedIcon,
+        label: 'Bảo mật',
+        route: '/teacher/security'
+      },
+      {
         icon: UserCircleIcon,
         label: 'Thông tin cá nhân',
-        route: '/teacher/profile-settings'
+        route: '/teacher/profile-setting'
       },
     ]
 

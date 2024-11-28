@@ -37,12 +37,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   const logout = () => {
-    const router = useRouter()
+    // const router = useRouter()
 
     state.value.user = null
     state.value.token = null
     Cookies.remove('token_user_edu')
-    router.push('/')
+    // router.push('/')
   }
   const register = async (userData: TUserAuth) => {
     state.value.loading = true

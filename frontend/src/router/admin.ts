@@ -29,7 +29,7 @@ const admin = [
 
     children: [
       {
-        path: '/admin/dashboard',
+        path: '/admin',
         name: 'admin.dashboard',
         component: Dashboard,
         meta: { requiresAuth: true, role: 'admin', title: 'Bảng điều khiển ' }

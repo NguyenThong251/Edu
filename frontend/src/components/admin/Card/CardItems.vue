@@ -33,6 +33,11 @@ watchEffect(() => {
     },
     {
       icon: revenue,
+      title: "Tổng số doanh thu",
+      total: `${formatPrice(props.total_revenue)}`,
+    },
+    {
+      icon: revenue,
       title: "Doanh thu ròng",
       total: `${formatPrice(props.net_revenue)}`,
     },
