@@ -17,6 +17,8 @@ import Voucher from '@/views/admin/Voucher.vue'
 import Level from '@/views/admin/Level.vue'
 import Language from '@/views/admin/Language.vue'
 import User from '@/views/admin/User.vue'
+import Security from '@/views/user/Security.vue'
+import MyProfile from '@/views/user/MyProfile.vue'
 const admin = [
   {
     path: '/admin',
@@ -155,6 +157,18 @@ const admin = [
         name: 'admin.user',
         component: User,
         meta: { requiresAuth: true, role: 'admin', title: 'Người dùng | Edunity' }
+      },
+      {
+        path: '/admin/profile-security',
+        name: 'admin.profile-security',
+        component: Security,
+        meta: { requiresAuth: true, role: 'admin', title: 'Bảo mật | Edunity' }
+      },
+      {
+        path: '/admin/profile-setting',
+        name: 'admin.user',
+        component: MyProfile,
+        meta: { requiresAuth: true, role: 'admin', title: 'Chỉnh sửa thông tin | Edunity' }
       }
     ]
   }

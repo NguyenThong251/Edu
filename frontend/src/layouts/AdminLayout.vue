@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import SiderArea from '@/components/admin/Sidebar/SidebarArea.vue';
 import HeaderArea from '@/components/admin/Header/HeaderArea.vue';
+import { useRoute, useRouter } from 'vue-router';
 // import '@/assets/css/style.css'
+const router = useRouter()
+const route = useRoute()
+if (route.path === '/admin') {
+  router.push('/admin/dashboard')
+}
 </script>
 <template>
   <!-- ========= Bắt đầu trang============ -->

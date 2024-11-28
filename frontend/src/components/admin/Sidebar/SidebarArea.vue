@@ -4,7 +4,7 @@ import logoMinimal from '@/assets/images/minimal-logo.svg'
 import SidebarItems from './SidebarItems.vue';
 import { computed, ref } from 'vue';
 import { WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon, TicketIcon } from '@heroicons/vue/24/outline';
-import { Cog8ToothIcon, InboxStackIcon, LanguageIcon, UserCircleIcon } from '@heroicons/vue/20/solid';
+import { Cog8ToothIcon, InboxStackIcon, LanguageIcon, UserCircleIcon, LockClosedIcon } from '@heroicons/vue/20/solid';
 import type { MenuGroup } from '@/interfaces/admin.interface';
 
 import { useSidebarStore } from '@/store/sidebar';
@@ -102,9 +102,15 @@ const menuGroups = ref<MenuGroup[]>([
       }
       ,
       {
+        icon: LockClosedIcon,
+        label: 'Bảo mật',
+        route: '/admin/profile-security'
+      },
+
+      {
         icon: UserCircleIcon,
         label: 'Thông tin cá nhân',
-        route: '/admin/profile-settings'
+        route: '/admin/profile-setting'
       },
     ]
   }
@@ -209,7 +215,7 @@ const selectedMenuGroups = computed(() => {
       class=" w-[250px] h-[97vh] max-h-screen relative dark:bg-dark-sidebar bg-primary-sidebar rounded-[16px] shadow-sidebar transform duration-100 overflow-y-auto scroll-hidden"
       :class="sidebarClass">
       <!-- SIDEBAR HEADER -->
-      <RouterLink class="flex items-center justify-center" to="/admin">
+      <RouterLink class="flex items-center justify-center" to="/admin/dashboard">
         <img class="pt-4 w-36  " :class="{ 'p-4': currentLogo == logoMinimal }" :src="currentLogo" alt="">
         <!-- <WindowIcon 
             class="hidden sm:block w-6 h-6 dark:hover:text-gray-200 text-gray-400"
