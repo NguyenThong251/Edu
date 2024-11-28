@@ -428,4 +428,5 @@ const handleExitReviewLesson = () => {
   z-index: 9999;
   pointer-events: none;
 }
+
 </style>
