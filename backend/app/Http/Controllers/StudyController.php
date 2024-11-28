@@ -615,6 +615,7 @@ class StudyController extends Controller
             ->where('status', 'active')
             ->first();
         $responseData = [
+            'created_by' => $course->created_by,
             'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
@@ -842,6 +843,7 @@ class StudyController extends Controller
             ->where('status', 'active')
             ->first();
         $responseData = [
+            'created_by' => $course->created_by,
             'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
