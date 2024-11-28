@@ -11,22 +11,23 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('progress_quizzes', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('course_id');
             $table->unsignedBigInteger('quiz_id');
-            $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
+            $table->double('questions_done');
+            $table->double('percent');
             $table->enum('status', ['active', 'inactive'])->default('inactive');
 
+            $table->softDeletes();
+            $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
-
-            // Primary key
-            $table->primary(['user_id', 'course_id', 'quiz_id']);
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
 
             // Foreign keys
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
-            $table->foreign('quiz_id')->references('id')->on('quizzes')->onDelete('cascade');
+            // $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            // $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
+            // $table->foreign('quiz_id')->references('id')->on('quizzes')->onDelete('cascade');
         });
     }
 

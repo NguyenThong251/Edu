@@ -12,14 +12,23 @@ class Lecture extends Model
     protected $fillable = [
         'section_id',
         'title',
-        'content',
+        'content_link',
         'link_url',
         'status',
         'duration',
+        'order',
     ];
 
     public function section(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Section::class);
+    }
+    public function progress()
+    {
+        return $this->hasMany(ProgressLecture::class, 'lecture_id');
+    }
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
     }
 }

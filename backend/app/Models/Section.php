@@ -11,8 +11,10 @@ class Section extends Model
 
     protected $fillable = [
         'course_id',
-        'type_section',
+        'title',
         'status',
+        'description',
+        'order',
     ];
 
     public function course(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -25,5 +27,14 @@ class Section extends Model
         return $this->hasMany(Lecture::class, 'section_id');
     }
 
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class, 'section_id');
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
 
 }

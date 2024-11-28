@@ -3,93 +3,158 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Category;
+use App\Models\Category; 
+use App\Models\Course; 
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 
 class CategoryController extends Controller
 {
     public function getListAdmin(Request $request)
     {
-        // Query để lấy danh sách Category, không kiểm tra trạng thái
-        $categoriesQuery = Category::query();
+        // Query cơ bản
+        $categoriesQuery = Category::with('children');
 
-        // Lấy số lượng limit và thông tin phân trang từ request
-        $limit = $request->get('limit', null);
-        $perPage = $request->get('per_page', 10);
-        $currentPage = $request->get('page', 1);
-
-        // Nếu có limit thì giới hạn kết quả trước khi phân trang thủ công
-        if ($limit) {
-            // Lấy các kết quả giới hạn
-            $categories = $categoriesQuery->limit($limit)->get();
-
-            // Lấy tổng số lượng kết quả
-            $total = $categories->count();
-
-            // Phân trang thủ công cho kết quả đã giới hạn
-            $categories = $categories->forPage($currentPage, $perPage)->values();
-
-            $paginatedCategories = new \Illuminate\Pagination\LengthAwarePaginator(
-                $categories,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
-            );
-
-            // Chuyển đổi đối tượng phân trang sang mảng với tất cả các thuộc tính chi tiết
-            $paginationData = $paginatedCategories->toArray();
-
-            return formatResponse(STATUS_OK, $paginationData, '', __('messages.category_fetch_success'));
-        } else {
-            // Nếu không có limit, phân trang như bình thường
-            $categories = $categoriesQuery->paginate($perPage, ['*'], 'page', $currentPage);
-            return formatResponse(STATUS_OK, $categories, '', __('messages.category_fetch_success'));
+        // Lọc theo trạng thái xóa mềm
+        if ($request->has('deleted') && $request->deleted == 1) {
+            $categoriesQuery->onlyTrashed();
         }
-    }
 
+        // Lọc theo từ khóa
+        if ($request->has('keyword') && !empty($request->keyword)) {
+            $keyword = $request->keyword;
+            $categoriesQuery->where(function ($query) use ($keyword) {
+                $query->where('name', 'like', "%$keyword%")
+                    ->orWhere('keyword', 'like', "%$keyword%");
+            });
+        }
 
+        // Lọc theo trạng thái hoạt động
+        if ($request->has('status') && !is_null($request->status)) {
+            $categoriesQuery->where('status', $request->status);
+        }
 
-    public function index(Request $request)
-    {
-        // Số mục trên mỗi trang, mặc định là 10 nếu không có trong request
-        $perPage = $request->get('per_page', 10);
+        // Lấy danh sách tất cả danh mục
+        $allCategories = $categoriesQuery->get();
 
-        // Lấy tất cả các danh mục cùng với danh mục con
-        $categories = Category::with('children')->withCount('courses')->get();
+        // Thu thập ID của danh mục con
         $childCategoryIds = collect();
-
-        // Thu thập các id của các danh mục con
-        foreach ($categories as $category) {
+        foreach ($allCategories as $category) {
             if ($category->children) {
                 $childCategoryIds = $childCategoryIds->merge($category->children->pluck('id'));
             }
         }
 
         // Loại bỏ các danh mục con khỏi danh sách chính
-        $filteredCategories = $categories->reject(function ($category) use ($childCategoryIds) {
+        $filteredCategories = $allCategories->reject(function ($category) use ($childCategoryIds) {
             return $childCategoryIds->contains($category->id);
         });
 
-        // Phân trang
-        $currentPage = $request->get('page', 1); // Lấy trang hiện tại từ request, mặc định là 1
-        $total = $filteredCategories->count(); // Tổng số danh mục đã lọc
-        $filteredCategories = $filteredCategories->slice(($currentPage - 1) * $perPage, $perPage)->values(); // Lấy các mục cho trang hiện tại
-        // Tạo thông tin phân trang
+        // Phân trang danh sách đã lọc
+        $perPage = (int) $request->get('per_page', 10);
+        $currentPage = (int) $request->get('page', 1);
+        $total = $filteredCategories->count();
+
+        $paginatedCategories = $filteredCategories
+            ->slice(($currentPage - 1) * $perPage, $perPage)
+            ->values();
+
+        // Tạo dữ liệu phân trang
         $paginated = [
-            'data' => $filteredCategories,
+            'data' => $paginatedCategories,
             'current_page' => $currentPage,
-            'last_page' => (int) ceil($total / $perPage), // Tính số trang cuối cùng
+            'last_page' => (int) ceil($total / $perPage),
             'per_page' => $perPage,
             'total' => $total,
         ];
 
-        // Phản hồi theo chuẩn
-        return formatResponse(STATUS_OK, $paginated, '', __('messages.category_fetch_success'));
+        // Trả về kết quả
+        return formatResponse(
+            STATUS_OK,
+            $paginated,
+            '',
+            __('messages.category_fetch_success')
+        );
     }
+
+
+
+
+
+    public function index(Request $request)
+{
+    // Số mục trên mỗi trang, mặc định là 10 nếu không có trong request
+    $perPage = $request->get('per_page', 10);
+
+    // Lấy tất cả danh mục kèm danh mục con
+    $categories = Category::with('children')->get();
+
+    // Tính tổng số courses (bao gồm danh mục con) cho tất cả danh mục
+    $categories->map(function ($category) {
+        $category->courses_count = $this->calculateTotalCourses($category); // Tính tổng số courses cho danh mục (bao gồm danh mục con)
+        return $category;
+    });
+
+    $childCategoryIds = collect();
+
+    // Thu thập các id của các danh mục con
+    foreach ($categories as $category) {
+        if ($category->children) {
+            $childCategoryIds = $childCategoryIds->merge($category->children->pluck('id'));
+        }
+    }
+
+    // Loại bỏ các danh mục con khỏi danh sách chính
+    $filteredCategories = $categories->reject(function ($category) use ($childCategoryIds) {
+        return $childCategoryIds->contains($category->id);
+    });
+
+    // Phân trang
+    $currentPage = $request->get('page', 1); // Lấy trang hiện tại từ request, mặc định là 1
+    $total = $filteredCategories->count(); // Tổng số danh mục đã lọc
+    $filteredCategories = $filteredCategories->slice(($currentPage - 1) * $perPage, $perPage)->values(); // Lấy các mục cho trang hiện tại
+
+    // Tạo thông tin phân trang
+    $paginated = [
+        'data' => $filteredCategories,
+        'current_page' => $currentPage,
+        'last_page' => (int) ceil($total / $perPage), // Tính số trang cuối cùng
+        'per_page' => $perPage,
+        'total' => $total,
+    ];
+
+    // Phản hồi theo chuẩn
+    return formatResponse(STATUS_OK, $paginated, '', __('messages.category_fetch_success'));
+}
+
+/**
+ * Đệ quy tính tổng số courses của danh mục (bao gồm danh mục con)
+ *
+ * @param Category $category
+ * @return int
+ */
+private function calculateTotalCourses($category)
+{
+    // Lấy số lượng courses của danh mục hiện tại
+    $totalCourses = Course::where('category_id', $category->id)
+        ->where('status', 'active')
+        ->count();
+
+    // Đệ quy tính tổng số courses cho tất cả danh mục con
+    if ($category->children) {
+        $category->children->map(function ($child) use (&$totalCourses) {
+            $child->courses_count = $this->calculateTotalCourses($child); // Gán số courses cho danh mục con
+            $totalCourses += $child->courses_count; // Cộng dồn tổng số courses
+        });
+    }
+
+    return $totalCourses;
+}
+
+
 
 
     // Tạo mới category
@@ -97,7 +162,7 @@ class CategoryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:100|unique:categories',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            // 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'icon' => 'nullable|string',
             'keyword' => 'nullable|string',
@@ -289,17 +354,15 @@ class CategoryController extends Controller
             return formatResponse(STATUS_FAIL, '', '', __('messages.category_not_found'));
         }
 
-        // Cập nhật is_deleted và deleted_by
-        $category->is_deleted = true;
         $category->deleted_by = auth()->id();
         $category->save();
 
         $category->delete(); // Thực hiện soft delete
+        $category = Category::onlyTrashed()->find($id);
 
-        return formatResponse(STATUS_OK, '', '', __('messages.category_soft_delete_success'));
+        return formatResponse(STATUS_OK, $category, '', __('messages.category_soft_delete_success'));
     }
 
-    // Khôi phục category bị soft deleted (cập nhật is_deleted)
     public function restore($id)
     {
         // Tìm danh mục bị xóa mềm
@@ -317,15 +380,15 @@ class CategoryController extends Controller
             return formatResponse(STATUS_FAIL, '', '', __('messages.category_not_found')); // Thông báo danh mục không tồn tại
         }
 
-        // Cập nhật lại is_deleted và deleted_by
-        $category->is_deleted = false;
         $category->deleted_by = null; // Xóa thông tin deleted_by khi khôi phục
         $category->save();
 
         // Khôi phục danh mục
         $category->restore();
 
-        return formatResponse(STATUS_OK, '', '', __('messages.category_restore_success')); // Thông báo khôi phục thành công
+        $category = Category::find($id);
+
+        return formatResponse(STATUS_OK, $category, '', __('messages.category_restore_success')); // Thông báo khôi phục thành công
     }
 
     // Xóa cứng category
@@ -341,6 +404,6 @@ class CategoryController extends Controller
         // Xóa vĩnh viễn
         $category->forceDelete();
 
-        return formatResponse(STATUS_OK, '', '', __('messages.category_force_delete_success'));
+        return formatResponse(STATUS_OK, $category, '', __('messages.category_force_delete_success'));
     }
 }

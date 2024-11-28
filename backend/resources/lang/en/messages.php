@@ -144,6 +144,44 @@ return [
     'language_force_delete_success' => 'Language permanently deleted successfully.',
     'language_not_found' => 'Language not found.',
 
+
+    //Lecture
+    'lecture_fetch_success' => 'Lecture list fetched successfully.',
+    'lecture_detail_success' => 'Lecture details fetched successfully.',
+    'lecture_create_success' => 'Lecture created successfully.',
+    'lecture_update_success' => 'Lecture updated successfully.',
+    'lecture_soft_delete_success' => 'Lecture soft deleted successfully.',
+    'lecture_not_found' => 'Lecture not found.',
+    'validation_error' => 'Invalid data provided.',
+    'content_upload_failed' => 'Content upload failed.',
+    'content_must_be_video' => 'Content must be a video file.',
+    'content_must_be_pdf' => 'Content must be a PDF file.',
+    'section_not_owned' => 'Section does not belong to you.',
+    'unauthorized_action' => 'You are not authorized to perform this action.',
+    'section_id_required' => 'Section ID is required.',
+    'section_id_invalid' => 'Section ID is invalid.',
+    'type_required' => 'Lecture type is required.',
+    'type_invalid' => 'Lecture type is invalid.',
+    'title_required' => 'Lecture title is required.',
+    'title_max' => 'Lecture title must not exceed 255 characters.',
+    'content_required' => 'Lecture content is required.',
+    'content_file' => 'Content must be a file.',
+    'content_mimes' => 'Content must be a file of type mp4 or pdf.',
+    'content_max' => 'File size must not exceed 20MB.',
+    'preview_required' => 'Preview status is required.',
+    'preview_invalid' => 'Preview status is invalid.',
+    'status_required' => 'Lecture status is required.',
+    'status_invalid' => 'Lecture status is invalid.',
+    'order_required' => 'Lecture order is required.',
+    'order_unique' => 'Lecture order already exists in this section.',
+
+    //STUDY
+    'course_not_purchased' => 'You have not purchased this course.',
+    'course_access_granted' => 'You can access this course.',
+    'no_courses_found' => 'No courses found.',
+    'courses_retrieved_successfully' => 'Courses retrieved successfully.',
+
+
     // CART
     'cart_items_fetched' => 'List of courses in cart retrieved successfully.',
     'course_not_found_in_cart' => 'Course not in cart.',
@@ -187,6 +225,7 @@ return [
 //    'updateUser' => 'Cập nhật thành công',
     'phone_number_update' => 'Phone number must be a number.',
     'address_update' => 'Address must be a string',
-    'contactInfo_update' => 'Contact info must be string.',
+    'contactInfo_update' => 'Contact info must be array.',
 
+    'user_has_blocked' => 'Account has been blocked.',
 ];

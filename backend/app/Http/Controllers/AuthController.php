@@ -7,10 +7,13 @@ use App\Models\User;
 use App\Jobs\SendEmailForgotPassword;
 use App\Jobs\SendEmailVerification;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Laravel\Socialite\Facades\Socialite;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
@@ -273,6 +276,9 @@ class AuthController extends Controller
         if (!$user->email_verified) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.email_not_verified'));
         }
+        if ($user->status != USER::USER_ACTIVE) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.user_has_blocked'));
+        }
         $credentials = request(['email', 'password']);
         if (!$token = auth('api')->attempt($credentials)) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.password_incorrect'));
@@ -339,7 +345,7 @@ class AuthController extends Controller
             'email' => 'string|email|max:100|unique:users,email,' . $user->id,
             'phone_number' => 'regex:/^[0-9]+$/',
             'address' => 'string',
-            'contact_info' => 'string',
+            'contact_info' => 'array',
             'gender' => 'nullable|string|in:male,female,unknown',
             'date_of_birth' => 'nullable|date',
             'password' => 'string|min:8',
@@ -353,7 +359,7 @@ class AuthController extends Controller
 
             'phone_number.regex' => __('messages.phone_number_update'),
             'address.string' => __('messages.address_update'),
-            'contact_info.string' => __('messages.contactInfo_update'),
+            'contact_info.array' => __('messages.contactInfo_update'),
 
             'email.required' => __('messages.email_required'),
             'email.string' => __('messages.email_string'),
@@ -382,35 +388,55 @@ class AuthController extends Controller
         return formatResponse(STATUS_OK, $user, '', __('messages.update_success'));
     }
 
-    public function adminUpdateUser()
+    public function adminUpdateUser(Request $request)
     {
-        $validator = Validator::make(request()->all(), [
-            'user_id' => 'required|integer',
-            'username' => 'string|max:50|unique:users',
-            'email' => 'string|email|max:100|unique:users',
-            'password' => 'string|min:8',
-            'role' => 'in:admin,instructor,student',
-            'status' => 'in:active,inactive',
+        // Xác thực dữ liệu đầu vào
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|integer|exists:users,id',
+            'first_name' => 'sometimes|string|max:50',
+            'last_name' => 'sometimes|string|max:50',
+            'email' => [
+                'sometimes',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($request->input('user_id')),
+            ],
+            'role' => 'sometimes|in:admin,instructor,student',
+            'status' => 'sometimes|in:active,inactive',
         ]);
-
+//        , [
+//        'user_id.required' => 'User ID là bắt buộc.',
+//        'user_id.integer' => 'User ID phải là số nguyên.',
+//        'user_id.exists' => 'Người dùng không tồn tại.',
+//        'first_name.string' => 'First name phải là chuỗi.',
+//        'first_name.max' => 'First name không được vượt quá 50 ký tự.',
+//        'last_name.string' => 'Last name phải là chuỗi.',
+//        'last_name.max' => 'Last name không được vượt quá 50 ký tự.',
+//        'email.email' => 'Email không hợp lệ.',
+//        'email.max' => 'Email không được vượt quá 255 ký tự.',
+//        'email.unique' => 'Email đã được sử dụng.',
+//        'role.in' => 'Role không hợp lệ.',
+//        'status.in' => 'Status không hợp lệ.',
+//    ]
+        // Kiểm tra nếu validation thất bại
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Xác thực thất bại');
         }
-        $data = request()->all();
 
-        $user = User::where('id', $data['user_id'])->first();
+        // Lấy dữ liệu cần cập nhật, loại bỏ password nếu có
+        $data = $request->only(['first_name', 'last_name', 'email', 'role', 'status']);
+
+        $user = User::find($request->input('user_id'));
         if (!$user) {
             return formatResponse(STATUS_FAIL, '', '', 'Tài khoản không tồn tại');
         }
 
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make(request()->input('password'));
-        }
-
-        if (!$user->update($data)) {
+        if ($user->update($data)) {
+            return formatResponse(STATUS_OK, $user, '', 'Cập nhật thông tin thành công');
+        } else {
             return formatResponse(STATUS_FAIL, '', '', 'Cập nhật thông tin thất bại');
         }
-        return formatResponse(STATUS_OK, $user, '', 'Cập nhật thông tin thành công');
     }
 
 
@@ -439,7 +465,7 @@ class AuthController extends Controller
         }
         if ($user->trashed()) {
             $user->restore();
-            $user->is_deleted = User::STATUS_DEFAULT;
+//            $user->is_deleted = User::STATUS_DEFAULT;
             $user->save();
             return formatResponse(STATUS_OK, $user, '', 'Khôi phục thành công');
         }
@@ -495,6 +521,144 @@ class AuthController extends Controller
         return formatResponse(STATUS_FAIL, '', '', 'Cập nhật hình ảnh thất bại', CODE_BAD);
     }
 
+
+    public function getAllUser(Request $request)
+    {
+        // Query cơ bản lấy danh sách User
+        $userQuery = User::query();
+        // Kiểm tra tham số `deleted`
+        if ($request->has('deleted') && $request->deleted == 1) {
+            // Lấy các  đã xóa
+            $userQuery->onlyTrashed();
+        } else {
+            // Chỉ lấy các  chưa xóa (mặc định)
+            $userQuery->whereNull('deleted_at');
+        }
+
+        // Kiểm tra tham số `status`
+        if ($request->has('status') && !is_null($request->status)) {
+            $userQuery->where('status', $request->status);
+        }
+
+        // Kiểm tra tham số `role`
+        if ($request->has('role') && !is_null($request->role)) {
+            $userQuery->where('role', $request->role);
+        }
+
+        // Lọc theo email (nếu có)
+        if ($request->has('email') && !empty($request->email)) {
+            $userQuery->where('email', 'like', '%' . $request->email . '%');
+        }
+
+        // Lọc theo keyword tìm kiếm trong tên
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $userQuery->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', '%' . $search . '%')
+                    ->orWhere('last_name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Sắp xếp theo `created_at` hoặc bất kỳ trường nào được cung cấp
+        $orderBy = $request->get('order_by', 'created_at'); // Trường sắp xếp (mặc định là `created_at`)
+        $orderDirection = $request->get('order_direction', 'desc'); // Hướng sắp xếp (mặc định là `desc`)
+        $userQuery->orderBy($orderBy, $orderDirection);
+
+        // Phân trang với `per_page` và `page`
+        $perPage = (int)$request->get('per_page', 10); // Mặc định là 10 bản ghi mỗi trang
+        $page = (int)$request->get('page', 1); // Trang hiện tại, mặc định là 1
+
+        // Lấy danh sách đã lọc
+        $users = $userQuery->get();
+
+        // Tổng số bản ghi
+        $total = $users->count();
+
+        // Phân trang thủ công
+        $paginatedUsers = $users->forPage($page, $perPage)->values();
+
+        // Tạo đối tượng LengthAwarePaginator cho phân trang
+        $pagination = new LengthAwarePaginator(
+            $paginatedUsers, // Dữ liệu của trang hiện tại
+            $total,          // Tổng số bản ghi
+            $perPage,        // Số lượng bản ghi mỗi trang
+            $page,           // Trang hiện tại
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(), // Đường dẫn chính
+                'query' => $request->query() // Tham số query hiện tại
+            ]
+        );
+
+        // Chuyển đổi dữ liệu phân trang thành mảng
+        $users = $pagination->toArray();
+
+        // Trả về kết quả với đầy đủ thông tin lọc, phân trang và thông điệp
+        return formatResponse(
+            STATUS_OK,
+            $users, // Dữ liệu người dùng đã phân trang
+            '',
+            __('messages.user_fetch_success') // Thông điệp thành công
+        );
+    }
+
+    public function adminCreateUser(Request $request)
+    {
+        // Xác thực dữ liệu đầu vào
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:50',
+            'last_name' => 'required|string|max:50',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'role' => 'required|in:admin,instructor,student',
+            'status' => 'nullable|in:active,inactive',
+            'email_verified' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'FAIL', 'errors' => $validator->errors(),], 422);
+        }
+        $currentUser = Auth::user();
+        $user = User::create([
+            'first_name' => $request->input('first_name'),
+            'last_name' => $request->input('last_name'),
+            'email' => $request->input('email'),
+            'password' => Hash::make($request->input('password')),
+            'role' => $request->input('role'),
+            'status' => $request->input('status', 'inactive'),
+            'email_verified' => $request->input('email_verified', false),
+            'created_by' => $currentUser->id,
+        ]);
+        return response()->json(['status' => 'OK', 'message' => 'User created successfully.', 'data' => $user,], 201);
+    }
+
+    public function getDetailUser($id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['status' => 'FAIL', 'message' => 'User not found.',], 404);
+        }
+        return response()->json(['status' => 'success', 'data' => $user,], 200);
+    }
+
+    public function blockOrUnlockUser($id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['status' => 'FAIL', 'message' => 'User not found.',], 404);
+        }
+        if ($user->status === 'inactive') {
+            $user->status = 'active';
+            $user->save();
+            return response()->json(['status' => 'OK', 'message' => 'User has been unlocked successfully.', 'data' => $user], 200);
+        }
+        if ($user->status === 'active') {
+            $user->status = 'inactive';
+            $user->save();
+            return response()->json(['status' => 'OK', 'message' => 'User has been blocked successfully.', 'data' => $user], 200);
+        }
+        return response()->json(['status' => 'FAIL', 'message' => 'Unable to change user status.'], 400);
+    }
 
     protected function respondWithToken($token, $refreshToken)
     {

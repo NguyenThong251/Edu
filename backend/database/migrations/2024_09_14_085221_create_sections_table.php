@@ -13,15 +13,20 @@ return new class extends Migration {
         Schema::create('sections', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('course_id');
-            $table->string('name');
+            $table->string('title');
+            $table->text('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->string('sort')->nullable();
+            
+            // Thêm cột order để sắp xếp thứ tự section trong khóa học
+            $table->integer('order')->default(0);
+            
             $table->softDeletes();
             $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
             $table->bigInteger('created_by')->nullable();
             $table->bigInteger('updated_by')->nullable();
-            // Foreign key
+
+            // Khóa ngoại liên kết đến bảng courses
             $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
         });
     }

@@ -6,24 +6,101 @@ use Illuminate\Http\Request;
 use App\Models\CourseLevel;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CourseLevelController extends Controller
 {
+    public function getListAdmin(Request $request)
+    {
+        // Query cơ bản lấy danh sách CourseLevel
+        $courseLevelsQuery = CourseLevel::query();
+
+        // Kiểm tra tham số `deleted`
+        if ($request->has('deleted') && $request->deleted == 1) {
+            // Lấy các course level đã xóa
+            $courseLevelsQuery->onlyTrashed();
+        } else {
+            // Chỉ lấy các course level chưa xóa (mặc định)
+            $courseLevelsQuery->whereNull('deleted_at');
+        }
+
+        // Lọc theo keyword (nếu có)
+        if ($request->has('keyword') && !empty($request->keyword)) {
+            $keyword = $request->keyword;
+            $courseLevelsQuery->where('name', 'like', '%' . $keyword . '%');
+        }
+
+        // Lọc theo status (nếu có)
+        if ($request->has('status') && !is_null($request->status)) {
+            $courseLevelsQuery->where('status', $request->status);
+        }
+
+        // Sắp xếp theo `created_at` (mặc định là `desc`)
+        $order = $request->get('order', 'desc'); // Giá trị mặc định là desc
+        $courseLevelsQuery->orderBy('created_at', $order);
+
+        // Phân trang với per_page và page
+        $perPage = (int) $request->get('per_page', 10); // Số lượng bản ghi mỗi trang, mặc định 10
+        $page = (int) $request->get('page', 1); // Trang hiện tại, mặc định 1
+
+        // Lấy danh sách đã lọc
+        $courseLevels = $courseLevelsQuery->get();
+
+        // Tổng số lượng bản ghi
+        $total = $courseLevels->count();
+
+        // Phân trang thủ công
+        $paginatedCourseLevels = $courseLevels->forPage($page, $perPage)->values();
+
+        // Tạo đối tượng LengthAwarePaginator
+        $pagination = new LengthAwarePaginator(
+            $paginatedCourseLevels, // Dữ liệu cho trang hiện tại
+            $total,                 // Tổng số bản ghi
+            $perPage,               // Số lượng bản ghi mỗi trang
+            $page,                  // Trang hiện tại
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(), // Đường dẫn chính
+                'query' => $request->query() // Lấy tất cả query parameters hiện tại
+            ]
+        );
+
+        // Chuyển đổi dữ liệu phân trang thành mảng
+        $courseLevels = $pagination->toArray();
+
+        // Trả về kết quả với đầy đủ thông tin filter, order và phân trang
+        return formatResponse(
+            STATUS_OK,
+            $courseLevels,
+            '',
+            __('messages.course_level_fetch_success')
+        );
+    }
+
     // Lấy danh sách các cấp độ khóa học
     public function index(Request $request)
     {
-        $courseLevelsQuery = CourseLevel::query();
+        // Query cơ bản lấy danh sách CourseLevel và lọc theo status
+        $courseLevelsQuery = CourseLevel::query()->where('status', 'active');
+
+        // Kiểm tra tham số limit để lấy dữ liệu giới hạn hoặc phân trang
         if ($request->has('limit')) {
             $limit = $request->get('limit');
             $courseLevels = $courseLevelsQuery->limit($limit)->get();
         } else {
-            $perPage = $request->get('per_page', 10);
-            $currentPage = $request->get('page', 1);
+            $perPage = $request->get('per_page', 10); // Số lượng bản ghi mỗi trang (mặc định: 10)
+            $currentPage = $request->get('page', 1); // Trang hiện tại (mặc định: 1)
             $courseLevels = $courseLevelsQuery->paginate($perPage, ['*'], 'page', $currentPage);
         }
 
-        return formatResponse(STATUS_OK, $courseLevels, '', __('messages.course_level_fetch_success'));
+        // Trả về dữ liệu
+        return formatResponse(
+            STATUS_OK,
+            $courseLevels,
+            '',
+            __('messages.course_level_fetch_success')
+        );
     }
+
 
     // Hiển thị một cấp độ cụ thể
     public function show($id)
@@ -114,8 +191,8 @@ class CourseLevelController extends Controller
         $courseLevel->deleted_by = auth()->id();
         $courseLevel->save();
         $courseLevel->delete();
-
-        return formatResponse(STATUS_OK, '', '', __('messages.course_level_soft_delete_success'));
+        $courseLevel = CourseLevel::onlyTrashed()->find($id);
+        return formatResponse(STATUS_OK, $courseLevel, '', __('messages.course_level_soft_delete_success'));
     }
 
     // Khôi phục cấp độ khóa học bị xóa mềm
@@ -128,8 +205,8 @@ class CourseLevelController extends Controller
 
         $courseLevel->deleted_by = null;
         $courseLevel->restore();
-
-        return formatResponse(STATUS_OK, '', '', __('messages.course_level_restore_success'));
+        $courseLevel = CourseLevel::find($id);
+        return formatResponse(STATUS_OK, $courseLevel, '', __('messages.course_level_restore_success'));
     }
 
     // Xóa vĩnh viễn cấp độ khóa học
@@ -142,6 +219,6 @@ class CourseLevelController extends Controller
 
         $courseLevel->forceDelete();
 
-        return formatResponse(STATUS_OK, '', '', __('messages.course_level_force_delete_success'));
+        return formatResponse(STATUS_OK, $courseLevel, '', __('messages.course_level_force_delete_success'));
     }
 }

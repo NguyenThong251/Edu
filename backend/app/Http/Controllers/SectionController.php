@@ -12,18 +12,17 @@ class SectionController extends Controller
     {
 
         $request->validate([
-            'name' => 'required',
+            'title' => 'required',
         ]);
 
         // check duplicate
-        if (Section::where('course_id', $request->course_id)->where('name', $request->name)->exists()) {
+        if (Section::where('course_id', $request->course_id)->where('title', $request->title)->exists()) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.sections_code_already_exists'));
         }
 
         // insert section
         $section = new Section();
-        $section->name = $request->name;
-        // $section->user_id   = auth()->user()->id;
+        $section->title = $request->title;
         $section->course_id = $request->course_id;
         $done = $section->save();
 
@@ -51,12 +50,12 @@ class SectionController extends Controller
         $section = Section::find($id); // Tìm section cần cập nhật
         if ($section) {
             // Kiểm tra trùng lặp, ngoại trừ chính section đang sửa
-            if (Section::where('name', $request->name)->where('id', '!=', $id)->exists()) {
+            if (Section::where('title', $request->title)->where('id', '!=', $id)->exists()) {
                 return formatResponse(STATUS_FAIL, '', '', __('messages.sections_code_already_exists'));
             }
 
             // Cập nhật dữ liệu
-            $section->name = $request->input('name');
+            $section->title = $request->input('title');
             $section->save();
 
             // Trả về phản hồi thành công
@@ -77,17 +76,25 @@ class SectionController extends Controller
     public function sort(Request $request)
     {
         $sortedSections = $request->input('sortedSections');
-        
-        // Giả sử bạn có một model `Section`, cập nhật thứ tự cho từng phần tử
-        foreach ($sortedSections as $index => $section) {
-            // Cập nhật thứ tự của các phần tử
-            Section::where('id', $section['id'])->update(['sort' => $index + 1]);
-        }
+        // Ghi log dữ liệu sortedSections
+        Log::info('Dữ liệu đã sắp xếp nè aaaa:', ['sortedSections' => $sortedSections]);
 
-        return response()->json([
-            'status' => 'OK',
-            'message' => 'Dữ liệu đã được sắp xếp thành công'
-        ]);
+        // Kiểm tra nếu dữ liệu có hợp lệ
+        // if (empty($sortedSections)) {
+        //     return response()->json([
+        //         'status' => 'error',
+        //         'message' => 'Không có dữ liệu để sắp xếp!'
+        //     ]);
+        // }
+
+        // foreach ($sortedSections as $index => $section) {
+        //     Section::where('id', $section['id'])->update(['order' => $index + 1]);
+        // }
+
+        // return response()->json([
+        //     'status' => 'OK',
+        //     'message' => 'Dữ liệu đã được sắp xếp thành công'
+        // ]);
     }
 }
 

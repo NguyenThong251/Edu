@@ -26,6 +26,8 @@ class SectionSeeder extends Seeder
             $this->command->info('Không có dữ liệu trong bảng courses.');
             return;
         }
+
+        // Lấy tất cả ID từ bảng users
         $userIds = User::pluck('id')->toArray();
          // Tạo 10 Section cho mỗi khóa học
          foreach ($courseIds as $courseId) {
@@ -36,9 +38,9 @@ class SectionSeeder extends Seeder
             for ($i = 0; $i < 10; $i++) {
                 Section::create([
                     'course_id' => $courseId,                         // Gán `course_id` cho mỗi Section
-                    'name' => $faker->sentence(2),                    // Tên section với 2 từ
+                    'title' => $faker->sentence(2),                    // Tên section với 2 từ
                     'status' => $faker->randomElement(['active', 'inactive']), // Trạng thái ngẫu nhiên
-                    'sort' => $sortOrder++,                            // Số thứ tự tăng dần
+                    'order' => $sortOrder++,                            // Số thứ tự tăng dần
                     'deleted_by' => null,                              // Giá trị mặc định là null
                     'created_by' => $faker->randomElement($userIds), // Chọn ngẫu nhiên ID từ danh sách user
                     'updated_by' => $faker->optional()->randomElement($userIds), // Người cập nhật ngẫu nhiên hoặc null

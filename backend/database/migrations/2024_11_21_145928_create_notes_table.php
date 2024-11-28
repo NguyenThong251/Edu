@@ -10,23 +10,20 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('progress_lecture', function (Blueprint $table) {
+        Schema::create('notes', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('course_id');
+            $table->unsignedBigInteger('section_id');
             $table->unsignedBigInteger('lecture_id');
-            $table->boolean('done')->default(false);
-            $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
-
+            $table->integer('current_time'); // phút đang học
+            $table->string('lecture_title', 255);
+            $table->text('content'); // nội dung ghi chú
             $table->timestamps();
 
-            // Primary key
-            $table->primary(['user_id', 'course_id', 'lecture_id']);
-
-            // Foreign keys
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
+            $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
             $table->foreign('lecture_id')->references('id')->on('lectures')->onDelete('cascade');
         });
     }
@@ -36,6 +33,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('progress_lecture');
+        Schema::dropIfExists('notes');
     }
 };

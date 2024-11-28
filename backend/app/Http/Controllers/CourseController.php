@@ -7,6 +7,10 @@ use App\Models\Category;
 use App\Models\OrderItem;
 use App\Models\Wishlist;
 use App\Models\Review;
+use App\Models\Lecture;
+use App\Models\Order;
+use Carbon\Carbon;
+use App\Http\Controllers\StudyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -68,7 +72,7 @@ class CourseController extends Controller
         }
     }
 
-    
+
     public function search(Request $request)
     {
         // Lấy các tham số lọc từ request
@@ -99,7 +103,7 @@ class CourseController extends Controller
         $popularCourses = OrderItem::select('course_id', DB::raw('COUNT(*) as purchase_count'))
             ->groupBy('course_id')->orderByDesc('purchase_count')->take($limitTag)->pluck('course_id')->toArray();
         $topRatedCourses = Course::select('courses.id') // Sửa ở đây
-            ->leftJoin('reviews', 'courses.id', '=', 'reviews.course_id')
+        ->leftJoin('reviews', 'courses.id', '=', 'reviews.course_id')
             ->groupBy('courses.id')->orderByRaw('AVG(reviews.rating) DESC')->take($limitTag)->pluck('id')->toArray();
         $favoriteCourses = Wishlist::select('course_id')
             ->groupBy('course_id')->orderByRaw('COUNT(*) DESC')->take($limitTag)->pluck('course_id')->toArray();
@@ -139,13 +143,13 @@ class CourseController extends Controller
             // Sử dụng whereIn để lấy các khóa học
             $query->whereIn('category_id', $allCategoryIds);
         }
-        if($level_ids){
+        if ($level_ids) {
             $level_ids = array_map('intval', explode(',', $level_ids));
             if ($level_ids && is_array($level_ids)) {
                 $query->whereIn('level_id', $level_ids); // Lọc theo danh sách level_ids
             }
         }
-        if($language_ids){
+        if ($language_ids) {
             $language_ids = array_map('intval', explode(',', $language_ids));
             if ($language_ids && is_array($language_ids)) {
                 $query->whereIn('language_id', $language_ids); // Lọc theo danh sách level_ids
@@ -171,15 +175,15 @@ class CourseController extends Controller
         if ($min_rating) {
             $query->whereHas('reviews', function ($q) use ($min_rating) {
                 $q->select('course_id') // Chọn course_id để nhóm
-                    ->groupBy('course_id') // Nhóm theo course_id
-                    ->havingRaw('AVG(rating) >= ?', [$min_rating]);
+                ->groupBy('course_id') // Nhóm theo course_id
+                ->havingRaw('AVG(rating) >= ?', [$min_rating]);
             });
         }
         if ($max_rating) {
             $query->whereHas('reviews', function ($q) use ($max_rating) {
                 $q->select('course_id') // Chọn course_id để nhóm
-                    ->groupBy('course_id') // Nhóm theo course_id
-                    ->havingRaw('AVG(rating) <= ?', [$max_rating]);
+                ->groupBy('course_id') // Nhóm theo course_id
+                ->havingRaw('AVG(rating) <= ?', [$max_rating]);
             });
         }
         if ($duration_ranges = $request->input('duration_ranges')) {
@@ -189,9 +193,9 @@ class CourseController extends Controller
                 $q->whereDoesntHave('sections')
                     ->orWhereHas('sections', function ($q) use ($duration_ranges) {
                         $q->join('lectures', 'sections.id', '=', 'lectures.section_id') // Kết nối với bảng lectures
-                            ->select('sections.course_id') // Chọn course_id để nhóm
-                            ->selectRaw('SUM(lectures.duration) as total_duration') // Tính tổng duration từ lectures
-                            ->groupBy('sections.course_id'); // Nhóm theo course_id
+                        ->select('sections.course_id') // Chọn course_id để nhóm
+                        ->selectRaw('SUM(lectures.duration) as total_duration') // Tính tổng duration từ lectures
+                        ->groupBy('sections.course_id'); // Nhóm theo course_id
 
                         // Lặp qua từng khoảng thời gian trong mảng
                         $duration_ranges = explode(',', $duration_ranges);
@@ -277,14 +281,13 @@ class CourseController extends Controller
             $page,
             ['path' => LengthAwarePaginator::resolveCurrentPath()]
         );
-        
+
         // Chuyển đổi đối tượng phân trang sang mảng với tất cả các thuộc tính chi tiết
         $paginationData = $paginatedCourses->toArray();
-        
+
         // Trả về dữ liệu phân trang
         return formatResponse(STATUS_OK, $paginationData, '', __('messages.course_fetch_success'));
     }
-
 
 
     public function uploadThumbnail(Request $request)
@@ -299,6 +302,7 @@ class CourseController extends Controller
         $imageUrl = env('URL_IMAGE_S3') . $path;
         return $imageUrl;
     }
+
     public function deleteThumbnail($thumbnailUrl)
     {
         $currentFilePath = str_replace(env('URL_IMAGE_S3'), '', $thumbnailUrl);
@@ -360,9 +364,32 @@ class CourseController extends Controller
     }
 
     // Hiển thị một khóa học cụ thể
-    public function detail($id)
+    public function detail($id, Request $request)
     {
-        $course = Course::with(['category', 'level', 'creator', 'sections.lectures', 'reviews', 'language'])
+        $course = Course::with([
+            'category' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'level' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'creator' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'sections' => function ($query) {
+                $query->where('status', 'active')->with([
+                    'lectures' => function ($query) {
+                        $query->where('status', 'active');
+                    },
+                ]);
+            },
+            'reviews' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'language' => function ($query) {
+                $query->where('status', 'active');
+            },
+        ])
             ->where('status', 'active')
             ->where('id', $id)
             ->first();
@@ -371,27 +398,129 @@ class CourseController extends Controller
             return formatResponse(STATUS_FAIL, '', '', __('messages.course_not_found'));
         }
 
-        // Tính toán các thông tin cần thiết
-        $old_price = $course->price; // Thay đổi tên thành old_price
+        // Tính toán thông tin khóa học
+        $old_price = $course->price;
         $sale_value = $course->sale_value;
-        $type_sale = $course->type_sale; // Giả sử là 'percentage' hoặc 'fixed'
+        $type_sale = $course->type_sale;
 
-        // Lấy thông tin sections và lectures
-        $sections = $course->sections;
+        $sections = $course->sections->where('status', 'active');
         $sections_count = $sections->count();
         $lectures_count = $sections->reduce(function ($carry, $section) {
-            return $carry + $section->lectures->count();
+            return $carry + $section->lectures->where('status', 'active')->count();
         }, 0);
 
-        // Tính tổng duration
-        $total_duration = round($sections->reduce(function ($carry, $section) {
-            return $carry + $section->lectures->sum('duration');
-        }, 0) / 3600, 1);
+        $total_duration = $this->formatDuration($sections->reduce(function ($carry, $section) {
+            return $carry + $section->lectures->where('status', 'active')->sum('duration');
+        }));
 
-        // Tính trung bình rating và số lượng reviews
-        $total_reviews = $course->reviews->count();
-        $average_rating = $total_reviews > 0 ? round($course->reviews->avg('rating'), 1) : null;
+        $preview_videos = Lecture::where('status', 'active')
+            ->whereHas('section', function ($query) use ($course) {
+                $query->where('course_id', $course->id)
+                    ->where('preview', 'can')
+                    ->where('status', 'active');
+            })
+            ->where('type', 'video')
+            ->pluck('content_link');
 
+        // Thống kê instructor
+        $creatorId = $course->creator->id;
+        $courseIds = Course::where('created_by', $creatorId)->where('status', 'active')->pluck('id');
+        $totalCourses = $courseIds->count();
+        $orderIds = OrderItem::whereIn('course_id', $courseIds)->pluck('order_id');
+        $usersCount = Order::whereIn('id', $orderIds)->distinct()->count();
+
+        $reviewsData = Review::whereIn('course_id', $courseIds)
+            ->where('status', 'active')
+            ->selectRaw('COUNT(*) as total_reviews, AVG(rating) as average_rating')
+            ->first();
+
+        $totalReviews = $reviewsData->total_reviews ?? 0;
+        $averageRating = $reviewsData->average_rating ?? 0;
+
+        $instructor = [
+            'info' => $course->creator,
+            'courses_count' => $totalCourses,
+            'students_count' => $usersCount,
+            'total_reviews' => $totalReviews,
+            'average_rating' => round($averageRating, 2),
+        ];
+
+        // Truy vấn reviews
+        $reviewsQuery = DB::table('reviews')
+            ->join('users', 'reviews.user_id', '=', 'users.id')
+            ->where('reviews.course_id', $id)
+            ->where('reviews.status', 'active')
+            ->select(
+                'reviews.rating',
+                'reviews.comment',
+                'reviews.created_at',
+                'users.first_name',
+                'users.last_name',
+                'users.avatar'
+            );
+        $comment_keyword = null;
+
+        // Kiểm tra và gán giá trị từ $request nếu tồn tại
+        if ($request->comment_keyword) {
+            $comment_keyword = $request->comment_keyword;
+        }
+        if ($comment_keyword) {
+            $reviewsQuery->where(function ($q) use ($comment_keyword) {
+                $q->where('reviews.comment', 'LIKE', '%' . $comment_keyword . '%')
+                    ->orWhere(DB::raw("CONCAT(users.last_name, ' ', users.first_name)"), 'LIKE', '%' . $comment_keyword . '%');
+            });
+        }
+
+        $reviews = $reviewsQuery->get();
+
+        // Xử lý dữ liệu reviews
+        $total_reviews = $reviews->count();
+        $average_rating = $total_reviews > 0 ? round($reviews->avg('rating'), 1) : null;
+
+        $rating_counts = $reviews->groupBy('rating')->map(function ($group) {
+            return count($group);
+        });
+
+        $rating_percentages = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $count = $rating_counts->get($i, 0);
+            $rating_percentages[$i] = $total_reviews > 0 ? floor(($count / $total_reviews) * 100) : 0;
+        }
+
+        $review_list = $reviews->map(function ($review) {
+            $last_name = $review->last_name ?? '';
+            $first_name = $review->first_name ?? '';
+            $name = trim($last_name . ' ' . $first_name) ?: 'Người dùng không xác định';
+
+            $avatar = $review->avatar;
+
+            $created_at = Carbon::parse($review->created_at);
+            $now = Carbon::now();
+            $diff = $created_at->diff($now);
+
+            if ($diff->y > 0) {
+                $time_diff = $diff->y . ' năm trước';
+            } elseif ($diff->m > 0) {
+                $time_diff = $diff->m . ' tháng trước';
+            } elseif ($diff->d > 0) {
+                $time_diff = $diff->d . ' ngày trước';
+            } elseif ($diff->h > 0) {
+                $time_diff = $diff->h . ' giờ trước';
+            } elseif ($diff->i > 0) {
+                $time_diff = $diff->i . ' phút trước';
+            } else {
+                $time_diff = $diff->s . ' giây trước';
+            }
+
+            return [
+                'user_avatar' => $avatar,
+                'user_name' => $name,
+                'rating' => $review->rating,
+                'comment' => $review->comment,
+                'time_diff' => $time_diff,
+            ];
+        });
+        $study=new StudyController;
         // Chuẩn bị dữ liệu trả về
         $course_data = [
             'id' => $course->id,
@@ -400,26 +529,69 @@ class CourseController extends Controller
             'level' => $course->level->name,
             'thumbnail' => $course->thumbnail,
             'language' => $course->language->name,
-            'old_price' => round($course->price, 0), // Đổi từ original_price sang old_price
-            'current_price' => round($course->type_sale === 'price' ? $course->price - $course->sale_value : $course->price * (1 - $course->sale_value / 100), 0),
+            'old_price' => round($course->price, 0),
+            'current_price' => round(
+                $course->type_sale === 'price'
+                    ? $course->price - $course->sale_value
+                    : $course->price * (1 - $course->sale_value / 100),
+                0
+            ),
             'type_sale' => $type_sale,
             'sale_value' => $sale_value,
-            'sections' => $sections,
             'sections_count' => $sections_count,
             'lectures_count' => $lectures_count,
             'total_duration' => $total_duration,
             'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
                 ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
                 : ''),
-            'average_rating' => $average_rating, // Thêm trung bình rating
-            'total_reviews' => $total_reviews, // Thêm tổng số reviews
+            'average_rating' => $average_rating,
+            'total_reviews' => $total_reviews,
+            'preview_videos' => $preview_videos,
+            'course_contents' => $study->getAllContent(0, $id)['allContent'],
+            'order_course_of_instructor' => Course::where('created_by', $course->creator->id)
+                ->where('status', 'active')
+                ->take(10)
+                ->get(),
+            'instructor' => $instructor,
             'status' => $course->status,
+            'reviews' => [
+                'total_reviews' => $total_reviews,
+                'average_rating' => $average_rating,
+                'rating_percentages' => $rating_percentages,
+                'review_list' => $review_list,
+            ],
         ];
 
         return formatResponse(STATUS_OK, $course_data, '', __('messages.course_detail_success'));
     }
 
 
+
+    private function formatDuration($seconds)
+    {
+        if ($seconds < 60) {
+            return "{$seconds} giây"; // Dưới 1 phút
+        }
+
+        $minutes = floor($seconds / 60);
+        $remainingSeconds = $seconds % 60; // Tính số giây lẻ
+
+        if ($minutes < 60) {
+            return $remainingSeconds > 0
+                ? "{$minutes} phút {$remainingSeconds} giây" // Hiển thị phút và giây lẻ nếu có
+                : "{$minutes} phút"; // Chỉ hiển thị phút
+        }
+
+        $hours = floor($minutes / 60);
+        $remainingMinutes = $minutes % 60;
+
+        if ($remainingMinutes > 0 || $remainingSeconds > 0) {
+            return "{$hours} giờ"
+                . ($remainingMinutes > 0 ? " {$remainingMinutes} phút" : ""); // Chỉ thêm giây nếu khác 0
+        }
+
+        return "{$hours} giờ"; // Chỉ hiển thị giờ nếu không có phút và giây
+    }
 
 
     // Cập nhật thông tin khóa học
@@ -485,14 +657,14 @@ class CourseController extends Controller
         $course->updated_by = auth()->id();
         $course->save();
 
-            return formatResponse(STATUS_OK, $course, '', __('messages.course_update_success'));
+        return formatResponse(STATUS_OK, $course, '', __('messages.course_update_success'));
     }
     public function showOne($id) {
     $user = auth()->user(); // Lấy user hiện tại từ auth
     $course = Course::where('id', $id) // Lọc theo id khóa học
         ->where('created_by', $user->id) // Lọc theo user đã tạo khóa học
         ->with(['sections' => function ($query) {
-            $query->orderBy('sort', 'desc'); // Sắp xếp sections theo trường 'sort' giảm dần
+            $query->orderBy('order', 'desc'); // Sắp xếp sections theo trường 'sort' giảm dần
         }, 'sections.lectures'])
         ->first(); // Lấy bản ghi đầu tiên
     if (!$course) {
@@ -644,8 +816,8 @@ class CourseController extends Controller
             }, 0);
 
             $total_duration = $course->sections->reduce(function ($carry, $section) {
-                return $carry + $section->lectures->sum('duration');
-            }, 0) / 3600; // Đổi tổng thời gian thành giờ
+                    return $carry + $section->lectures->sum('duration');
+                }, 0) / 3600; // Đổi tổng thời gian thành giờ
 
             // Tính trung bình đánh giá và số lượng reviews
             $reviews_count = $course->reviews->count();
@@ -758,19 +930,19 @@ class CourseController extends Controller
 
         // Lấy các khóa học được đánh giá cao nhất từ bảng reviews
         $topRatedCourses = Review::select('course_id', DB::raw('AVG(rating) as average_rating'))
-        ->groupBy('course_id')
-        ->orderByDesc('average_rating')
-        ->limit($limit)
-        ->get();
+            ->groupBy('course_id')
+            ->orderByDesc('average_rating')
+            ->limit($limit)
+            ->get();
 
         // Lấy chi tiết các khóa học cùng với category và level dựa trên course_id đã gom nhóm
         $courses = Course::with('category', 'level', 'creator')
-        ->where('status', 'active')
-        ->whereIn('id', $topRatedCourses->pluck('course_id'))
-        ->when($allCategoryIds, function ($query) use ($allCategoryIds) {
-            return $query->whereIn('category_id', $allCategoryIds);
-        })
-        ->get();
+            ->where('status', 'active')
+            ->whereIn('id', $topRatedCourses->pluck('course_id'))
+            ->when($allCategoryIds, function ($query) use ($allCategoryIds) {
+                return $query->whereIn('category_id', $allCategoryIds);
+            })
+            ->get();
 
         if ($courses->isEmpty()) {
             // Nếu không có khóa học nào
@@ -815,19 +987,19 @@ class CourseController extends Controller
 
         // Lấy các khóa học được yêu thích nhất từ bảng wishlist
         $favoriteCourses = Wishlist::select('course_id', DB::raw('COUNT(*) as wishlist_count'))
-        ->groupBy('course_id')
-        ->orderByDesc('wishlist_count')
-        ->limit($limit)
-        ->get();
+            ->groupBy('course_id')
+            ->orderByDesc('wishlist_count')
+            ->limit($limit)
+            ->get();
 
         // Lấy chi tiết các khóa học cùng với category, level, và creator dựa trên course_id đã gom nhóm
         $courses = Course::with('category', 'level', 'creator')
-        ->where('status', 'active')
-        ->whereIn('id', $favoriteCourses->pluck('course_id'))
-        ->when($allCategoryIds, function ($query) use ($allCategoryIds) {
-            return $query->whereIn('category_id', $allCategoryIds);
-        })
-        ->get();
+            ->where('status', 'active')
+            ->whereIn('id', $favoriteCourses->pluck('course_id'))
+            ->when($allCategoryIds, function ($query) use ($allCategoryIds) {
+                return $query->whereIn('category_id', $allCategoryIds);
+            })
+            ->get();
 
 
         if ($courses->isEmpty()) {
@@ -914,4 +1086,43 @@ class CourseController extends Controller
 //             ],
 //         ]);
 //     }
+
+// get list of instructors list of their courses.
+    public function getListInstructorCourses(Request $request)
+    {
+        $user = auth()->user();
+        $title = $request->input('title', null);
+        $status = $request->input('status', null);
+        $page = $request->input('page', 1);
+        $perPage = $request->input('per_page', 10);
+        $priceOrder = $request->input('price_order', null);
+
+
+        $query = Course::where('created_by', $user->id);
+        if ($status) {
+            $query->where('status', $status);
+        }
+        if ($title) {
+            $query->where('title', 'like', '%' . $title . '%');
+        }
+        if ($priceOrder && in_array(strtolower($priceOrder), ['asc', 'desc'])) {
+            $query->orderBy('price', strtolower($priceOrder));
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+        $courses = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'status' => 'OK',
+            'data' => $courses->items(),
+            'pagination' => [
+                'total' => $courses->total(),
+                'current_page' => $courses->currentPage(),
+                'last_page' => $courses->lastPage(),
+                'per_page' => $courses->perPage(),
+            ],
+            'code' => 200
+        ]);
+    }
+
 }

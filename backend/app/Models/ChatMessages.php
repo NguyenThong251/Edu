@@ -9,7 +9,7 @@ class ChatMessages extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['sender_id', 'receiver_id', 'message'];
+    protected $fillable = ['sender_id', 'receiver_id', 'message', 'image_url'];
 
     public function sender(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

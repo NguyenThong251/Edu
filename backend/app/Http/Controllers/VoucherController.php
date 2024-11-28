@@ -16,7 +16,7 @@ class VoucherController extends Controller
     // Lấy toàn bộ voucher (chỉ trả về voucher `active`)
     public function index()
     {
-        $vouchers = Voucher::where('status', 'active')->get();
+        $vouchers = Voucher::where('status', 'active')->paginate('10');
         return response()->json(['status' => 'success', 'result' => count($vouchers), 'data' => $vouchers], 200);
     }
 
@@ -84,28 +84,6 @@ class VoucherController extends Controller
         return response()->json(['status' => 'success', 'message' => __('messages.voucher_restore_success'), 'data' => $voucher], 200);
     }
 
-    // Áp dụng voucher
-    // public function applyVoucher(Request $request)
-    // {
-    //     $data = $request->validate(['voucher_code' => 'required|string|exists:vouchers,code']);
-    //     $user = Auth::user();
-    //     $cart = Cart::getOrCreateForUser($user);
-    //     $totalPrice = $cart->cartItems->sum('current_price');
-
-    //     $voucher = Voucher::where('code', $data['voucher_code'])->firstOrFail();
-    //     $result = $voucher->apply($totalPrice, $user->id);
-
-    //     return response()->json([
-    //         'status' => 'success',
-    //         'message' => __('messages.voucher_applied_successfully'),
-    //         'data' => [
-    //             'total_price' => $totalPrice,
-    //             'discount' => $result['discount'],
-    //             'total_price_after_discount' => $result['total_price_after_discount'],
-    //         ]
-    //     ]);
-    // }
-
     // Cập nhật voucher
     public function update(Request $request, $id)
     {
@@ -124,5 +102,55 @@ class VoucherController extends Controller
         $voucher = Voucher::findOrFail($id);
         $voucher->updateVoucher($data);
         return response()->json(['status' => 'success', 'message' => __('messages.voucher_updated_success'), 'data' => $voucher], 200);
+    }
+
+    // Filter voucher
+    public function filter(Request $request)
+    {
+        // dd($request->all());
+        // Lấy các tham số lọc từ request
+        $code = $request->input('code');
+        $expires_at = $request->input('expires_at');
+        $discount_type = $request->input('discount_type'); // 'percent' hoặc 'fixed'
+        $min_discount_value = $request->input('min_discount_value');
+        $max_discount_value = $request->input('max_discount_value');
+
+        // Tạo query để lọc voucher
+        $query = Voucher::query()->where('status', 'active');
+
+        // Lọc theo mã voucher
+        if ($code) {
+            $query->where('code', 'like', '%' . $code . '%');
+        }
+
+        // Lọc theo ngày hết hạn
+        if ($expires_at) {
+            $query->whereDate('expires_at', '=', $expires_at);
+        }
+
+        // Lọc theo loại giá trị giảm (percent hoặc fixed)
+        if ($discount_type) {
+            $query->where('discount_type', $discount_type);
+        }
+
+        // Lọc theo giá trị giảm tối thiểu
+        if ($min_discount_value) {
+            $query->where('max_discount_value', '>=', $min_discount_value);
+        }
+
+        // Lọc theo giá trị giảm tối đa
+        if ($max_discount_value) {
+            $query->where('max_discount_value', '<=', $max_discount_value);
+        }
+
+        // Thực hiện phân trang kết quả
+        $vouchers = $query->paginate(10);
+
+        // Trả về kết quả
+        return response()->json([
+            'status' => 'success',
+            'result' => $vouchers->total(),
+            'data' => $vouchers
+        ], 200);
     }
 }

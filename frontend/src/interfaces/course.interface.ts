@@ -59,8 +59,8 @@ export interface TCourseFilters {
 export interface TSection {
   id?: number | string
   course_id?: number[]
-  name?: string
-  sort?: number | string
+  title?: string
+  order?: number | string
   lectures?: TLectures[]
 }
 

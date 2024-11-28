@@ -11,17 +11,18 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('answers_users', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('question_id');
             $table->text('content');
+
+            $table->enum('status', ['active', 'inactive'])->default('active');
+
             $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
-
+            $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
-
-            // Primary key
-            $table->primary(['user_id', 'question_id']);
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
 
             // Foreign keys
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

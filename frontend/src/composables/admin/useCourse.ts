@@ -3,7 +3,7 @@ import api from '@/services/axiosConfig'
 
 import { ElNotification, ElMessage, ElMessageBox } from 'element-plus'
 import { da } from 'element-plus/es/locale/index.mjs'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, toRaw } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 
@@ -145,8 +145,7 @@ export default function useCourse() {
   const fetchCourseData = async () => {
     try {
       loading.value = true;
-      courseId.value = route.params.id as string; // Lấy ID từ URL
-  
+      courseId.value = route.params.id as string; // Lấy ID từ URL  
       const response = await api.get(`/auth/courses/${courseId.value}`);
       if (response.data.status === 'OK') {
         formDataEditCourse.value = response.data.data;
@@ -239,14 +238,16 @@ export default function useCourse() {
   // SECTIONS
   //Add sections
   courseId.value = route.params.id as string // Lấy ID từ URL
+  
 
   const formDataAddSection = ref({
-    name: '',
+    title: '',
     status: 'active',
     course_id : courseId.value
   })
   
   const handelFormSection = async () => {
+
     try {
       console.log('Dữ liệu form Section Data:', formDataAddSection.value)
       const response = await api.post('/auth/section/', formDataAddSection.value);
@@ -393,9 +394,16 @@ export default function useCourse() {
     // Sort section
     const handleSortSection = async (sortedSection: TSection): Promise<void> => {
       try {
-        console.log('Dữ liệu đã sắp xếp:', sortedSection);
+        // Chuyển Proxy thành dữ liệu gốc
+        const rawData = toRaw(sortedSection);
+          // Chuyển dữ liệu thành JSON
+        const jsonData = JSON.stringify(rawData);
+
+        console.log('Dữ liệu đã sắp xếp:', jsonData);
+
+        
         // Gửi mảng đã sắp xếp lên backend
-        const response = await api.post('/section/sort', { sortedSection });
+        const response = await api.post('/section/sort', { sortedSection: rawData });
         if (response.data.status === 'OK') {
           ElNotification({
             title: 'Thành công',

@@ -12,12 +12,16 @@ return new class extends Migration {
     {
         Schema::create('quizzes', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('section_id')->nullable();
             $table->string('title', 255);
-            $table->softDeletes();
-            $table->boolean('is_deleted')->default(0);
-            $table->enum('status', ['active', 'inactive'])->default('inactive');
 
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->integer('order')->default(0);
+            $table->softDeletes();
+            $table->bigInteger('deleted_by')->nullable();
             $table->timestamps();
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
         });
     }
 

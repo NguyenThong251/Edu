@@ -57,7 +57,7 @@
                           title="Thêm bài học"
                           dialogVisible="dialogAddnewLesson"
                           link="#"
-                          @click="addLesson"
+                          @click="addTypeLesson"
                         />
                         <!-- button dialog 3 new quiz -->
                         <ButtonPrimarySm
@@ -87,7 +87,7 @@
                       <!-- Dropdown items -->
                       <div class="mt-6">
                         <template
-                          v-for="(itemSection, index) in section.slice().reverse()"
+                          v-for="(itemSection, index) in section"
                           :key="itemSection.id"
                         >
                           <el-collapse class="mb-2" @change="ActiveToggle">
@@ -97,7 +97,7 @@
                               @click.stop
                             >
                               <template #title>
-                                {{ index + 1 }}. {{ itemSection.name }}
+                                {{ index + 1 }}. {{ itemSection.title }}
                                 <div
                                   class="gap-2 el-collapse-item__btn flex transition-opacity duration-200 group-hover:opacity-100 opacity-0"
                                   :class="{
@@ -134,6 +134,7 @@
                                   >
                                     {{ itemLecture.title }}
                                     <div class="flex gap-2">
+                                      {{itemLecture.type}}
                                       <ButtonSecondarySm :icon="PencilIcon" />
                                       <ButtonSecondarySm :icon="TrashIcon" />
                                     </div>
@@ -496,7 +497,7 @@
       label="Tên chương"
       inputId="nameSection"
       inputPlaceHoder="Nhập tên chương"
-      v-model="formDataAddSection.name"
+      v-model="formDataAddSection.title"
     />
   </DialogArea>
   <!-- End Dialog thêm chương -->
@@ -511,10 +512,30 @@
       label="Chỉnh sửa tên chương"
       inputId="nameEditSection"
       inputPlaceHoder="Nhập tên chương"
-      v-model="formDataEditSection.name"
+      v-model="formDataEditSection.title"
     />
   </DialogArea>
   <!-- End Dialog Chỉnh sửa chương -->
+
+  <!-- Dialog thêm bài học -->
+  <DialogArea
+    :dialogVisible="dialogAddTypeLesson"
+    title="Thêm bài học mới"
+    @close="dialogAddTypeLesson = false"
+  >
+    <label  class="label-input mt-2 mb-3 flex" > Chọn thể loại bài học</label>
+    <el-radio-group class="w-full" v-model="radio1">
+      <el-radio value="video" size="large" border>Video file</el-radio>
+      <el-radio value="file" size="large" border>Tài liệu</el-radio>
+    </el-radio-group>
+    <CkeditorGroup label="Nội dung bài học" />
+    <InputGroup inputId="duration" label="Thời lượng" inputPlaceHoder="Nhập thời lượng bài học" />
+    <InputGroup
+      inputId="videoLesson"
+      label="Video bài học"
+      inputPlaceHoder="Nhập đường dẫn video"
+    />
+  </DialogArea>
 
   <!-- Dialog thêm bài học -->
   <DialogArea
@@ -522,7 +543,6 @@
     title="Thêm bài học mới"
     @close="dialogAddnewLesson = false"
   >
-    <InputGroup inputId="nameLesson" label="Tên bài học" inputPlaceHoder="Nhập tên bài học" />
     <CkeditorGroup label="Nội dung bài học" />
     <InputGroup inputId="duration" label="Thời lượng" inputPlaceHoder="Nhập thời lượng bài học" />
     <InputGroup
@@ -563,7 +583,7 @@
           <el-input
           style="max-width: 600px"
           class="cursor-move py-2"
-          :placeholder="element.name"
+          :placeholder="element.title"
 
           >
             <template #title>{{ element.name }}</template>
@@ -675,6 +695,12 @@ const EditChapter = (id: number | string) => {
 
 //end dialog chương
 
+//dialog loại bài học
+const dialogAddTypeLesson = ref<boolean>(false)
+const addTypeLesson = () => {
+  dialogAddTypeLesson.value = true
+}
+
 //dialog bài học
 const dialogAddnewLesson = ref<boolean>(false)
 const addLesson = () => {
@@ -727,3 +753,21 @@ onMounted(() => {
   fetchLanguages()
 })
 </script>
+<style>
+.el-radio-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Chia thành 2 cột đều */
+  gap: 20px; /* Khoảng cách giữa các item */
+}
+
+.el-radio-group .el-radio {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.el-radio-group .el-radio.is-bordered {
+  padding: 10px;
+}
+
+</style>

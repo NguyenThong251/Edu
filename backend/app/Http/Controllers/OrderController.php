@@ -63,6 +63,7 @@ class OrderController extends Controller
                 : min($voucher->discount_value, $voucher->max_discount_value ?? PHP_INT_MAX);
 
             $total = max($total - $discount, 0);
+            $total = round($total);
         }
 
         try {
@@ -81,8 +82,8 @@ class OrderController extends Controller
                     ],
                 ],
                 'mode' => 'payment',
-                'success_url' => config('services.frontend_url') . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => config('services.frontend_url') . '/checkout/cancel',
+                'success_url' => config('services.frontend_url') . 'checkout/success?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => config('services.frontend_url') . 'checkout/cancel',
             ]);
 
             // Tạo đơn hàng trong hệ thống
@@ -126,7 +127,7 @@ class OrderController extends Controller
             DB::rollBack();
             Log::error('Order creation failed: ' . $e->getMessage());
 
-            return response()->json(['status' => 'error', 'message' => 'Order creation failed'], 500);
+            return response()->json(['status' => 'error', 'message' => 'Order creation failed: ' . $e->getMessage()], 500);
         }
     }
 
