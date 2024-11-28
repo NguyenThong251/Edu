@@ -3,25 +3,24 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NoteController;
-use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PayoutController;
-use App\Http\Controllers\WebhookController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
-use App\Http\Controllers\CartController;
 use App\Http\Controllers\CourseLevelController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ManageController;
 use App\Http\Controllers\Api\GoogleController;
-use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\LectureController;
 use App\Http\Controllers\StudyController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -122,6 +121,11 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 Route::put('/{id}', [VoucherController::class, 'update']);
             });
 
+            // Review in Admin
+            // Xem tất cả các review (bao gồm cả bị xóa)
+            Route::get('reviews/{courseId}/all', [ReviewController::class, 'getAllReviews']);
+            Route::post('reviews/{id}/restore', [ReviewController::class, 'restore']);
+
             // admin Xử lý rút tiền stripe
             Route::post('/payout/process/{id}', [PayoutController::class, 'processPayout']);
             // Liệt kê các yêu cầu rút tiền
@@ -141,8 +145,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('admin/get-line-chart/revenue', [AdminController::class, 'getAdminLineChartData']);
             Route::get('admin/get-line-chart/user', [AdminController::class, 'getUserRegistrationLineChart']);
             Route::get('admin/get-line-chart/order', [AdminController::class, 'getOrderLineChartData']);
-
-
         });
 
         // Routes cho instructor
@@ -221,9 +223,17 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 Route::patch('/{id}', [OrderController::class, 'cancel']);
                 Route::patch('/{id}/restore', [OrderController::class, 'restore']);
             });
+
+            // Review
+            Route::post('reviews', [ReviewController::class, 'store']);
+            Route::put('reviews/{id}', [ReviewController::class, 'update']);
+            Route::delete('reviews/{id}', [ReviewController::class, 'destroy']);
         });
     });
 });
+
+// All Review
+Route::get('courses/{courseId}/reviews', [ReviewController::class, 'index']);
 
 // Order webhook
 Route::get('/orders/verify-payment', [OrderController::class, 'verifyPayment']);
