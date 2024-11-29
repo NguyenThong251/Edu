@@ -71,8 +71,9 @@
             <div class="flex flex-col gap-5">
 
                 <div v-for="(review, index) in listReview" :key="index">
-                    <CardCourseComment :rate="review.rating" :name="review.user.last_name" :content="review.comment"
-                        :image="review.user.avatar" :created_at="review.created_at" />
+                    <CardCourseComment :course_id="review.course_id" :id="review.id" :rate="review.rating"
+                        :name="review.user.last_name" :content="review.comment" :image="review.user.avatar"
+                        :created_at="review.created_at" />
 
                     <!-- <h2>{{ review.comment }}</h2> -->
                 </div>

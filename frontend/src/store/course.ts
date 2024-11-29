@@ -8,7 +8,7 @@ import type { TChangeContent, TLesson } from '@/interfaces/ui.interface'
 export const useCourseStore = defineStore('courseStore', () => {
   // State
   const course = ref<any>()
-  const listCourseAdmin = ref<any>()
+  const listCourseTeacher = ref<any>()
   const isLoading = ref<boolean>(false)
   const error = ref<string | null>(null)
   const myCourses = ref<TCardMyCourse[]>([])
@@ -126,8 +126,8 @@ export const useCourseStore = defineStore('courseStore', () => {
   // Teacher
   const fetchTeacherCourse = async (params: any = {}) => {
     try {
-      const response = await api.get('auth/instructor/course', { params })
-      listCourseAdmin.value = response.data.data
+      const response = await api.get('/auth/instructor/course', { params })
+      listCourseTeacher.value = response.data.data
     } catch (error) {
       console.error(error)
     }
@@ -136,7 +136,7 @@ export const useCourseStore = defineStore('courseStore', () => {
   const getCourse = () => course.value
   fetchMyCourse()
   return {
-    listCourseAdmin,
+    listCourseTeacher,
     courseStudySearch,
     studyCourse,
     course,

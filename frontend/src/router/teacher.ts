@@ -1,6 +1,8 @@
 import LayoutCourseVideo from '@/layouts/LayoutCourseVideo.vue'
 import TeacherLayout from '@/layouts/TeacherLayout.vue'
 import UserDashboard from '@/layouts/UserDashboard.vue'
+import CourseListPage from '@/views/teacher/CourseListPage.vue'
+import PaymentPage from '@/views/teacher/PaymentPage.vue'
 import MyProfile from '@/views/user/MyProfile.vue'
 import Security from '@/views/user/Security.vue'
 
@@ -28,6 +30,18 @@ const teacher = [
         name: 'teacher.profile-setting',
         component: MyProfile,
         meta: { requiresAuth: true, role: 'instructor', title: 'Cài đặt| Edunity' }
+      },
+      {
+        path: '/teacher/course/list',
+        name: 'teacher.course',
+        component: CourseListPage,
+        meta: { requiresAuth: true, role: 'instructor', title: 'Bảo mật | Edunity' }
+      },
+      {
+        path: '/teacher/payment',
+        name: 'teacher.payment',
+        component: PaymentPage,
+        meta: { requiresAuth: true, role: 'instructor', title: 'Bảo mật | Edunity' }
       }
     ]
   }

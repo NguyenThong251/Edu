@@ -3,8 +3,8 @@ import logo from '@/assets/images/logo2.svg'
 import logoMinimal from '@/assets/images/minimal-logo.svg'
 import SidebarItems from './SidebarItems.vue';
 import { computed, ref } from 'vue';
-import { WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon, TicketIcon } from '@heroicons/vue/24/outline';
-import { Cog8ToothIcon, InboxStackIcon, LanguageIcon, UserCircleIcon, LockClosedIcon } from '@heroicons/vue/20/solid';
+import { WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon, TicketIcon, NewspaperIcon } from '@heroicons/vue/24/outline';
+import { Cog8ToothIcon, InboxStackIcon, LanguageIcon, UserCircleIcon, LockClosedIcon, CreditCardIcon } from '@heroicons/vue/20/solid';
 import type { MenuGroup } from '@/interfaces/admin.interface';
 
 import { useSidebarStore } from '@/store/sidebar';
@@ -73,6 +73,16 @@ const menuGroups = ref<MenuGroup[]>([
         ]
       },
       {
+        icon: CreditCardIcon,
+        label: 'Thanh toán',
+        route: '/admin/payment',
+      },
+      {
+        icon: NewspaperIcon,
+        label: 'Đánh giá',
+        route: '/admin/user-review',
+      },
+      {
         icon: UserGroupIcon,
         label: 'Người dùng',
         route: '/admin/user',
@@ -122,7 +132,7 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
       {
         icon: HomeIcon,
         label: 'Bảng điều khiển',
-        route: '/teacher/dashboard'
+        route: '/teacher'
       },
       {
         icon: SquaresPlusIcon,
@@ -134,6 +144,10 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
         label: 'Khoá học',
         route: '#',
         children: [
+          {
+            label: 'Danh sách khóa học',
+            route: '/teacher/course/list'
+          },
           {
             label: 'Quản lý khoá học',
             route: '/teacher/course/manager-course'
@@ -182,11 +196,17 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
         icon: UserGroupIcon,
         label: 'Quản lí học viên',
         route: '/teacher/student',
-      },
+      }
+      ,
       {
         icon: ChatBubbleLeftRightIcon,
         label: 'Tin nhắn',
         route: '/teacher/message',
+      },
+      {
+        icon: CreditCardIcon,
+        label: 'Rút tiền',
+        route: '/teacher/payment',
       }
 
     ]
