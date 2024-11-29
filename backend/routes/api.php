@@ -110,20 +110,20 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::prefix('vouchers')->group(function () {
                 // Get all vouchers
                 Route::get('/', [VoucherController::class, 'index']);
+                // Get voucher by id or code
+                Route::get('/{idOrCode}', [VoucherController::class, 'show']);
+                Route::post('/create', [VoucherController::class, 'store']);
+                Route::put('/{id}', [VoucherController::class, 'update']);
+                Route::post('/delete', [VoucherController::class, 'destroy']);
                 Route::get('/filter', [VoucherController::class, 'filter']);
                 // Get all deleted vouchers
                 Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
-                // Get voucher by id or code
-                Route::get('/{idOrCode}', [VoucherController::class, 'show']);
-                Route::post('/create', [VoucherController::class, 'create']);
-                Route::post('/delete', [VoucherController::class, 'destroy']);
                 Route::post('/restore', [VoucherController::class, 'restoreVoucher']);
-                Route::put('/{id}', [VoucherController::class, 'update']);
             });
 
             // Review in Admin
             // Xem tất cả các review (bao gồm cả bị xóa)
-            Route::get('reviews/{courseId}/all', [ReviewController::class, 'getAllReviews']);
+            Route::get('reviews/{courseId}/deleted', [ReviewController::class, 'getDeletedReviews']);
             Route::post('reviews/{id}/restore', [ReviewController::class, 'restore']);
 
             // admin Xử lý rút tiền stripe
@@ -234,6 +234,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
 // All Review
 Route::get('courses/{courseId}/reviews', [ReviewController::class, 'index']);
+Route::get('courses/{courseId}/reviews/filter', [ReviewController::class, 'filter']);
 
 // Order webhook
 Route::get('/orders/verify-payment', [OrderController::class, 'verifyPayment']);
