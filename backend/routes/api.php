@@ -169,6 +169,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::patch('lectures/{id}/section', [LectureController::class, 'updateLectureSection'])->name('lectures.updateSection');
             Route::get('show-content-of-section/{id}', [LectureController::class, 'showContentBySection'])->name('lectures.showContentBySection');
             Route::get('lectures', [LectureController::class, 'getListAdmin'])->name('lectures.getListAdmin');
+            Route::get('lectures/edit-form/{id}', [LectureController::class, 'editForm'])->name('lectures.editForm');
 
 
             Route::post('quizzes', [QuizController::class, 'store'])->name('quizzes.store');

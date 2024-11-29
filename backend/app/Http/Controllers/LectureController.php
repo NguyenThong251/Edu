@@ -34,7 +34,9 @@ class LectureController extends Controller
             $keyword = $request->keyword;
             $lecturesQuery->where('title', 'like', '%' . $keyword . '%');
         }
-
+        if ($request->has('created_by') && !empty($request->created_by)) {
+            $lecturesQuery->where('created_by', $request->created_by);
+        }
         // Lọc theo section_id (nếu có)
         if ($request->has('section_id') && !empty($request->section_id)) {
             $sectionId = $request->section_id;
@@ -155,6 +157,19 @@ class LectureController extends Controller
         return formatResponse(STATUS_OK, '', '', __('messages.order_update_success'));
     }
 
+    public function editForm($id)
+    {
+        // Tìm quiz theo id, bao gồm cả các bản ghi đã bị xóa mềm
+        $lecture = Lecture::withTrashed()->find($id);
+
+        // Nếu không tìm thấy quiz
+        if (!$lecture) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.lecture_not_found'));
+        }
+
+        // Trả về thông tin của quiz
+        return formatResponse(STATUS_OK, $lecture, '', __('messages.lecture_detail_success'));
+    }
 
     public function index(Request $request)
     {
