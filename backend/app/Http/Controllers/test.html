@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File và Video Duration Test</title>
+</head>
+<body>
+    <h2>Chọn loại file:</h2>
+    <select id="fileType">
+        <option value="video">Video</option>
+        <option value="file">File</option>
+    </select>
+    
+    <h3>Chọn file:</h3>
+    <input type="file" id="fileInput" accept="video/*, .pdf">
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('fileType').addEventListener('change', function(event) {
+            const fileType = event.target.value;
+            const fileInput = document.getElementById('fileInput');
+            
+            if (fileType === 'video') {
+                fileInput.accept = 'video/*'; // Chỉ nhận video
+            } else if (fileType === 'file') {
+                fileInput.accept = '.pdf'; // Chỉ nhận file PDF
+            }
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const fileType = document.getElementById('fileType').value;
+            
+            if (fileType === 'video') {
+                handleVideo(file);
+            } else if (fileType === 'file') {
+                handleFile(file);
+            }
+        });
+
+        function handleVideo(file) {
+            const videoElement = document.createElement('video');
+            videoElement.preload = 'metadata';
+            
+            videoElement.onloadedmetadata = function() {
+                const duration = videoElement.duration;
+                document.getElementById('result').innerHTML = 
+                    `Thời lượng video: ${duration.toFixed(2)} giây`;
+            };
+            
+            videoElement.onerror = function() {
+                document.getElementById('result').innerHTML = 
+                    'Lỗi: Không thể xác định thời lượng video';
+            };
+            
+            videoElement.src = URL.createObjectURL(file);
+        }
+
+        function handleFile(file) {
+            if (file.type === 'application/pdf') {
+                // Đếm số trang của file PDF
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const typedarray = new Uint8Array(e.target.result);
+                    const loadingTask = pdfjsLib.getDocument(typedarray);
+                    
+                    loadingTask.promise.then(function(pdf) {
+                        document.getElementById('result').innerHTML = 
+                            `Số trang của file PDF: ${pdf.numPages}`;
+                    }).catch(function(error) {
+                        document.getElementById('result').innerHTML = 
+                            'Lỗi: Không thể đọc file PDF';
+                    });
+                };
+                
+                reader.readAsArrayBuffer(file);
+            } else {
+                document.getElementById('result').innerHTML = 
+                    'Lỗi: Không phải file PDF';
+            }
+        }
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+</body>
+</html>

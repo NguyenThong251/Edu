@@ -57,7 +57,7 @@
                           title="Thêm bài học"
                           dialogVisible="dialogAddnewLesson"
                           link="#"
-                          @click="addTypeLesson"
+                          @click="addLesson"
                         />
                         <!-- button dialog 3 new quiz -->
                         <ButtonPrimarySm
@@ -105,7 +105,14 @@
                                     'opacity-0': !toggleActive
                                   }"
                                 >
-                                  <ButtonSecondarySm title="Sắp xếp bài học" />
+                                  <ButtonSecondarySm   
+                                    v-if="
+                                    itemSection.lectures &&
+                                    Array.isArray(itemSection.lectures) &&
+                                    itemSection.lectures.length > 0
+                                    " 
+                                    title="Sắp xếp bài học" 
+                                  />
                                   <ButtonSecondarySm
                                     link="#"
                                     :icon="PencilIcon"
@@ -519,30 +526,107 @@
 
   <!-- Dialog thêm bài học -->
   <DialogArea
-    :dialogVisible="dialogAddTypeLesson"
+    :dialogVisible="dialogAddnewLesson"
     title="Thêm bài học mới"
-    @close="dialogAddTypeLesson = false"
+    @close="dialogAddnewLesson = false"
+    :submitForm="() => handleAddLecture()"
   >
     <label  class="label-input mt-2 mb-3 flex" > Chọn thể loại bài học</label>
-    <el-radio-group class="w-full" v-model="radio1">
+    <el-radio-group class="w-full" v-model="formDataAddLecture.type">
       <el-radio value="video" size="large" border>Video file</el-radio>
-      <el-radio value="file" size="large" border>Tài liệu</el-radio>
+      <el-radio value="file" size="large " border>Tài liệu</el-radio>
     </el-radio-group>
-    <CkeditorGroup label="Nội dung bài học" />
-    <InputGroup inputId="duration" label="Thời lượng" inputPlaceHoder="Nhập thời lượng bài học" />
     <InputGroup
-      inputId="videoLesson"
-      label="Video bài học"
-      inputPlaceHoder="Nhập đường dẫn video"
+      label="Tên bài học"
+      inputId="nameLecture"
+      inputPlaceHoder="Nhập tên bài học"
+      v-model="formDataAddLecture.title"
     />
+
+    <RadioGroup
+    label="Chương"
+    customsClass="items-center"
+    >
+    <el-select
+          v-model="formDataAddLecture.section_id"
+          placeholder="Chọn chương cho bài học"
+          class="w-full"
+          filterable
+          >
+          <template #empty>
+              <span>Không có giá trị nào</span> 
+            </template>
+              <el-option
+                v-for="item in section"
+                :key="item.id"
+                :label="item.title"
+                :value="item.id"
+              >
+              <span>{{ item.title }}</span>
+              </el-option>
+          </el-select>
+    </RadioGroup>
+
+
+    <UploadGroup
+      v-if="formDataAddLecture.type == 'video'"
+      label="Tải lên video bài học (.mp4)"
+      customsClass=" items-center"
+      :handlePreviewImg="handlePreviewImg"
+      />
+    <UploadGroup
+      v-if="formDataAddLecture.type == 'file'"
+      label="Tải file tài liệu bài học (.pdf)"
+      customsClass=" items-center"
+      :handlePreviewImg="handlePreviewImg"
+      />
+
+    <RadioGroup
+    :label="formDataAddLecture.type =='video'?'Thời lượng video': 'Số trang'"
+    customsClass="items-center"
+    >
+      <el-input
+      v-model="formDataAddLecture.duration"
+      class=""
+      disabled
+      placeholder="Please input"
+      />
+    </RadioGroup>
+
+    <RadioGroup
+    :label="formDataAddLecture.type =='video'?'Chọn xem trước video': 'Chọn xem trước tài liệu'"
+    customsClass="items-center"
+    >
+        <el-select
+          v-model="formDataAddLecture.preview"
+          class="w-full"
+          filterable
+          placeholder="Chọn loại xem trước"
+          >
+            <template #empty>
+              <span>Không có giá trị nào</span> 
+            </template>
+              <el-option label="Xem trước" value="can"></el-option>
+              <el-option label="Không xem trước" value="cant"></el-option>
+        </el-select>
+    </RadioGroup>
+
+  
+
   </DialogArea>
 
   <!-- Dialog thêm bài học -->
-  <DialogArea
+  <!-- <DialogArea
     :dialogVisible="dialogAddnewLesson"
     title="Thêm bài học mới"
     @close="dialogAddnewLesson = false"
   >
+    <InputGroup
+      label="Tên bài học"
+      inputId="nameLecture"
+      inputPlaceHoder="Nhập tên bài học"
+      v-model="formDataAddLecture.title"
+    />
     <CkeditorGroup label="Nội dung bài học" />
     <InputGroup inputId="duration" label="Thời lượng" inputPlaceHoder="Nhập thời lượng bài học" />
     <InputGroup
@@ -550,7 +634,7 @@
       label="Video bài học"
       inputPlaceHoder="Nhập đường dẫn video"
     />
-  </DialogArea>
+  </DialogArea> -->
   <!-- Dialog thêm quiz -->
   <DialogArea
     :dialogVisible="dialogAddnewQuiz"
@@ -654,9 +738,11 @@ const {
   handlePreviewImg,
   formDataAddSection,
   handelFormSection,
+  formDataAddLecture,
   handleDeleteSection,
   handleEditSection,
   handleSortSection,
+  handleAddLecture,
   formDataEditSection,
   fetchSectionId,
   dialogEditSection
@@ -695,11 +781,6 @@ const EditChapter = (id: number | string) => {
 
 //end dialog chương
 
-//dialog loại bài học
-const dialogAddTypeLesson = ref<boolean>(false)
-const addTypeLesson = () => {
-  dialogAddTypeLesson.value = true
-}
 
 //dialog bài học
 const dialogAddnewLesson = ref<boolean>(false)
@@ -755,9 +836,9 @@ onMounted(() => {
 </script>
 <style>
 .el-radio-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* Chia thành 2 cột đều */
-  gap: 20px; /* Khoảng cách giữa các item */
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important; /* Chia thành 2 cột đều */
+  gap: 20px !important; /* Khoảng cách giữa các item */
 }
 
 .el-radio-group .el-radio {

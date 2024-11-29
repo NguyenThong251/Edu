@@ -1,4 +1,4 @@
-import type { TSection } from '@/interfaces'
+import type { TLectures, TSection } from '@/interfaces'
 import api from '@/services/axiosConfig'
 
 import { ElNotification, ElMessage, ElMessageBox } from 'element-plus'
@@ -283,10 +283,9 @@ export default function useCourse() {
   
   
 // chỉnh sửa chương
-
-  const formDataEditSection = ref({
+  const formDataEditSection = ref<TSection>({
     id: '',
-    name: '',  // Các trường cần chỉnh sửa
+    title: '',  // Các trường cần chỉnh sửa
   });
   // get Id section
   const fetchSectionId = async (id: number | string) => {
@@ -392,18 +391,18 @@ export default function useCourse() {
   };
   
     // Sort section
-    const handleSortSection = async (sortedSection: TSection): Promise<void> => {
+  const handleSortSection = async (sortedSection:any) => {
       try {
         // Chuyển Proxy thành dữ liệu gốc
         const rawData = toRaw(sortedSection);
           // Chuyển dữ liệu thành JSON
         const jsonData = JSON.stringify(rawData);
 
-        console.log('Dữ liệu đã sắp xếp:', jsonData);
-
-        
+        console.log('Dữ liệu đã sắp xếp :', rawData);
+        console.log('Dữ liệu đã sắp xếp2:', jsonData);
         // Gửi mảng đã sắp xếp lên backend
-        const response = await api.post('/section/sort', { sortedSection: rawData });
+        const response = await api.post('/section/sort', { sortedSection: jsonData });
+        console.log('log res :', response);
         if (response.data.status === 'OK') {
           ElNotification({
             title: 'Thành công',
@@ -430,6 +429,67 @@ export default function useCourse() {
 
   // END SECTIONS
 
+  //  LECTURE
+  const formDataAddLecture = ref<TLectures>({
+    type: 'video',
+    title: '',
+    section_id: '',
+    content_link: '',
+    duration: '',
+    preview: '',
+    status: 'active',
+    order: ''
+  }) 
+  const handleAddLecture = async () => {
+    console.log('dữ liệu from:',formDataAddLecture.value);  
+
+    try {
+      loading.value = true
+      // const formData = new FormData();
+      //  // Gán các trường không phải tệp vào FormData
+      // for (const key in formDataAddLecture.value) {
+      //   if (formDataAddLecture.value[key]) {
+      //     formData.append(key, formDataAddLecture.value[key]);
+      //   }
+      // }
+
+      // In dữ liệu form   trước khi tạo FormData
+      console.log('Dữ liệu form trước khi tạo FormData:', formDataAddLecture.value)
+
+      const response = await api.post('/auth/lecture/', formDataAddLecture.value, {
+        // headers: {
+        //   'Content-Type': 'multipart/form-data'
+        // }
+      })
+      console.log(response);
+      
+      if (response.data.status === 'OK') {
+        console.log('Phản hồi API:', response.data)
+        ElNotification({
+          title: 'Thành công',
+          message: response.data.message || 'Thêm bài học thành công',
+          type: 'success'
+        })
+        // Chuyển hướng đến trang chỉnh sửa khóa học
+      const courseId = response.data.id;  // Giả sử API trả về course_id
+      const router = useRouter();
+      router.push({ name: 'editCourse', params: { id: courseId } });
+      } else {
+        ElNotification({
+          title: 'Thất bại',
+          message: response.data.message || 'Thêm bài học không thành công',
+          type: 'error'
+        })
+      }
+    } catch (err) {
+      // alert('Lỗi khi thêm khóa học: ' + err.message)
+    } finally {
+      loading.value = false
+    }
+  }
+  // END LECTURE
+
+
 
   onMounted(() => {
       fetchCourseData();
@@ -440,6 +500,7 @@ export default function useCourse() {
     formDataEditCourse,
     formDataAddSection,
     formDataEditSection,
+    formDataAddLecture,
     dialogEditSection,
     handelFormSection,
     courseLevels,
@@ -455,6 +516,7 @@ export default function useCourse() {
     handleDeleteSection,
     handleEditSection,
     handleSortSection,
+    handleAddLecture,
     courseId,
     loading,
     section,

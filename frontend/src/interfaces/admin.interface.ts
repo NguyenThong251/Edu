@@ -36,14 +36,15 @@ export interface SelectGroupProps extends TBaseInputProps {
   optionsData: Option[]
 }
 interface Option {
-  value: any
-  label: string
+  value?: any
+  label?: string
+  title?: string
 }
 
 export interface InputGroupProps extends TBaseInputProps {}
 export interface InputOpionGroupProps extends SelectGroupProps {}
 export interface UploadGroupProps extends TBaseInputProps {
-  imageUrl: any
+  imageUrl?: any
   handlePreviewImg: (event: any) => void
 }
 

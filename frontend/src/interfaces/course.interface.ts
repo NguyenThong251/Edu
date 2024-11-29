@@ -67,4 +67,11 @@ export interface TSection {
 export interface TLectures {
   id?: number | string
   title?: string
+  type?: string
+  section_id?: number | string
+  content_link?: string
+  duration?: number | string
+  preview?: string
+  status?: string
+  order?: number | string
 }
