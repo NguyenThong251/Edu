@@ -110,6 +110,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::prefix('vouchers')->group(function () {
                 // Get all vouchers
                 Route::get('/', [VoucherController::class, 'index']);
+                Route::get('list-vouchers-admin', [VoucherController::class, 'getListAdmin']);
                 Route::get('/filter', [VoucherController::class, 'filter']);
                 // Get all deleted vouchers
                 Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
@@ -196,8 +197,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('/message/private/{receiverId}', [ChatController::class, 'index']);
             Route::get('/chat/users', [ChatController::class, 'getUsers']);
             Route::post('/messages/{receiverId}', [ChatController::class, 'store']);
-            Route::post('/auth/upload-chat-image', [ChatController::class, 'uploadChatImage']);
-            Route::delete('/auth/delete-chat-image', [ChatController::class, 'deleteChatImage']);
+            Route::post('/upload-chat-image', [ChatController::class, 'uploadChatImage']);
+            Route::delete('/delete-chat-image', [ChatController::class, 'deleteChatImage']);
 
             Route::get('/search-content', [StudyController::class, 'searchContent']);
             Route::get('/study-course', [StudyController::class, 'studyCourse']);
