@@ -168,7 +168,7 @@ const admin = [
       },
       {
         path: '/admin/profile-setting',
-        name: 'admin.user',
+        name: 'admin.profile-setting',
         component: MyProfile,
         meta: { requiresAuth: true, role: 'admin', title: 'Chỉnh sửa thông tin | Edunity' }
       },

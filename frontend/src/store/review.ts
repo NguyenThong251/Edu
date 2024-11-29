@@ -75,7 +75,7 @@ export const useReviewsStore = defineStore('reviews', () => {
       })
       const response = await api.delete(`/auth/reviews/${idReview}`)
       await fetchReviews(id)
-      ElMessage.success('Cập nhật đánh giá thành công!')
+      ElMessage.success('Xóa đánh giá thành công!')
     } catch (error: any) {
       ElMessage.error(error.response.data.message)
     }

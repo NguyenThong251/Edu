@@ -18,7 +18,7 @@
                     <div class="flex gap-1">
                         <StarIcon v-for="n in rate" :key="n" class="w-4 h-4 text-yellow-400" />
                     </div>
-                    <span class="text-gray-600">{{ formatDate(created_at) }}</span>
+                    <span class="text-gray-600">{{ created_at }}</span>
                 </div>
             </div>
         </div>

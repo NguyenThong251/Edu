@@ -52,6 +52,7 @@
 
     <!-- Bảng hiển thị bình luận -->
     <el-dialog v-model="reviewDialogVisible" title="Danh sách Bình luận">
+        <el-button @click="openReviewDialogDelete">Khôi phục đánh giá</el-button>
         <el-table :data="state.listReview" class="mt-4">
             <el-table-column prop="comment" label="Bình luận" />
             <el-table-column prop="user.last_name" label="Người dùng" />
@@ -60,7 +61,18 @@
             <el-table-column label="Hành động">
                 <template #default="{ row }">
                     <el-button @click="handleDelete(row.id)">Xóa</el-button>
-                    <el-button v-if="row.status === 'deleted'" @click="restoreComment(row.id)">Khôi phục</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-dialog>
+
+
+    <el-dialog v-model="deletedCommentsDialogVisible" title="Danh sách bình luận đã xóa">
+        <el-table :data="state.listReviewDelete">
+            <el-table-column prop="content" label="Bình luận" />
+            <el-table-column label="Hành động">
+                <template #default="{ row }">
+                    <el-button @click="restoreComment(row.id)">Khôi phục</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -87,7 +99,6 @@ const navigateToDetail = (id: number) => {
 const { handleAddToCart } = useCart();
 const commentStore = useReviewsStore();
 const { state } = storeToRefs(commentStore)
-console.log(state)
 const { fetchReviews,
     createReview,
     updateReview,
@@ -95,6 +106,7 @@ const { fetchReviews,
     restoreReview,
     fetchReviewsDelete } = commentStore
 const reviewDialogVisible = ref(false);
+const deletedCommentsDialogVisible = ref(false);
 
 // Mở Dialog bình luận
 const openReviewDialog = async () => {
@@ -102,7 +114,16 @@ const openReviewDialog = async () => {
     // Fetch bình luận của khóa học ngay khi mở dialog
     await fetchReviews(props.id);
 };
+const openReviewDialogDelete = async () => {
+    deletedCommentsDialogVisible.value = true;
+    // Fetch bình luận của khóa học ngay khi mở dialog
+    await fetchReviewsDelete(props.id);
+};
 const handleDelete = (commentId: number) => {
     deleteReview(props.id, commentId);
+    reviewDialogVisible.value = false
 };
+const restoreComment = (commentId: number) => {
+    restoreReview(props.id, commentId)
+}
 </script>

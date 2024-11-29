@@ -88,7 +88,6 @@ onMounted(() => {
 const commentStore = useReviewsStore();
 const apiStore = apisStore()
 const { courses } = storeToRefs(apiStore)
-console.log(courses)
 const { fetchCourseSearch } = apiStore
 // const filters = reactive({
 //     courseId: null,

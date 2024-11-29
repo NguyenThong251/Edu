@@ -75,7 +75,7 @@
                         :name="review.user.last_name" :content="review.comment" :image="review.user.avatar"
                         :created_at="review.created_at" />
 
-                    <!-- <h2>{{ review.comment }}</h2> -->
+
                 </div>
             </div>
             <div class="flex items-center justify-center mt-5">
