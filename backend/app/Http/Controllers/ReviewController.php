@@ -12,13 +12,17 @@ class ReviewController extends Controller
 {
     public function index($courseId)
     {
-        $reviews = Review::where('course_id', $courseId)
-            ->where('status', 'active')
-            ->with('user')
-            ->latest()
-            ->get();
+        try {
+            $reviews = Review::where('course_id', $courseId)
+                ->where('status', 'active')
+                ->with('user')
+                ->latest()
+                ->paginate('10');
 
-        return response()->json(['reviews' => $reviews], 200);
+            return response()->json(['status' => 'success', 'results' => count($reviews), 'data' => $reviews], 200);
+        } catch (\Exception $exception) {
+            return response()->json(['message' => 'Có lỗi xảy ra: ' . $exception], 500);
+        }
     }
 
     public function store(Request $request)
@@ -91,6 +95,7 @@ class ReviewController extends Controller
                 return response()->json(['message' => 'Bạn chỉ có thể xóa đánh giá của mình '], 403);
             }
 
+            // thực hiện xóa mềm
             $review->delete();
 
             return response()->json(['message' => ' Xóa đánh giá thành công ']);
@@ -99,28 +104,79 @@ class ReviewController extends Controller
         }
     }
 
+    public function filter(Request $request, $courseId)
+    {
+        $query = Review::where('course_id', $courseId)
+            ->where('status', 'active')
+            ->with('user')
+            ->latest();
+
+        if ($request->has('rating')) {
+            $query->where('rating', $request->rating);
+        }
+
+
+        if ($request->has('comment')) {
+            $query->where('comment', 'like', '%' . $request->comment . '%');
+        }
+
+        $reviews = $query->paginate('10');
+
+        return response()->json(
+            [
+                'status' => 'success',
+                'results' => $reviews->total(),
+                'data' => $reviews
+            ],
+            200
+        );
+    }
+
+    public function getDeletedReviews($courseId)
+    {
+        $reviews = Review::where('course_id', $courseId)
+            ->with('user')->onlyTrashed()->paginate(10);
+
+        return response()->json(
+            [
+                'status' => 'success',
+                'results' => $reviews->total(),
+                'data' => $reviews
+            ],
+            200
+        );
+    }
+
     public function restore($id)
     {
         try {
             $review = Review::withTrashed()->findOrFail($id);
 
-            if ($review->user_id !== Auth::id()) {
-                return response()->json(['message' => 'Bạn chỉ có thể khôi phục đánh giá của mình '], 403);
+            if ($review->trashed() && Auth::user()->role === 'admin') {
+                $review->restore();
+            } else {
+                return response()->json(
+                    [
+                        'message' => 'Bạn không có quyền khôi phục đánh giá này'
+                    ],
+                    403
+                );
             }
 
-            $review->restore();
-
-            return response()->json(['message' => 'Khôi phục đánh giá thành công ']);
+            return response()->json(
+                [
+                    'message' => 'Khôi phục đánh giá thành công',
+                    'review' => $review
+                ],
+                200
+            );
         } catch (\Exception $exception) {
-            return response()->json(['message' => 'Có lỗi xảy ra: ' . $exception], 500);
+            return response()->json(
+                [
+                    'message' => 'Có lỗi xảy ra: ' . $exception
+                ],
+                500
+            );
         }
-    }
-
-    public function getAllReviews($courseId) // Lấy tất cả đánh giá bao gồm cả đã xóa
-    {
-        $reviews = Review::where('course_id', $courseId)
-            ->with('user')->withTrashed()->latest()->get();
-
-        return response()->json(['reviews' => $reviews], 200);
     }
 }

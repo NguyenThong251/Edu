@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Voucher;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 use App\Models\Cart;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class VoucherController extends Controller
 {
@@ -98,15 +98,8 @@ class VoucherController extends Controller
         return response()->json(['status' => 'success', 'data' => $voucher], 200);
     }
 
-    // Lấy danh sách voucher đã bị soft delete
-    public function getDeletedVouchers()
-    {
-        $deletedVouchers = Voucher::getAllDeleted();
-        return response()->json(['status' => 'success', 'data' => $deletedVouchers], 200);
-    }
-
     // Tạo voucher mới
-    public function create(Request $request)
+    public function store(Request $request)
     {
         try {
             $data = $request->validate([
@@ -136,22 +129,6 @@ class VoucherController extends Controller
         }
     }
 
-    // Xóa mềm voucher
-    public function destroy(Request $request)
-    {
-        $data = $request->validate(['code' => 'required|string|exists:vouchers,code']);
-        Voucher::softDeleteByCode($data['code']);
-        return response()->json(['status' => 'success', 'message' => __('messages.voucher_soft_deleted_success')], 200);
-    }
-
-    // Khôi phục voucher đã xóa
-    public function restoreVoucher(Request $request)
-    {
-        $data = $request->validate(['code' => 'required|string|exists:vouchers,code']);
-        $voucher = Voucher::restoreByCode($data['code']);
-        return response()->json(['status' => 'success', 'message' => __('messages.voucher_restore_success'), 'data' => $voucher], 200);
-    }
-
     // Cập nhật voucher
     public function update(Request $request, $id)
     {
@@ -170,6 +147,14 @@ class VoucherController extends Controller
         $voucher = Voucher::findOrFail($id);
         $voucher->updateVoucher($data);
         return response()->json(['status' => 'success', 'message' => __('messages.voucher_updated_success'), 'data' => $voucher], 200);
+    }
+
+    // Xóa mềm voucher
+    public function destroy(Request $request)
+    {
+        $data = $request->validate(['code' => 'required|string|exists:vouchers,code']);
+        Voucher::softDeleteByCode($data['code']);
+        return response()->json(['status' => 'success', 'message' => __('messages.voucher_soft_deleted_success')], 200);
     }
 
     // Filter voucher
@@ -220,5 +205,20 @@ class VoucherController extends Controller
             'result' => $vouchers->total(),
             'data' => $vouchers
         ], 200);
+    }
+
+    // Lấy danh sách voucher đã bị soft delete
+    public function getDeletedVouchers()
+    {
+        $deletedVouchers = Voucher::getAllDeleted();
+        return response()->json(['status' => 'success', 'data' => $deletedVouchers], 200);
+    }
+
+    // Khôi phục voucher đã xóa
+    public function restoreVoucher(Request $request)
+    {
+        $data = $request->validate(['code' => 'required|string|exists:vouchers,code']);
+        $voucher = Voucher::restoreByCode($data['code']);
+        return response()->json(['status' => 'success', 'message' => __('messages.voucher_restore_success'), 'data' => $voucher], 200);
     }
 }
