@@ -55,7 +55,7 @@
                       <template v-if="section.length > 0">
                         <ButtonPrimarySm
                           title="Thêm bài học"
-                          dialogVisible="dialogAddnewLesson"
+                          dialogVisible="dialogAddnewLecture"
                           link="#"
                           @click="addLesson"
                         />
@@ -142,8 +142,16 @@
                                     {{ itemLecture.title }}
                                     <div class="flex gap-2">
                                       {{itemLecture.type}}
-                                      <ButtonSecondarySm :icon="PencilIcon" />
-                                      <ButtonSecondarySm :icon="TrashIcon" />
+                                      <ButtonSecondarySm 
+                                      :icon="PencilIcon" 
+                                      link="#"
+                                      @click.prevent="itemLecture.id !== undefined && editLesson(itemLecture.id)"
+                                      />
+                                      <ButtonSecondarySm 
+                                      link="#"
+                                      :icon="TrashIcon"
+                                      @click.prevent="itemLecture.id !== undefined && handleDeleteLecture(itemLecture.id)"
+                                      />
                                     </div>
                                   </div>
                                 </template>
@@ -526,11 +534,11 @@
 
   <!-- Dialog thêm bài học -->
   <DialogArea
-    :dialogVisible="dialogAddnewLesson"
+    :dialogVisible="dialogAddnewLecture"
     title="Thêm bài học mới"
-    @close="dialogAddnewLesson = false"
+    @close="dialogAddnewLecture = false"
     :submitForm="() => handleAddLecture()"
-  >
+    >
     <label  class="label-input mt-2 mb-3 flex" > Chọn thể loại bài học</label>
     <el-radio-group class="w-full" v-model="formDataAddLecture.type">
       <el-radio value="video" size="large" border>Video file</el-radio>
@@ -542,7 +550,6 @@
       inputPlaceHoder="Nhập tên bài học"
       v-model="formDataAddLecture.title"
     />
-
     <RadioGroup
     label="Chương"
     customsClass="items-center"
@@ -566,20 +573,50 @@
               </el-option>
           </el-select>
     </RadioGroup>
-
-
-    <UploadGroup
-      v-if="formDataAddLecture.type == 'video'"
-      label="Tải lên video bài học (.mp4)"
-      customsClass=" items-center"
-      :handlePreviewImg="handlePreviewImg"
-      />
-    <UploadGroup
-      v-if="formDataAddLecture.type == 'file'"
-      label="Tải file tài liệu bài học (.pdf)"
-      customsClass=" items-center"
-      :handlePreviewImg="handlePreviewImg"
-      />
+    <RadioGroup
+    v-if="formDataAddLecture.type === 'video'"
+    label="Tải lên video bài học (.mp4)"
+    customsClass="items-center"
+    >
+      <el-upload
+        class="upload-demo"
+        drag
+        multiple
+        :before-upload="(file: File) => handleFileUpload(file, 'content')"
+      >
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div class="el-upload__text">
+          Kéo file thả vào đây hoặc <em>click để tải lên</em>
+        </div>
+        <template #tip>
+          <div class="el-upload__tip">
+            các tệp .mp4 có kích thước nhỏ hơn 20mb
+          </div>
+        </template>
+      </el-upload>
+    </RadioGroup>
+    <RadioGroup
+    v-if="formDataAddLecture.type === 'file'"
+    label="Tải file tài liệu bài học (.pdf)"
+    customsClass="items-center"
+    >
+    <el-upload
+        class="upload-demo"
+        drag
+        :before-upload="(file: File) => handleFileUpload(file, 'content')"
+        multiple
+      >
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div class="el-upload__text">
+          Kéo file thả vào đây hoặc <em>click để tải lên</em>
+        </div>
+        <template #tip>
+          <div class="el-upload__tip">
+            các tệp pdf có kích thước nhỏ hơn 20mb
+          </div>
+        </template>
+      </el-upload>
+    </RadioGroup>
 
     <RadioGroup
     :label="formDataAddLecture.type =='video'?'Thời lượng video': 'Số trang'"
@@ -614,8 +651,130 @@
   
 
   </DialogArea>
+  <!-- end Dialog thêm bài học -->
+  <!-- Dialog chỉnh sửa bài học -->
+  <DialogArea
+    :dialogVisible="dialogEditLecture"
+    title="Chỉnh sửa bài học"
+    @close="dialogEditLecture = false"
+    :submitForm="() => handleEditLecture(selectedLectureId)"
+    >
+    <label  class="label-input mt-2 mb-3 flex" > Chọn thể loại bài học</label>
+    <el-radio-group class="w-full" v-model="formDataEditLecture.type">
+      <el-radio value="video" size="large" border>Video file</el-radio>
+      <el-radio value="file" size="large " border>Tài liệu</el-radio>
+    </el-radio-group>
+    <InputGroup
+      label="Tên bài học"
+      inputId="nameLecture"
+      inputPlaceHoder="Nhập tên bài học"
+      v-model="formDataEditLecture.title"
+    />
+    <RadioGroup
+    label="Chương"
+    customsClass="items-center"
+    >
+    <el-select
+          v-model="formDataEditLecture.section_id"
+          placeholder="Chọn chương cho bài học"
+          class="w-full"
+          filterable
+          >
+          <template #empty>
+              <span>Không có giá trị nào</span> 
+            </template>
+              <el-option
+                v-for="item in section"
+                :key="item.id"
+                :label="item.title"
+                :value="item.id"
+              >
+              <span>{{ item.title }}</span>
+              </el-option>
+          </el-select>
+    </RadioGroup>
+    <RadioGroup
+    v-if="formDataEditLecture.type === 'video'"
+    label="Tải lên video bài học (.mp4)"
+    customsClass="items-center"
+    >
+      <el-upload
+        class="upload-demo"
+        drag
+        multiple
+        :before-upload="(file: File) => handleFileUpload(file, 'content')"
+      >
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div class="el-upload__text">
+          Kéo file thả vào đây hoặc <em>click để tải lên</em>
+        </div>
+        <template #tip>
+          <div class="el-upload__tip">
+            các tệp .mp4 có kích thước nhỏ hơn 20mb
+          </div>
+        </template>
+      </el-upload>
+    </RadioGroup>
+    <RadioGroup
+    v-if="formDataEditLecture.type === 'file'"
+    label="Tải file tài liệu bài học (.pdf)"
+    customsClass="items-center"
+    >
+    <el-upload
+        class="upload-demo"
+        drag
+        :before-upload="(file: File) => handleFileUpload(file, 'content')"
+        multiple
+      >
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div class="el-upload__text">
+          Kéo file thả vào đây hoặc <em>click để tải lên</em>
+        </div>
+        <template #tip>
+          <div class="el-upload__tip">
+            các tệp pdf có kích thước nhỏ hơn 20mb
+          </div>
+        </template>
+      </el-upload>
+    </RadioGroup>
 
-  <!-- Dialog thêm bài học -->
+    <RadioGroup
+    :label="formDataEditLecture.type =='video'?'Thời lượng video': 'Số trang'"
+    customsClass="items-center"
+    >
+      <el-input
+      v-model="formDataEditLecture.duration"
+      class=""
+      disabled
+      placeholder="Please input"
+      />
+    </RadioGroup>
+
+    <RadioGroup
+    :label="formDataEditLecture.type =='video'?'Chọn xem trước video': 'Chọn xem trước tài liệu'"
+    customsClass="items-center"
+    >
+        <el-select
+          v-model="formDataEditLecture.preview"
+          class="w-full"
+          filterable
+          placeholder="Chọn loại xem trước"
+          >
+            <template #empty>
+              <span>Không có giá trị nào</span> 
+            </template>
+              <el-option label="Xem trước" value="can"></el-option>
+              <el-option label="Không xem trước" value="cant"></el-option>
+        </el-select>
+    </RadioGroup>
+
+  
+
+  </DialogArea>
+  <!-- end Dialog chỉnh sửa bài học -->
+
+
+  
   <!-- <DialogArea
     :dialogVisible="dialogAddnewLesson"
     title="Thêm bài học mới"
@@ -683,6 +842,7 @@
   <!-- End Dialog Sắp xếp các chương -->
 </template>
 <script setup lang="ts">
+import { UploadFilled } from '@element-plus/icons-vue'
 import ButtonPrimary from '@/components/admin/Button/ButtonPrimary.vue'
 import ButtonPrimarySm from '@/components/admin/Button/ButtonPrimarySm.vue'
 import ButtonSecondary from '@/components/admin/Button/ButtonSecondary.vue'
@@ -736,16 +896,23 @@ const {
   submitFormEdit,
   section,
   handlePreviewImg,
+  handleFileUpload,
   formDataAddSection,
   handelFormSection,
   formDataAddLecture,
   handleDeleteSection,
+  handleDeleteLecture,
   handleEditSection,
   handleSortSection,
   handleAddLecture,
+  handleEditLecture,
   formDataEditSection,
+  formDataEditLecture,
   fetchSectionId,
-  dialogEditSection
+  fetchLectureId,
+  dialogEditSection,
+  dialogAddnewLecture,
+  dialogEditLecture
 } = useCourse()
 
 const { categories, fetchCategoriesCRUD } = useCategoryStore()
@@ -783,9 +950,14 @@ const EditChapter = (id: number | string) => {
 
 
 //dialog bài học
-const dialogAddnewLesson = ref<boolean>(false)
 const addLesson = () => {
-  dialogAddnewLesson.value = true
+  dialogAddnewLecture.value = true
+}
+const selectedLectureId = ref<number | string>('')
+const editLesson = (id: number | string)  => {
+  fetchLectureId(id)
+  selectedLectureId.value = id
+  dialogEditLecture.value = true
 }
 //end dialog bài học
 

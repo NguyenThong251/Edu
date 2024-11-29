@@ -80,21 +80,21 @@ class SectionController extends Controller
         Log::info('Dữ liệu đã sắp xếp nè aaaa:', ['sortedSections' => $sortedSections]);
 
         // Kiểm tra nếu dữ liệu có hợp lệ
-        // if (empty($sortedSections)) {
-        //     return response()->json([
-        //         'status' => 'error',
-        //         'message' => 'Không có dữ liệu để sắp xếp!'
-        //     ]);
-        // }
+        if (empty($sortedSections)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Không có dữ liệu để sắp xếp!'
+            ]);
+        }
 
-        // foreach ($sortedSections as $index => $section) {
-        //     Section::where('id', $section['id'])->update(['order' => $index + 1]);
-        // }
+        foreach ($sortedSections as $index => $section) {
+            Section::where('id', $section['id'])->update(['order' => $index + 1]);
+        }
 
-        // return response()->json([
-        //     'status' => 'OK',
-        //     'message' => 'Dữ liệu đã được sắp xếp thành công'
-        // ]);
+        return response()->json([
+            'status' => 'OK',
+            'message' => 'Dữ liệu đã được sắp xếp thành công'
+        ]);
     }
 }
 

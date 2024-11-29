@@ -1,5 +1,6 @@
 import type { TLectures, TSection } from '@/interfaces'
 import api from '@/services/axiosConfig'
+import * as pdfjsLib from 'pdfjs-dist';
 
 import { ElNotification, ElMessage, ElMessageBox } from 'element-plus'
 import { da } from 'element-plus/es/locale/index.mjs'
@@ -13,6 +14,9 @@ import { useRoute, useRouter } from 'vue-router'
 export default function useCourse() {
   const route = useRoute()
   const dialogEditSection = ref<boolean>(false);
+  //dialog bài học
+  const dialogAddnewLecture = ref<boolean>(false)
+  const dialogEditLecture = ref<boolean>(false)
   const imageUrl = ref<string | null>(null)
   const courseId = ref<string|number | null>(null)
 
@@ -39,6 +43,7 @@ export default function useCourse() {
   // State để lưu danh sách cấp độ và ngôn ngữ
   const courseLevels = ref([])
   const section = ref<TSection[]>([])
+  const lecture = ref<TLectures[]>([])
   const languages = ref([])
   const loading = ref(false)
   const error = ref(null)
@@ -150,6 +155,7 @@ export default function useCourse() {
       if (response.data.status === 'OK') {
         formDataEditCourse.value = response.data.data;
         section.value = response.data.data.sections;
+        lecture.value = response.data.data.sections.lectures;
       }
     } catch (err) {
       ElNotification({
@@ -310,7 +316,7 @@ export default function useCourse() {
   const handleEditSection = async (id: number | string) => {
     console.log('Dữ liệu trc khi chỉnh sửa:', id, formDataEditSection.value);
     try {
-      if (!formDataEditSection.value.name || !formDataEditSection.value.id) {
+      if (!formDataEditSection.value.title || !formDataEditSection.value.id) {
         ElNotification({
           title: 'Lỗi',
           message: 'Dữ liệu chỉnh sửa không hợp lệ',
@@ -431,62 +437,279 @@ export default function useCourse() {
 
   //  LECTURE
   const formDataAddLecture = ref<TLectures>({
-    type: 'video',
+    type: '',
     title: '',
     section_id: '',
-    content_link: '',
+    content: '',
     duration: '',
     preview: '',
     status: 'active',
     order: ''
   }) 
+  const resetForm = () => {
+    formDataAddLecture.value = {
+      type: '',         // Loại mặc định
+      title: '',             // Tên bài giảng
+      section_id: '',        // Chương
+      content_link: '',      // Link nội dung
+      duration: '',          // Thời lượng hoặc số trang
+      preview: '',           // Loại xem trước
+      status: 'active',      // Trạng thái
+      order: '',             // Thứ tự
+    };
+  };
   const handleAddLecture = async () => {
-    console.log('dữ liệu from:',formDataAddLecture.value);  
-
+    console.log('Dữ liệu form:', formDataAddLecture.value);
     try {
-      loading.value = true
-      // const formData = new FormData();
-      //  // Gán các trường không phải tệp vào FormData
-      // for (const key in formDataAddLecture.value) {
-      //   if (formDataAddLecture.value[key]) {
-      //     formData.append(key, formDataAddLecture.value[key]);
-      //   }
-      // }
-
-      // In dữ liệu form   trước khi tạo FormData
-      console.log('Dữ liệu form trước khi tạo FormData:', formDataAddLecture.value)
-
-      const response = await api.post('/auth/lecture/', formDataAddLecture.value, {
-        // headers: {
-        //   'Content-Type': 'multipart/form-data'
-        // }
-      })
+      loading.value = true;
+      // Khởi tạo FormData
+      const formData = new FormData();
+  
+      // Duyệt qua các trường dữ liệu và thêm vào FormData
+      Object.entries(formDataAddLecture.value).forEach(([key, value]) => {
+        if (key === 'content' && value instanceof File) {
+          // Nếu là file thì append vào FormData
+          formData.append(key, value);
+        } else if (value !== '') {
+          // Các trường khác
+          formData.append(key, value as string);
+        }
+      });
+      // Log tất cả giá trị trong FormData
+      for (const [key, value] of formData.entries()) {
+        console.log('log dữ liệu trc khi gửi đi: ',`${key}:`, value);
+      }
+      // Gửi request
+      const response = await api.post('/auth/lectures/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
       console.log(response);
-      
+  
       if (response.data.status === 'OK') {
-        console.log('Phản hồi API:', response.data)
         ElNotification({
           title: 'Thành công',
           message: response.data.message || 'Thêm bài học thành công',
-          type: 'success'
-        })
-        // Chuyển hướng đến trang chỉnh sửa khóa học
-      const courseId = response.data.id;  // Giả sử API trả về course_id
-      const router = useRouter();
-      router.push({ name: 'editCourse', params: { id: courseId } });
+          type: 'success',
+        });
+        dialogAddnewLecture.value = false
+        resetForm()
       } else {
         ElNotification({
           title: 'Thất bại',
           message: response.data.message || 'Thêm bài học không thành công',
-          type: 'error'
-        })
+          type: 'error',
+        });
       }
+      dialogAddnewLecture.value = false
+      resetForm()
     } catch (err) {
-      // alert('Lỗi khi thêm khóa học: ' + err.message)
+      console.error('Lỗi khi thêm bài học:', err);
+      ElNotification({
+        title: 'Lỗi',
+        message: 'Có lỗi xảy ra khi thêm bài học',
+        type: 'error',
+      });
     } finally {
-      loading.value = false
+      loading.value = false;
+    }
+  };
+  //edit lecture
+  const formDataEditLecture = ref<TLectures>({
+    type: '',
+    title: '',
+    section_id: '',
+    content: '',
+    duration: '',
+    preview: '',
+    status: 'active',
+    order: ''
+  });
+  const fetchLectures = () => {
+    formDataEditLecture.value = {
+      type: '',
+      title: '',
+      section_id: '',
+      content: '',
+      duration: '',
+      preview: '',
+      status: 'active',
+      order: ''
+  };
+  }
+  // get Id lecture
+  const fetchLectureId = async (id: number | string) => {
+    try {
+      const response = await api.get(`/auth/lectures/${id}`);
+      formDataEditLecture.value = { ...response.data.data };
+      if (response.data.status === 'OK') {
+        console.log('đã tải dữ liệu bài học', response.data.data) ;
+      } else {
+        console.log('Không thể lấy dữ liệu chỉnh sửa');
+      }
+    } catch (error) {
+      ElNotification({
+        title: 'Lỗi',
+        message: 'Có lỗi khi tải dữ liệu chỉnh sửa',
+        type: 'error',
+      });
     }
   }
+
+  const handleEditLecture = async (id: number | string) => {
+    console.log('Dữ liệu trc khi chỉnh sửa:', id, formDataEditLecture.value);
+    try {
+      loading.value = true;
+  
+      // Chuẩn bị dữ liệu để gửi
+      const formData = new FormData();
+  
+      // Duyệt qua dữ liệu từ form và thêm vào FormData
+      Object.entries(formDataEditLecture.value).forEach(([key, value]) => {
+        if (key === 'content' && value instanceof File) {
+          // Nếu là file, thêm file vào FormData
+          formData.append(key, value);
+        } else if (value !== '') {
+          // Các trường thông thường
+          formData.append(key, value as string);
+        }
+      });
+  
+      console.log('Dữ liệu gửi lên:', formDataEditLecture.value);
+  
+      // Gửi dữ liệu đến API
+      const response = await api.post(`/auth/lectures/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      if (response.data.status === 'OK') {
+        ElNotification.success('Cập nhật bài học thành công');
+        console.log('Phản hồi từ API:', response.data);
+
+        dialogEditLecture.value = false // đóng dialog
+        // Xử lý sau khi chỉnh sửa thành công (nếu cần, ví dụ làm mới danh sách)
+        await fetchLectures();
+      } else {
+        ElNotification.error(response.data.message || 'Cập nhật bài học không thành công');
+      }
+    } catch (error) {
+      console.error('Lỗi khi cập nhật bài học:', error);
+      ElNotification.error('Đã xảy ra lỗi khi cập nhật bài học');
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  //detete lecture
+  const handleDeleteLecture = async (id: number | string) => {
+    // Hiển thị hộp thoại xác nhận trước khi xóa
+    ElMessageBox.confirm(
+      'Bạn có chắc chắn muốn xóa bài học này?', // Thông báo xác nhận
+      'Xác nhận xóa', // Tiêu đề
+      {
+        confirmButtonText: 'Có',
+        cancelButtonText: 'Không',
+        type: 'warning', // Loại thông báo
+      }
+    )
+      .then(async () => {
+        // Nếu người dùng nhấn "Có", tiếp tục xóa
+        try {
+          const response = await api.delete(`/auth/lectures/${id}`);
+          // Sau khi xóa thành công, cập nhật lại section.value
+          lecture.value = lecture.value.filter((s:any) => s.id !== id);
+          ElNotification({
+            type: 'success',
+            message: 'Xóa bài học thành công!'
+          });
+        } catch (error) {
+          ElNotification({
+            type: 'error',
+            message: 'Xóa bài học không thành công!'
+          });
+        }
+      })
+      .catch(() => {
+        // Nếu người dùng nhấn "Không", không làm gì cả
+        ElNotification({
+          type: 'info',
+          message: 'Hủy xóa bài học'
+        });
+      });
+    };
+
+  
+  const handleFileUpload = async (file: File, key: string) => {
+    if (formDataAddLecture.value.type === 'video' && file.type !== 'video/mp4') {
+      ElMessage.error('Chỉ chấp nhận file định dạng .mp4');
+      return false;
+    }
+    
+    if (formDataAddLecture.value.type === 'file' && file.type !== 'application/pdf') {
+      ElMessage.error('Chỉ chấp nhận file định dạng .pdf');
+      return false;
+    }
+
+  
+    // Gán file vào FormData
+    formDataAddLecture.value[key] = file;
+  
+    // Tính duration cho video
+    if (formDataAddLecture.value.type === 'video') {
+      const videoElement = document.createElement('video');
+      videoElement.src = URL.createObjectURL(file);
+
+      videoElement.onloadedmetadata = () => {
+        const duration = Math.ceil(videoElement.duration); // Thời lượng tính bằng giây
+        formDataAddLecture.value.duration = duration;
+        console.log('Thời lượng video (giây):', duration);
+      };
+    }
+    
+    if (formDataAddLecture.value.type === 'file') {
+      const reader = new FileReader();
+    
+      reader.onload = async (event: ProgressEvent<FileReader>) => {
+        const data = event.target?.result;
+        console.log('log data:', data);
+        if (data) {
+          try {
+            // Chuyển dữ liệu thành dạng Uint8Array
+            const typedArray = new Uint8Array(data as ArrayBuffer);
+    
+            console.log('Chuyển dữ liệu thành dạng Uint8Array:', typedArray);
+            // Load file PDF bằng pdf.js
+            const pdf = await pdfjsLib.getDocument(typedArray).promise;
+            console.log('Load file PDF bằng pdf.js:', pdf);
+            
+            // Lấy số trang
+            const pageCount = pdf.numPages;
+            console.log('Số trang PDF:', pageCount);
+            formDataAddLecture.value.duration = pageCount;
+            ElMessage.success(`Số trang của file PDF: ${pageCount}`);
+          } catch (error) {
+            console.error('Lỗi khi đọc file PDF:', error);
+            ElMessage.error('Không thể xác định số trang của file PDF');
+          }
+        }
+      };
+    
+      // Đọc file PDF dưới dạng ArrayBuffer
+      reader.readAsArrayBuffer(formDataAddLecture.value.content);
+    }
+
+    console.log('File nhận được:', file);
+    if (!file) {
+      console.error('Không nhận được file!');
+      return false;
+    }
+    // console.log('Đã chọn file:', file);
+    return false; // Trả về false để tránh el-upload tự gửi request
+  };
   // END LECTURE
 
 
@@ -500,21 +723,28 @@ export default function useCourse() {
     formDataEditCourse,
     formDataAddSection,
     formDataEditSection,
+    formDataEditLecture,
     formDataAddLecture,
     dialogEditSection,
+    dialogAddnewLecture,
+    dialogEditLecture,
     handelFormSection,
     courseLevels,
     fetchCourseLevels,
     fetchLanguages,
     fetchSectionId,
+    fetchLectureId,
     handlePreviewImg,
+    handleFileUpload,
     languages,
     imageUrl,
     submitForm,
     submitFormEdit,
     fetchCourseData,
     handleDeleteSection,
+    handleDeleteLecture,
     handleEditSection,
+    handleEditLecture,
     handleSortSection,
     handleAddLecture,
     courseId,

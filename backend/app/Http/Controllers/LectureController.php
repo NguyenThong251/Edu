@@ -4,13 +4,162 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Lecture;
+use App\Models\Quiz;
+use App\Models\Section;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Pagination\LengthAwarePaginator;
 use FFMpeg\FFMpeg;
+use getID3;
 
 class LectureController extends Controller
 {
+    public function showUploadForm()
+    {
+        return view('upload');
+    }
+    public function getListAdmin(Request $request)
+    {
+        // Query cơ bản lấy danh sách Lectures
+        $lecturesQuery = Lecture::query();
+
+        // Kiểm tra tham số `deleted`
+        if ($request->has('deleted') && $request->deleted == 1) {
+            // Lấy các bài giảng đã xóa
+            $lecturesQuery->onlyTrashed();
+        } else {
+            // Chỉ lấy các bài giảng chưa xóa (mặc định)
+            $lecturesQuery->whereNull('deleted_at');
+        }
+
+        // Lọc theo keyword (nếu có)
+        if ($request->has('keyword') && !empty($request->keyword)) {
+            $keyword = $request->keyword;
+            $lecturesQuery->where('title', 'like', '%' . $keyword . '%');
+        }
+
+        // Lọc theo section_id (nếu có)
+        if ($request->has('section_id') && !empty($request->section_id)) {
+            $sectionId = $request->section_id;
+            $lecturesQuery->where('section_id', $sectionId);
+        }
+
+        // Lọc theo status (nếu có)
+        if ($request->has('status') && !is_null($request->status)) {
+            $lecturesQuery->where('status', $request->status);
+        }
+
+        // Sắp xếp theo `created_at` (mặc định là `desc`)
+        $order = $request->get('order', 'desc'); // Giá trị mặc định là desc
+        $lecturesQuery->orderBy('created_at', $order);
+
+        // Phân trang với per_page và page
+        $perPage = (int) $request->get('per_page', 10); // Số lượng bản ghi mỗi trang, mặc định 10
+        $page = (int) $request->get('page', 1); // Trang hiện tại, mặc định 1
+
+        // Lấy danh sách đã lọc
+        $lectures = $lecturesQuery->get();
+
+        // Tổng số lượng bản ghi
+        $total = $lectures->count();
+
+        // Phân trang thủ công
+        $paginatedLectures = $lectures->forPage($page, $perPage)->values();
+
+        // Tạo đối tượng LengthAwarePaginator
+        $pagination = new LengthAwarePaginator(
+            $paginatedLectures, // Dữ liệu cho trang hiện tại
+            $total,              // Tổng số bản ghi
+            $perPage,            // Số lượng bản ghi mỗi trang
+            $page,               // Trang hiện tại
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(), // Đường dẫn chính
+                'query' => $request->query() // Lấy tất cả query parameters hiện tại
+            ]
+        );
+
+        // Chuyển đổi dữ liệu phân trang thành mảng
+        $lectures = $pagination->toArray();
+
+        // Trả về kết quả với đầy đủ thông tin filter, order và phân trang
+        return formatResponse(
+            STATUS_OK,
+            $lectures,
+            '',
+            __('messages.lecture_fetch_success')
+        );
+    }
+
+    public function showContentBySection($sectionId)
+    {
+        // Lấy tất cả lectures thuộc section
+        $lectures = Lecture::where('section_id', $sectionId)
+            ->whereNull('deleted_at') // Lọc các bài giảng chưa bị xóa (hoặc có thể điều chỉnh nếu muốn lấy cả bài giảng đã xóa)
+            ->get();
+    
+        // Thêm thuộc tính content_type cho lecture
+        $lectures->each(function ($lecture) {
+            $lecture->content_type = 'lecture'; // Gán giá trị 'lecture' cho content_type
+        });
+    
+        // Lấy tất cả quizzes thuộc section
+        $quizzes = Quiz::where('section_id', $sectionId)
+            ->whereNull('deleted_at') // Lọc các quiz chưa bị xóa (hoặc có thể điều chỉnh nếu muốn lấy cả quiz đã xóa)
+            ->get();
+    
+        // Thêm thuộc tính content_type cho quiz
+        $quizzes->each(function ($quiz) {
+            $quiz->content_type = 'quiz'; // Gán giá trị 'quiz' cho content_type
+        });
+    
+        // Kết hợp (merge) lectures và quizzes lại với nhau
+        $content = $lectures->merge($quizzes);
+    
+        // Sắp xếp theo order (tăng dần)
+        $content = $content->sortBy('order');
+    
+        // Trả về kết quả
+        return formatResponse(STATUS_OK, $content, '', __('messages.content_fetch_success'));
+    }
+    
+    public function updateOrder(Request $request)
+    {
+        // Kiểm tra xem dữ liệu 'data' có tồn tại trong request không
+        $sortedContent = json_decode($request->input('sorted_content'), true);
+        // Kiểm tra nếu không có 'sorted_content' hoặc nó không phải là mảng
+        if (!$sortedContent || !is_array($sortedContent)) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.invalid_data_format'));
+        }
+
+        // Duyệt qua từng item trong mảng data và cập nhật lại order cho từng lecture/quiz
+        foreach ($sortedContent as $item) {
+            // Kiểm tra nếu phần tử không có id hoặc order
+            if (!isset($item['id']) || !isset($item['order'])) {
+                continue; // Bỏ qua phần tử không hợp lệ
+            }
+
+            // Cập nhật order cho lecture hoặc quiz
+            if ($item['content_type'] == 'lecture') {
+                $lecture = Lecture::find($item['id']);
+                if ($lecture) {
+                    $lecture->order = $item['order']; // Cập nhật order mới
+                    $lecture->save();
+                }
+            } elseif ($item['content_type'] == 'quiz') {
+                $quiz = Quiz::find($item['id']);
+                if ($quiz) {
+                    $quiz->order = $item['order']; // Cập nhật order mới
+                    $quiz->save();
+                }
+            }
+        }
+
+        // Trả về phản hồi thành công
+        return formatResponse(STATUS_OK, '', '', __('messages.order_update_success'));
+    }
+
+
     public function index(Request $request)
     {
         // Pagination setup
@@ -52,7 +201,7 @@ class LectureController extends Controller
             'section_id' => 'required|exists:sections,id',
             'type' => 'required|in:video,file',
             'title' => 'required|string|max:255',
-            'content_link' => 'required|file|mimes:mp4,pdf|max:20480',
+            'duration' => 'required',
             'content' => [
                 'required',
                 'file',
@@ -68,6 +217,7 @@ class LectureController extends Controller
             'status' => 'required|in:active,inactive',
         ], [
             'section_id.required' => __('messages.section_id_required'),
+            'duration.required' => __('messages.duration_required'),
             'section_id.exists' => __('messages.section_id_invalid'),
             'type.required' => __('messages.type_required'),
             'type.in' => __('messages.type_invalid'),
@@ -90,21 +240,30 @@ class LectureController extends Controller
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
-        $content = $request->file('content');
         
 
+
         $lecture = new Lecture();
-        if ($request->type === 'video') {
-            $lecture->duration = $this->getVideoDuration($content);
-        } else {
-            $lecture->duration = $this->getPdfPageCount($content);
-        }
-        return $lecture->duration;
         $lecture->section_id = $request->section_id;
         $lecture->type = $request->type;
         $lecture->title = $request->title;
         $contentPath = $this->uploadContent($request);
         $lecture->content_link = $contentPath;
+        $lecture->duration = $request->duration;
+
+        $sectionId = $request->section_id;
+
+        // Fetch the largest order for lectures in the section
+        $maxLectureOrder = Lecture::where('section_id', $sectionId)->max('order');
+    
+        // Fetch the largest order for quizzes in the section (assuming you have a Quiz model)
+        $maxQuizOrder = Quiz::where('section_id', $sectionId)->max('order');
+    
+        // Determine the largest order (either lecture or quiz)
+        $maxOrder = max($maxLectureOrder, $maxQuizOrder);
+    
+        // Calculate the order for the new lecture (if there are no lectures or quizzes, set order to 1)
+        $lecture->order = ($maxOrder) ? $maxOrder + 1 : 1;
 
         
 
@@ -114,6 +273,48 @@ class LectureController extends Controller
         $lecture->save();
 
         return formatResponse(STATUS_OK, $lecture, '', __('messages.lecture_create_success'));
+    }
+
+    public function updateLectureSection(Request $request, $lectureId)
+    {
+        // Tìm bài giảng cần cập nhật
+        $lecture = Lecture::findOrFail($lectureId);
+
+        // Lấy section_id từ request (có thể trả về 404 nếu không có)
+        $sectionId = (int)$request->input('section_id');
+
+        // Kiểm tra xem section có tồn tại không
+        $section = Section::find($sectionId);
+        if (!$section) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.section_not_found'));
+
+        }
+
+        // Cập nhật lại section cho bài giảng
+        $lecture->section_id = $sectionId;
+        $lecture->save();
+
+        return formatResponse(STATUS_OK, $lecture, '', __('messages.lecture_section_updated'));
+    }
+
+    public function updateLectureStatus(Request $request, $lectureId)
+    {
+        // Tìm bài giảng cần cập nhật
+        $lecture = Lecture::findOrFail($lectureId);
+
+        // Lấy trạng thái mới từ request
+        $status = $request->input('status');
+
+        // Kiểm tra trạng thái hợp lệ (active hoặc inactive)
+        if (!in_array($status, ['active', 'inactive'])) {
+            throw new \Exception(__('messages.invalid_status'));
+        }
+
+        // Cập nhật trạng thái
+        $lecture->status = $status;
+        $lecture->save();
+
+        return formatResponse(STATUS_OK, $lecture, '', __('messages.lecture_status_updated'));
     }
 
 
@@ -134,139 +335,168 @@ class LectureController extends Controller
         return $contentUrl;
     }
 
-
-    private function getVideoDuration($content)
+    private function updateContent(Request $request, $lectureId)
     {
-        $filePath = $content->getPathname();
+        // Tìm bài giảng cần cập nhật
+        $lecture = Lecture::findOrFail($lectureId);
         
-        // Chạy FFmpeg để lấy thời gian video (duration)
-        $cmd = "ffmpeg -i {$filePath} 2>&1"; // Lệnh này sẽ in thông tin metadata của video
-        $output = shell_exec($cmd);
+        // Kiểm tra nếu có file mới và có file cũ cần xóa
+        if ($request->hasFile('content')) {
+            // Lấy đường dẫn của file cũ (nếu có)
+            $oldFile = $lecture->content_link;
+            
+            // Nếu file cũ tồn tại trên S3, xóa nó
+            if ($oldFile) {
+                $this->deleteContent($oldFile);
+            }
 
-        // Tìm thời gian trong output
-        if (preg_match('/Duration: (\d+):(\d+):(\d+\.\d+)/', $output, $matches)) {
-            $hours = (int)$matches[1];
-            $minutes = (int)$matches[2];
-            $seconds = (float)$matches[3];
+            // Tải lên file mới
+            $contentPath = $this->uploadContent($request);
 
-            // Chuyển đổi thời gian thành giây
-            return ($hours * 3600) + ($minutes * 60) + $seconds;
+            // Cập nhật đường dẫn mới
+            $lecture->content_link = $contentPath;
         }
 
-        throw new \Exception(__('messages.video_duration_error'));
+        // Trả về URL mới của file
+        return $lecture->content_link;
     }
 
 
-
-
-    private function getPdfPageCount($content)
+    public function deleteContent($contentLink)
     {
-        $pdf = new \setasign\Fpdi\Fpdi();
-        $file = $content->getPathname();
-        $pdf->setSourceFile($file);
-        return $pdf->setSourceFile($file);
+        // Lấy đường dẫn hiện tại của tệp (cắt bỏ URL gốc từ S3)
+        $currentFilePath = str_replace(env('URL_IMAGE_S3'), '', $contentLink);
+
+        // Kiểm tra xem tệp có tồn tại trên S3 không
+        if (Storage::disk('s3')->exists($currentFilePath)) {
+            // Xóa tệp khỏi S3
+            Storage::disk('s3')->delete($currentFilePath);
+        }
     }
 
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $lectureId)
     {
+        // Tìm bài giảng cần cập nhật
+        $lecture = Lecture::findOrFail($lectureId);
+
         $user = auth()->user();
 
-        $lecture = Lecture::find($id);
-        if (!$lecture) {
-            return formatResponse(STATUS_FAIL, '', '', __('messages.lecture_not_found'));
-        }
-
-        // Kiểm tra quyền sở hữu section nếu là instructor
-        if ($user->role === 'instructor') {
-            $section = \App\Models\Section::where('id', $request->section_id ?? $lecture->section_id)
-                ->where('created_by', $user->id)
-                ->first();
-
-            if (!$section) {
-                return formatResponse(
-                    STATUS_FAIL,
-                    '',
-                    __('messages.section_not_owned'),
-                    __('messages.unauthorized_action')
-                );
-            }
-        }
-
+        // Validate đầu vào
         $validator = Validator::make($request->all(), [
-            'section_id' => 'nullable|exists:sections,id',
-            'type' => 'nullable|in:video,file',
-            'title' => 'nullable|string|max:255',
-            'content' => 'nullable|file|mimes:mp4,pdf|max:20480',
-            'preview' => 'nullable|in:can,cant',
-            'status' => 'nullable|in:active,inactive',
-            'order' => [
-                'nullable',
-                'integer',
-                'min:0',
-                Rule::unique('lectures')->where(function ($query) use ($request) {
-                    return $query->where('section_id', $request->section_id);
-                })->ignore($id),
+            'section_id' => 'required|exists:sections,id',
+            'type' => 'required|in:video,file',
+            'title' => 'required|string|max:255',
+            'duration' => 'required',
+            'content' => [
+                'nullable', // content không bắt buộc, chỉ yêu cầu khi có file
+                'file',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->type === 'video' && (!$value->isValid() || $value->getMimeType() !== 'video/mp4' || $value->getSize() > 2048 * 1024 * 1024)) {
+                        $fail(__('messages.content_video_invalid'));
+                    } elseif ($request->type === 'file' && (!$value->isValid() || $value->getMimeType() !== 'application/pdf' || $value->getSize() > 50 * 1024 * 1024)) {
+                        $fail(__('messages.content_file_invalid'));
+                    }
+                },
             ],
+            'preview' => 'required|in:can,cant',
+            'status' => 'required|in:active,inactive',
         ], [
+            'section_id.required' => __('messages.section_id_required'),
+            'duration.required' => __('messages.duration_required'),
             'section_id.exists' => __('messages.section_id_invalid'),
+            'type.required' => __('messages.type_required'),
             'type.in' => __('messages.type_invalid'),
+            'title.required' => __('messages.title_required'),
             'title.max' => __('messages.title_max'),
+            'content.required' => __('messages.content_required'),
             'content.file' => __('messages.content_file'),
-            'content.mimes' => __('messages.content_mimes'),
-            'content.max' => __('messages.content_max'),
+            'preview.required' => __('messages.preview_required'),
             'preview.in' => __('messages.preview_invalid'),
+            'status.required' => __('messages.status_required'),
             'status.in' => __('messages.status_invalid'),
-            'order.unique' => __('messages.order_unique'),
+            'content_video_invalid' => __('messages.content_video_invalid'),
+            'content_file_invalid' => __('messages.content_file_invalid'),
         ]);
 
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
 
-        // Kiểm tra và xử lý nội dung tệp mới nếu được cung cấp
-        if ($request->hasFile('content')) {
-            Storage::delete($lecture->content_link);
-            $contentPath = $this->uploadContent($request);
-            $lecture->content_link = $contentPath;
+        // Cập nhật các trường khác
+        $lecture->section_id = $request->section_id;
+        $lecture->type = $request->type;
+        $lecture->title = $request->title;
+        $lecture->duration = $request->duration;
+        $lecture->preview = $request->preview;
+        $lecture->status = $request->status;
 
-            if ($request->type === 'video') {
-                $lecture->duration = $this->getVideoDuration($contentPath);
-            } else {
-                $lecture->duration = $this->getPdfPageCount($contentPath);
-            }
+        // Kiểm tra nếu có file mới
+        if ($request->hasFile('content')) {
+            // Cập nhật nội dung (file) mới
+            $contentPath = $this->updateContent($request, $lectureId);
+            $lecture->content_link = $contentPath; // Cập nhật URL file mới
         }
 
-        // Cập nhật các trường khác
-        $lecture->fill($request->only(['section_id', 'type', 'title', 'preview', 'status', 'order']));
-        $lecture->updated_by = $user->id;
-        $lecture->save();
+        $lecture->save(); // Lưu lại các thay đổi
 
         return formatResponse(STATUS_OK, $lecture, '', __('messages.lecture_update_success'));
     }
 
-
     public function destroy($id)
     {
-        $lecture = Lecture::find($id);
-        if (!$lecture) {
-            return formatResponse(STATUS_FAIL, '', '', __('messages.lecture_not_found'));
-        }
+        // $lecture = Lecture::find($id);
+        
+        // // Kiểm tra xem bài giảng có tồn tại không
+        // if (!$lecture) {
+        //     return formatResponse(STATUS_FAIL, '', '', __('messages.lecture_not_found'));
+        // }
 
-        $lecture->deleted_by = auth()->id();
-        $lecture->save();
-        $lecture->delete();
+        // // Gán thông tin người xóa
+        // $lecture->deleted_by = auth()->id();
+        
+        // // Xóa bài giảng (soft delete)
+        // $lecture->delete();
 
-        return formatResponse(STATUS_OK, '', '', __('messages.lecture_soft_delete_success'));
+        // // Lấy lại bài giảng đã bị xóa mềm
+        // $lecture = Lecture::onlyTrashed()->find($id);
+        Lecture::where('id', $id)->delete();
+        return formatResponse(STATUS_OK, $lecture, '', __('messages.lecture_soft_delete_success'));
     }
+
 
     public function restore($id)
     {
         $lecture = Lecture::onlyTrashed()->find($id);
+
+        // Kiểm tra bài giảng có bị xóa mềm hay không
         if (!$lecture) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.lecture_not_found'));
         }
 
-        $lecture->deleted_by = null;
+        // Khôi phục bài giảng
+        $lecture->deleted_by = null;  // Bỏ thông tin người xóa
+        $lecture->restore();
+        
+        // Lấy lại bài giảng sau khi đã khôi phục
+        $lecture = Lecture::find($id);
+        
+        return formatResponse(STATUS_OK, $lecture, '', __('messages.lecture_restore_success'));
     }
+    public function forceDelete($id)
+    {
+        $lecture = Lecture::onlyTrashed()->find($id);
+
+        // Kiểm tra bài giảng có tồn tại trong danh sách đã xóa mềm hay không
+        if (!$lecture) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.lecture_not_found'));
+        }
+
+        // Xóa vĩnh viễn bài giảng
+        $lecture->forceDelete();
+
+        return formatResponse(STATUS_OK, $lecture, '', __('messages.lecture_force_delete_success'));
+    }
+
+
 }

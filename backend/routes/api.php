@@ -178,11 +178,16 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             //     Route::post('lesson/sort', 'sort')->name('lesson.sort');
             // });
             
+            Route::put('sort-content-of-section', [LectureController::class, 'updateOrder'])->name('lectures.updateOrder');
             Route::post('lectures', [LectureController::class, 'store'])->name('lectures.store');
             Route::get('lectures/{id}', [LectureController::class, 'show'])->name('lectures.show');
             Route::post('lectures/{id}', [LectureController::class, 'update'])->name('lectures.update');
             Route::get('lectures/restore/{id}', [LectureController::class, 'restore'])->name('lectures.restore');
             Route::delete('lectures/{id}', [LectureController::class, 'destroy'])->name('lectures.destroy');
+            Route::patch('lectures/{id}/status', [LectureController::class, 'updateLectureStatus'])->name('lectures.updateStatus');
+            Route::patch('lectures/{id}/section', [LectureController::class, 'updateLectureSection'])->name('lectures.updateSection');
+            Route::get('show-content-of-section/{id}', [LectureController::class, 'showContentBySection'])->name('lectures.showContentBySection');
+
 
             Route::post('questions', [QuestionController::class, 'store'])->name('questions.store');
             Route::get('questions/{id}', [QuestionController::class, 'editForm'])->name('questions.editForm');
