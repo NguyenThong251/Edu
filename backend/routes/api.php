@@ -131,8 +131,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/payout/process/{id}', [PayoutController::class, 'processPayout']);
             // Liệt kê các yêu cầu rút tiền
             Route::get('/payout/requests', [PayoutController::class, 'listPayoutRequests']);
-            Route::get('/payout/', [PayoutController::class, 'index']);
-            Route::get('/payout/report-payment', [PayoutController::class, 'report']);
 
             //get all user
             Route::get('/get-all-user', [AuthController::class, 'getAllUser']);
@@ -145,10 +143,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('block/unblock-user/{id}', [AuthController::class, 'blockOrUnlockUser']);
 
             //admin report
+            Route::get('admin/', [AdminController::class, 'index']);
             Route::get('admin/get-report', [AdminController::class, 'getAdminReport']);
             Route::get('admin/get-line-chart/revenue', [AdminController::class, 'getAdminLineChartData']);
             Route::get('admin/get-line-chart/user', [AdminController::class, 'getUserRegistrationLineChart']);
             Route::get('admin/get-line-chart/order', [AdminController::class, 'getOrderLineChartData']);
+
+
         });
 
         // Routes cho instructor
@@ -182,6 +183,10 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('instructor/course-statistics', [InstructorController::class, 'getCourseStatistics']);
 
             // Liên kết Stripe
+            Route::get('/payout/', [PayoutController::class, 'index']);
+            Route::get('/payout/report-payment', [PayoutController::class, 'report']);
+
+
             Route::get('/payment-methods/stripe/link', [PaymentMethodController::class, 'linkStripe'])->name('payment_methods.stripe.link');
             // Liệt kê các phương thức thanh toán
             Route::get('/payment-methods', [PaymentMethodController::class, 'listPaymentMethods']);
@@ -191,6 +196,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::delete('/payment-methods/{id}', [PaymentMethodController::class, 'deletePaymentMethod']);
             // Yêu cầu rút tiền
             Route::post('/payout/request', [PayoutController::class, 'requestPayout']);
+
+
         });
 
         // Routes cho student

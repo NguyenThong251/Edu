@@ -314,4 +314,24 @@ class AdminController extends Controller
         }
     }
 
+    public function index(Request $request)
+    {
+        // Query danh sách payout_requests
+        $payoutRequests = PayoutRequest::query()
+            ->when($request->has('status'), function ($query) use ($request) {
+                $query->where('status', $request->input('status')); // Lọc theo status
+            })
+            ->when($request->has('start_date') && $request->has('end_date'), function ($query) use ($request) {
+                $query->whereBetween('created_at', [
+                    $request->input('start_date'),
+                    $request->input('end_date')
+                ]);
+            })
+            ->orderByRaw("FIELD(status, 'pending', 'processing', 'completed', 'failed')") // Ưu tiên pending lên trước
+            ->orderBy('created_at', 'desc') // Sắp xếp theo ngày tạo (mới nhất trước)
+            ->paginate(10); // Phân trang (10 bản ghi mỗi trang)
+
+        return response()->json($payoutRequests);
+    }
+
 }
