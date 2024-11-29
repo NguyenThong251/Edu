@@ -4,24 +4,24 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\NoteController;
-use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PayoutController;
-use App\Http\Controllers\WebhookController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
-use App\Http\Controllers\CartController;
 use App\Http\Controllers\CourseLevelController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ManageController;
 use App\Http\Controllers\Api\GoogleController;
-use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\LectureController;
 use App\Http\Controllers\StudyController;
 use App\Http\Controllers\InstructorController;
+use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -115,6 +115,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::prefix('vouchers')->group(function () {
                 // Get all vouchers
                 Route::get('/', [VoucherController::class, 'index']);
+                Route::get('list-vouchers-admin', [VoucherController::class, 'getListAdmin']);
                 Route::get('/filter', [VoucherController::class, 'filter']);
                 // Get all deleted vouchers
                 Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
@@ -125,6 +126,11 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 Route::post('/restore', [VoucherController::class, 'restoreVoucher']);
                 Route::put('/{id}', [VoucherController::class, 'update']);
             });
+
+            // Review in Admin
+            // Xem tất cả các review (bao gồm cả bị xóa)
+            Route::get('reviews/{courseId}/all', [ReviewController::class, 'getAllReviews']);
+            Route::post('reviews/{id}/restore', [ReviewController::class, 'restore']);
 
             // admin Xử lý rút tiền stripe
             Route::post('/payout/process/{id}', [PayoutController::class, 'processPayout']);
@@ -145,8 +151,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('admin/get-line-chart/revenue', [AdminController::class, 'getAdminLineChartData']);
             Route::get('admin/get-line-chart/user', [AdminController::class, 'getUserRegistrationLineChart']);
             Route::get('admin/get-line-chart/order', [AdminController::class, 'getOrderLineChartData']);
-
-
         });
 
         // Routes cho instructor
@@ -180,6 +184,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('lectures/restore/{id}', [LectureController::class, 'restore'])->name('lectures.restore');
             Route::delete('lectures/{id}', [LectureController::class, 'destroy'])->name('lectures.destroy');
 
+            Route::post('questions', [QuestionController::class, 'store'])->name('questions.store');
+            Route::get('questions/{id}', [QuestionController::class, 'editForm'])->name('questions.editForm');
+            Route::put('questions/{id}', [QuestionController::class, 'update'])->name('questions.update');
+            Route::get('questions/restore/{id}', [QuestionController::class, 'restore'])->name('questions.restore');
+            Route::delete('questions/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+            Route::delete('questions/permanent-delete/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+
             Route::get('instructor/course', [InstructorController::class, 'getListCourses']);
             Route::get('instructor/report', [InstructorController::class, 'getReport']);
             Route::get('instructor/line-chart', [InstructorController::class, 'getLineChartData']);
@@ -204,9 +215,10 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('/message/private/{receiverId}', [ChatController::class, 'index']);
             Route::get('/chat/users', [ChatController::class, 'getUsers']);
             Route::post('/messages/{receiverId}', [ChatController::class, 'store']);
-            Route::post('/auth/upload-chat-image', [ChatController::class, 'uploadChatImage']);
-            Route::delete('/auth/delete-chat-image', [ChatController::class, 'deleteChatImage']);
+            Route::post('/upload-chat-image', [ChatController::class, 'uploadChatImage']);
+            Route::delete('/delete-chat-image', [ChatController::class, 'deleteChatImage']);
 
+            Route::get('/search-content', [StudyController::class, 'searchContent']);
             Route::get('/study-course', [StudyController::class, 'studyCourse']);
             Route::get('/change-content', [StudyController::class, 'changeContent']);
             Route::get('/get-user-courses', [StudyController::class, 'getUserCourses']);
@@ -235,9 +247,17 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 Route::patch('/{id}', [OrderController::class, 'cancel']);
                 Route::patch('/{id}/restore', [OrderController::class, 'restore']);
             });
+
+            // Review
+            Route::post('reviews', [ReviewController::class, 'store']);
+            Route::put('reviews/{id}', [ReviewController::class, 'update']);
+            Route::delete('reviews/{id}', [ReviewController::class, 'destroy']);
         });
     });
 });
+
+// All Review
+Route::get('courses/{courseId}/reviews', [ReviewController::class, 'index']);
 
 // Order webhook
 Route::get('/orders/verify-payment', [OrderController::class, 'verifyPayment']);

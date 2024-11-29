@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Voucher;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,61 @@ use App\Models\Cart;
 
 class VoucherController extends Controller
 {
+    public function getListAdmin(Request $request)
+    {
+        $vouchersQuery = Voucher::query();
+
+        if ($request->has('deleted') && $request->deleted == 1) {
+            $vouchersQuery->onlyTrashed();
+        } else {
+            $vouchersQuery->whereNull('deleted_at');
+        }
+
+        if ($request->has('keyword') && !empty($request->keyword)) {
+            $keyword = $request->keyword;
+            $vouchersQuery->where('code', 'like', '%' . $keyword . '%');
+        }
+
+        if ($request->has('status') && !is_null($request->status)) {
+            $vouchersQuery->where('status', $request->status);
+        }
+
+        $order = $request->get('order', 'desc');
+        $vouchersQuery->orderBy('created_at', $order);
+
+
+        $order = $request->get('order', 'desc');
+        $vouchersQuery->orderBy('created_at', $order);
+
+        // Phân trang với per_page và page
+        $perPage = (int)$request->get('per_page', 10);
+        $page = (int)$request->get('page', 1);
+
+        $vouchers = $vouchersQuery->get();
+
+        $total = $vouchers->count();
+
+        $paginatedVouchers = $vouchers->forPage($page, $perPage)->values();
+
+        $pagination = new LengthAwarePaginator(
+            $paginatedVouchers,
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(),
+                'query' => $request->query()
+            ]
+        );
+        $vouchers = $pagination->toArray();
+        return formatResponse(
+            STATUS_OK,
+            $vouchers,
+            '',
+            __('messages.course_level_fetch_success')
+        );
+    }
+
     // Lấy toàn bộ voucher (chỉ trả về voucher `active`)
     public function index()
     {

@@ -70,7 +70,16 @@ class OrderController extends Controller
             DB::beginTransaction();
 
             $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+
+            if (!$user->email) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('message.order_require_email'),
+                ], 400);
+            }
+
             $response = $stripe->checkout->sessions->create([
+                'customer_email' => $user->email,
                 'line_items' => [
                     [
                         'price_data' => [
@@ -82,8 +91,8 @@ class OrderController extends Controller
                     ],
                 ],
                 'mode' => 'payment',
-                'success_url' => config('services.frontend_url') . 'checkout/success?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => config('services.frontend_url') . 'checkout/cancel',
+                'success_url' => config('services.frontend_url') . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => config('services.frontend_url') . '/checkout/cancel',
             ]);
 
             // Tạo đơn hàng trong hệ thống
@@ -202,8 +211,16 @@ class OrderController extends Controller
         try {
             // Tạo phiên thanh toán Stripe mới
             $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
-            // dd($stripe);
+
+            if (!$user->email) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('message.order_require_email'),
+                ], 400);
+            }
+
             $response = $stripe->checkout->sessions->create([
+                'customer_email' => $user->email,
                 'line_items' => [
                     [
                         'price_data' => [

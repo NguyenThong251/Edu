@@ -345,10 +345,12 @@ class AuthController extends Controller
             'email' => 'string|email|max:100|unique:users,email,' . $user->id,
             'phone_number' => 'regex:/^[0-9]+$/',
             'address' => 'string',
+            'biography' => 'string',
             'contact_info' => 'array',
             'gender' => 'nullable|string|in:male,female,unknown',
             'date_of_birth' => 'nullable|date',
             'password' => 'string|min:8',
+            'role' => 'sometimes|in:instructor,student',
         ], [
             'first_name.required' => __('messages.first_name_required'),
             'first_name.string' => __('messages.first_name_string'),
@@ -378,7 +380,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
-        $data = request()->except(['role', 'email_verified', 'reset_token', 'status']);
+        $data = request()->except(['email_verified', 'reset_token', 'status']);
         if (isset($data['password'])) {
             $data['password'] = Hash::make(request()->input('password'));
         }

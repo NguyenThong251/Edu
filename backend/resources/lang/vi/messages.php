@@ -182,6 +182,22 @@ return [
     'no_courses_found' => 'Không có khóa học nào.',
     'courses_retrieved_successfully' => 'Đã lấy thành công các khóa học của bạn.',
 
+    //Question
+    'question_fetch_success' => 'Lấy danh sách câu hỏi thành công.',
+    'question_create_success' => 'Tạo câu hỏi thành công.',
+    'question_update_success' => 'Cập nhật câu hỏi thành công.',
+    'question_soft_delete_success' => 'Xóa tạm câu hỏi thành công.',
+    'question_restore_success' => 'Khôi phục câu hỏi thành công.',
+    'question_force_delete_success' => 'Xóa vĩnh viễn câu hỏi thành công.',
+    'question_not_found' => 'Câu hỏi không tồn tại.',
+    'quiz_required' => 'Quiz là bắt buộc.',
+    'quiz_not_found' => 'Quiz không tồn tại.',
+    'question_required' => 'Câu hỏi là bắt buộc.',
+    'options_required' => 'Options là bắt buộc.',
+    'answer_required' => 'Đáp án là bắt buộc.',
+    'question_edit_form_success' => 'Lấy thông tin chi tiết câu hỏi để chỉnh sửa thành công.',
+
+
 
     // CART
     'cart_items_fetched' => 'Danh sách khóa học trong giỏ hàng đã được lấy thành công.',
@@ -207,6 +223,7 @@ return [
     // ORDER
     'order_created_success' => 'Đơn hàng đã được tạo thành công.',
     'order_create_failed' => 'Tạo đơn hàng thất bại.',
+    'order_require_email' => 'Email của người dùng là bắt buộc để tạo phiên thanh toán.',
 
     // Admin user
     'getUsers' => 'Lấy dữ liệu thành công',

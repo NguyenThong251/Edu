@@ -385,6 +385,13 @@ class StudyController extends Controller
 
         return "{$hours} giờ"; // Chỉ hiển thị giờ nếu không có phút và giây
     }
+    public function searchContent(Request $request){
+        $userId = Auth::user()->id;
+        $courseId = $request->input('course_id');
+        $contentKeyword='';
+        $contentKeyword = $request->input('content_keyword');
+        return $this->getAllContent($userId, $courseId, $contentKeyword);
+    }
 
 
 
@@ -608,6 +615,7 @@ class StudyController extends Controller
             ->where('status', 'active')
             ->first();
         $responseData = [
+            'created_by' => $course->created_by,
             'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
@@ -835,6 +843,7 @@ class StudyController extends Controller
             ->where('status', 'active')
             ->first();
         $responseData = [
+            'created_by' => $course->created_by,
             'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
