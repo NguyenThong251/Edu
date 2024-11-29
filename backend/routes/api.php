@@ -110,6 +110,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::prefix('vouchers')->group(function () {
                 // Get all vouchers
                 Route::get('/', [VoucherController::class, 'index']);
+                Route::get('list-vouchers-admin', [VoucherController::class, 'getListAdmin']);
                 Route::get('/filter', [VoucherController::class, 'filter']);
                 // Get all deleted vouchers
                 Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
