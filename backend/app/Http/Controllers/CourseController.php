@@ -156,7 +156,7 @@ class CourseController extends Controller
                 $q->where('courses.title', 'like', '%' . $keyword . '%')
                     ->orWhereRaw("CONCAT(users.last_name, ' ', users.first_name) LIKE ?", ['%' . $keyword . '%']);
             })
-            ->join('users', 'users.id', '=', 'courses.created_by');
+                ->join('users', 'users.id', '=', 'courses.created_by');
         }
 
         if ($min_rating) {
@@ -359,7 +359,7 @@ class CourseController extends Controller
 
 
         // Thống kê instructor
-        $creatorId = $course->creator->id;
+        $creatorId = $course->creator ? $course->creator->id : null;
         $courseIds = Course::where('created_by', $creatorId)->where('status', 'active')->pluck('id');
         $totalCourses = $courseIds->count();
         $orderIds = OrderItem::whereIn('course_id', $courseIds)->pluck('order_id');
@@ -456,7 +456,7 @@ class CourseController extends Controller
                 'time_diff' => $time_diff,
             ];
         });
-        $study=new StudyController;
+        $study = new StudyController;
         // Chuẩn bị dữ liệu trả về
         $data = $this->search($request, $course->creator->id, $id)->getData(); // Lấy dữ liệu dạng object
         $orderCourse = json_decode(json_encode($data), true)['data']['data'];
@@ -739,8 +739,8 @@ class CourseController extends Controller
             }, 0);
 
             $total_duration = $course->sections->reduce(function ($carry, $section) {
-                    return $carry + $section->lectures->sum('duration');
-                }, 0) / 3600; // Đổi tổng thời gian thành giờ
+                return $carry + $section->lectures->sum('duration');
+            }, 0) / 3600; // Đổi tổng thời gian thành giờ
 
             // Tính trung bình đánh giá và số lượng reviews
             $reviews_count = $course->reviews->count();
@@ -935,82 +935,82 @@ class CourseController extends Controller
 
 
 
-//     public function filterCourses(Request $request)
-//     {
-//         $category_id = $request->input('category_id');
-//         $title = $request->input('title');
-//         $min_price = $request->input('min_price');
-//         $max_price = $request->input('max_price');
-//         $status = $request->input('status');
-//         $type_sale = $request->input('type_sale');
-//         $rating = $request->input('rating');
-//         $duration_range = $request->input('duration_range');
-//
-//
-//         $page = $request->input('page', 1);
-//         $perPage = $request->input('per_page', 10);
-//
-//         $sort_by = $request->input('sort_by', 'created_at');
-//         $sort_order = $request->input('sort_order', 'desc');
-//
-//         $query = Course::with('reviews');
-//         if ($category_id) {
-//             $categoryIds = explode(',', $category_id);
-//             $query->whereIn('category_id', $categoryIds);
-//         }
-//         if ($title) {
-//             $query->where('title', 'like', '%' . $title . '%');
-//         }
-//         if ($min_price) {
-//             $query->where('price', '>=', $min_price);
-//         }
-//         if ($max_price) {
-//             $query->where('price', '<=', $max_price);
-//         }
-//         if ($status) {
-//             $query->where('status', $status);
-//         }
-//
-//         if ($rating) {
-//             $query->whereHas('reviews', function ($q) use ($rating) {
-//                 $q->havingRaw('ROUND(AVG(rating),0) = ?', [$rating]);
-//             });
-//         }
-//
-//         if ($duration_range) {
-//             $query->whereHas('sections.lectures', function ($q) use ($duration_range) {
-//                 switch ($duration_range) {
-//                     case '0-2':
-//                         $q->havingRaw('SUM(duration) <= 120');
-//                         break;
-//                     case '3-5':
-//                         $q->havingRaw('SUM(duration) BETWEEN 180 AND 300');
-//                         break;
-//                     case '6-12':
-//                         $q->havingRaw('SUM(duration) BETWEEN 360 AND 720');
-//                         break;
-//                     case '12+':
-//                         $q->havingRaw('SUM(duration) > 720');
-//                         break;
-//                 }
-//             });
-//         }
-//
-//         $query->orderBy($sort_by, $sort_order);
-//         $courses = $query->paginate($perPage, ['*'], 'page', $page);
-//         return response()->json([
-//             'status' => 'success',
-//             'data' => $courses->items(),
-//             'pagination' => [
-//                 'total' => $courses->total(),
-//                 'current_page' => $courses->currentPage(),
-//                 'last_page' => $courses->lastPage(),
-//                 'per_page' => $courses->perPage(),
-//             ],
-//         ]);
-//     }
+    //     public function filterCourses(Request $request)
+    //     {
+    //         $category_id = $request->input('category_id');
+    //         $title = $request->input('title');
+    //         $min_price = $request->input('min_price');
+    //         $max_price = $request->input('max_price');
+    //         $status = $request->input('status');
+    //         $type_sale = $request->input('type_sale');
+    //         $rating = $request->input('rating');
+    //         $duration_range = $request->input('duration_range');
+    //
+    //
+    //         $page = $request->input('page', 1);
+    //         $perPage = $request->input('per_page', 10);
+    //
+    //         $sort_by = $request->input('sort_by', 'created_at');
+    //         $sort_order = $request->input('sort_order', 'desc');
+    //
+    //         $query = Course::with('reviews');
+    //         if ($category_id) {
+    //             $categoryIds = explode(',', $category_id);
+    //             $query->whereIn('category_id', $categoryIds);
+    //         }
+    //         if ($title) {
+    //             $query->where('title', 'like', '%' . $title . '%');
+    //         }
+    //         if ($min_price) {
+    //             $query->where('price', '>=', $min_price);
+    //         }
+    //         if ($max_price) {
+    //             $query->where('price', '<=', $max_price);
+    //         }
+    //         if ($status) {
+    //             $query->where('status', $status);
+    //         }
+    //
+    //         if ($rating) {
+    //             $query->whereHas('reviews', function ($q) use ($rating) {
+    //                 $q->havingRaw('ROUND(AVG(rating),0) = ?', [$rating]);
+    //             });
+    //         }
+    //
+    //         if ($duration_range) {
+    //             $query->whereHas('sections.lectures', function ($q) use ($duration_range) {
+    //                 switch ($duration_range) {
+    //                     case '0-2':
+    //                         $q->havingRaw('SUM(duration) <= 120');
+    //                         break;
+    //                     case '3-5':
+    //                         $q->havingRaw('SUM(duration) BETWEEN 180 AND 300');
+    //                         break;
+    //                     case '6-12':
+    //                         $q->havingRaw('SUM(duration) BETWEEN 360 AND 720');
+    //                         break;
+    //                     case '12+':
+    //                         $q->havingRaw('SUM(duration) > 720');
+    //                         break;
+    //                 }
+    //             });
+    //         }
+    //
+    //         $query->orderBy($sort_by, $sort_order);
+    //         $courses = $query->paginate($perPage, ['*'], 'page', $page);
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'data' => $courses->items(),
+    //             'pagination' => [
+    //                 'total' => $courses->total(),
+    //                 'current_page' => $courses->currentPage(),
+    //                 'last_page' => $courses->lastPage(),
+    //                 'per_page' => $courses->perPage(),
+    //             ],
+    //         ]);
+    //     }
 
-// get list of instructors list of their courses.
+    // get list of instructors list of their courses.
     public function getListInstructorCourses(Request $request)
     {
         $user = auth()->user();
@@ -1047,5 +1047,4 @@ class CourseController extends Controller
             'code' => 200
         ]);
     }
-
 }

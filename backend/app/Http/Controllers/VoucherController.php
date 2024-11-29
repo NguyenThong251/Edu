@@ -40,21 +40,7 @@ class VoucherController extends Controller
         $order = $request->get('order', 'desc');
         $vouchersQuery->orderBy('created_at', $order);
 
-        // // Phân trang tự động với `paginate`
-        // $perPage = (int) $request->get('per_page', 10); // Số lượng bản ghi mỗi trang
-        // $vouchers = $vouchersQuery->paginate($perPage);
 
-        // // Trả về kết quả
-        // return response()->json([
-        //     'status' => 'success',
-        //     'result' => $vouchers->total(),
-        //     'data' => $vouchers->items(),
-        //     'pagination' => [
-        //         'current_page' => $vouchers->currentPage(),
-        //         'last_page' => $vouchers->lastPage(),
-        //         'per_page' => $vouchers->perPage(),
-        //     ],
-        // ], 200);
         $order = $request->get('order', 'desc'); // Giá trị mặc định là desc
         $vouchersQuery->orderBy('created_at', $order);
 
