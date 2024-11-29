@@ -1,6 +1,0 @@
-{
-    "require": {
-        "php-ffmpeg/php-ffmpeg": "^1.2",
-        "setasign/fpdi": "^2.6"
-    }
-}
