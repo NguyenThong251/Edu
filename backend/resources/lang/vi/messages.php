@@ -186,6 +186,16 @@ return [
     'lecture_not_found' => 'Không tìm thấy bài giảng.',
     'quiz_not_found' => 'Không tìm thấy bài kiểm tra.',
 
+    //QUIZ 
+    'quiz_not_found' => 'Không tìm thấy bài kiểm tra.',
+    'quiz_fetch_success' => 'Lấy danh sách bài kiểm tra thành công.',
+    'quiz_detail_success' => 'Lấy chi tiết bài kiểm tra thành công.',
+    'quiz_create_success' => 'Tạo bài kiểm tra thành công.',
+    'quiz_update_success' => 'Cập nhật bài kiểm tra thành công.',
+    'quiz_soft_delete_success' => 'Đã xóa mềm bài kiểm tra.',
+    'quiz_restore_success' => 'Đã khôi phục bài kiểm tra.',
+    'quiz_force_delete_success' => 'Đã xóa vĩnh viễn bài kiểm tra.',
+
     //STUDY
     'course_not_purchased' => 'Bạn chưa mua khóa học này.',
     'course_access_granted' => 'Bạn có thể truy cập khóa học này.',

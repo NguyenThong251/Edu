@@ -21,6 +21,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\QuizController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +75,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::middleware(['role:admin'])->group(function () {
             // Quản lý, ManageController
             Route::get('courses', [CourseController::class, 'getListAdmin'])->name('courses.getListAdmin');
+
 
             Route::get('categories', [CategoryController::class, 'getListAdmin'])->name('categories.getListAdmin');
             Route::get('getAdmin', [ManageController::class, 'getAdmin'])->name('users.admins');
@@ -166,6 +168,20 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::patch('lectures/{id}/status', [LectureController::class, 'updateLectureStatus'])->name('lectures.updateStatus');
             Route::patch('lectures/{id}/section', [LectureController::class, 'updateLectureSection'])->name('lectures.updateSection');
             Route::get('show-content-of-section/{id}', [LectureController::class, 'showContentBySection'])->name('lectures.showContentBySection');
+            Route::get('lectures', [LectureController::class, 'getListAdmin'])->name('lectures.getListAdmin');
+
+
+            Route::post('quizzes', [QuizController::class, 'store'])->name('quizzes.store');
+            Route::get('quizzes/{id}', [QuizController::class, 'show'])->name('quizzes.show');
+            Route::put('quizzes/{id}', [QuizController::class, 'update'])->name('quizzes.update');
+            Route::get('quizzes/restore/{id}', [QuizController::class, 'restore'])->name('quizzes.restore');
+            Route::delete('quizzes/{id}', [QuizController::class, 'destroy'])->name('quizzes.destroy');
+            Route::delete('quizzes/permanent-delete/{id}', [QuizController::class, 'forceDelete'])->name('quizzes.destroy');
+            Route::patch('quizzes/{id}/status', [QuizController::class, 'updateQuizStatus'])->name('quizzes.updateStatus');
+            Route::patch('quizzes/{id}/section', [QuizController::class, 'updateQuizSection'])->name('quizzes.updateSection');
+            Route::get('quizzes', [QuizController::class, 'getListAdmin'])->name('quizzes.getListAdmin');
+            Route::get('quizzes/edit-form/{id}', [QuizController::class, 'editForm'])->name('quizzes.editForm');
+
 
 
             Route::post('questions', [QuestionController::class, 'store'])->name('questions.store');

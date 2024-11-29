@@ -15,10 +15,6 @@ use getID3;
 
 class LectureController extends Controller
 {
-    public function showUploadForm()
-    {
-        return view('upload');
-    }
     public function getListAdmin(Request $request)
     {
         // Query cơ bản lấy danh sách Lectures
