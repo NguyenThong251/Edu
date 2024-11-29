@@ -9,10 +9,11 @@ export interface TReview {
   course_id: number
   rating: number
   comment: string
+  created_at: string
   status: 'active' | 'inactive'
-  first_name: string
-  last_name: string
   user: {
+    first_name: string
+    last_name: string
     id: number
     avatar: string
   }
@@ -29,15 +30,26 @@ export const useReviewsStore = defineStore('reviews', () => {
 
   const fetchReviews = async (id: number) => {
     try {
-      const response = await api.get(`/courses/${id}/review`)
-      state.value.listReview = response.data.data
+      const response = await api.get(`/courses/${id}/reviews`)
+      state.value.listReview = response.data.reviews
     } catch (error) {
       console.log(error)
     }
   }
 
+  const createReview = async (params: any = {}) => {
+    try {
+      const response = await api.post('/auth/reviews', params)
+      await fetchReviews(params.course_id)
+      ElMessage.success('Your review was submitted successfully!')
+    } catch (error: any) {
+      ElMessage.error(error.response.data.message)
+    }
+  }
+
   return {
     state,
-    fetchReviews
+    fetchReviews,
+    createReview
   }
 })

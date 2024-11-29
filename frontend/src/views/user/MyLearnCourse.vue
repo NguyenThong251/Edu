@@ -11,7 +11,7 @@
             <div class="rounded-2xl w-full overflow-hidden">
               <vue-plyr>
                 <video controls preload="metadata" @pause="handlePause" @ended="handleVideoEnd"
-                       @timeupdate="handleTimeUpdate" ref="videoElement">
+                  @timeupdate="handleTimeUpdate" ref="videoElement">
                   <source :src="currentContent.content_link" type="video/mp4" />
                   Trình duyệt của bạn không hỗ trợ video.
                 </video>
@@ -24,20 +24,18 @@
           </div>
           <!-- Quizz -->
           <div v-else-if="currentContent.current_content_type === 'quiz'"
-               class="min-h-[70vh] bg-white flex items-center justify-center">
+            class="min-h-[70vh] bg-white flex items-center justify-center">
             <div v-if="isReviewMode">
               <div class="">
                 <h2 class="text-xl font-semibold mb-4 text-center">Ôn tập: {{ currentContent.title }}
                 </h2>
-                <div v-for="(question, index) in currentContent.questions" :key="question.id"
-                     class="mb-4">
+                <div v-for="(question, index) in currentContent.questions" :key="question.id" class="mb-4">
                   <p class="font-medium">Câu {{ index + 1 }}: {{ question.question }}</p>
                   <ul class="mt-2">
-                    <li v-for="option in question.options" :key="option" class="px-4 py-2 rounded"
-                        :class="{
-                                                'bg-green-200': option === question.answer, // Đáp án đúng
-                                                'bg-red-200': option === question.answer_user && option !== question.answer // Đáp án sai người dùng chọn
-                                            }">
+                    <li v-for="option in question.options" :key="option" class="px-4 py-2 rounded" :class="{
+                      'bg-green-200': option === question.answer, // Đáp án đúng
+                      'bg-red-200': option === question.answer_user && option !== question.answer // Đáp án sai người dùng chọn
+                    }">
                       {{ option }}
                     </li>
                   </ul>
@@ -47,8 +45,7 @@
                 <Button variant="primary" @click="handleExitReviewLesson()">Thoát ôn tập</Button>
               </div>
             </div>
-            <div v-if="currentContent.percent < 100"
-                 class="bg-white p-4 rounded-lg shadow-md max-w-md w-full">
+            <div v-if="currentContent.percent < 100" class="bg-white p-4 rounded-lg shadow-md max-w-md w-full">
               <h2 class="text-xl font-semibold mb-4 text-center">Bài tập: {{ currentContent.title }}</h2>
               <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
                 <div class="bg-blue-500 h-2.5 rounded-full" :style="{ width: progressQuizz + '%' }">
@@ -57,14 +54,14 @@
               <p class="text-center mb-6">{{ currentQuestion.question }}</p>
               <form class="space-y-4" @submit.prevent="checkAnswer">
                 <label v-for="(option, index) in currentQuestion.options" :key="index"
-                       class="flex items-center bg-blue-50 p-3 rounded-lg cursor-pointer">
-                  <input type="radio" name="question" class="form-radio h-4 w-4 text-blue-600"
-                         :value="option" v-model="selectedAnswer" />
+                  class="flex items-center bg-blue-50 p-3 rounded-lg cursor-pointer">
+                  <input type="radio" name="question" class="form-radio h-4 w-4 text-blue-600" :value="option"
+                    v-model="selectedAnswer" />
                   <span class="ml-2 text-gray-700">{{ option }}</span>
                 </label>
 
                 <button type="submit"
-                        class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg text-center mt-4">
+                  class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg text-center mt-4">
                   Gửi câu trả lời
                 </button>
               </form>
@@ -72,8 +69,7 @@
             </div>
             <!-- On tap -->
             <!-- Nếu quiz đã hoàn thành -->
-            <div v-else-if="currentContent.percent >= 100 && !isReviewMode"
-                 class="flex flex-col items-center">
+            <div v-else-if="currentContent.percent >= 100 && !isReviewMode" class="flex flex-col items-center">
               <canvas id="celebrationCanvas" class="w-full h-[300px]"></canvas>
               <p class="text-xl font-bold text-center text-indigo-600 mt-5">Chúc mừng bạn đã hoàn
                 thành
@@ -98,12 +94,12 @@
             </el-tab-pane>
             <el-tab-pane label="Ghi chú" name="third">
               <UserNote :course_id="idCourse || 0" :section_id="currentContent.section_id || 0"
-                        :lecture_id="currentContent.id || 0" :lecture_title="currentContent.title || ''"
-                        :currentTime="videoCurrentTime || 0" />
+                :lecture_id="currentContent.id || 0" :lecture_title="currentContent.title || ''"
+                :currentTime="videoCurrentTime || 0" />
               <!-- :section_id="currentContent" :lecture_id="" :lecture_title=""  -->
             </el-tab-pane>
             <el-tab-pane label="Đánh giá" name="fourth">
-              <UserFeedback />
+              <UserFeedback :idCourse="idCourse" :listReview="state.listReview" />
             </el-tab-pane>
           </el-tabs>
         </div>
@@ -112,8 +108,7 @@
         <div class="bg-white rounded-lg shadow-lg p-5">
           <header class="p-2 flex items-center gap-3 overflow-hidden bg-gray-800 rounded-lg">
             <img class="-ms-6 w-20"
-                 src="https://ik.imagekit.io/laracasts/series/thumbnails/svg/livewire-basics.svg?tr=w-200"
-                 alt="">
+              src="https://ik.imagekit.io/laracasts/series/thumbnails/svg/livewire-basics.svg?tr=w-200" alt="">
             <div class="flex flex-col gap-3">
               <h3 class="text-xl font-medium text-white">Danh sách chương học</h3>
               <el-progress :percentage="progress" status="success" />
@@ -126,25 +121,24 @@
                 <div class="px-4 !text-gray-900 flex gap-5 items-center justify-between leading-5">
                   <h3 class="text-lg">{{ content.title }}</h3>
                   <div class="flex gap-1" v-if="content.content_course_type === 'section'">
-                                        <span class="text-gray-500">{{ content.content_done }}/{{
-                                            content.content_count
-                                          }}
-                                            Hoàn thành</span> •
+                    <span class="text-gray-500">{{ content.content_done }}/{{
+                      content.content_count
+                    }}
+                      Hoàn thành</span> •
                     <span class="text-pink-500">{{ content.duration_display }}</span>
                   </div>
                   <!-- <div @click="handleChangeContent(content)" -->
-                  <div @click="handleChangeContent(content)"
-                       v-if="content.content_course_type === 'quiz'" class=" text-blue-500">
+                  <div @click="handleChangeContent(content)" v-if="content.content_course_type === 'quiz'"
+                    class=" text-blue-500">
                     Quiz
                   </div>
                 </div>
               </template>
               <div v-for="lesson in content.section_content" :key="lesson.id"
-                   class="cursor-pointer flex justify-between items-start bg-gray-50  py-2">
+                class="cursor-pointer flex justify-between items-start bg-gray-50  py-2">
                 <div class="flex items-center gap-3 w-full px-4" @click="handleChangeContent(lesson)"
-                     :class="{ 'bg-gray-200 rounded-lg': currentContent.id === lesson.id }">
-                  <CheckOuline :class="lesson.percent >= 100 ? 'text-green-500' : 'text-gray-500'"
-                               class="h-5 w-5" />
+                  :class="{ 'bg-gray-200 rounded-lg': currentContent.id === lesson.id }">
+                  <CheckOuline :class="lesson.percent >= 100 ? 'text-green-500' : 'text-gray-500'" class="h-5 w-5" />
                   <div class=" flex flex-col">
                     <h3>{{ lesson.title }}</h3>
                     <div>
@@ -157,8 +151,7 @@
                         <span class="text-pink-500">{{ lesson.duration_display }}</span>
                       </div>
                       <!-- Nếu không, hiển thị biểu tượng câu hỏi -->
-                      <div class="flex items-center gap-1"
-                           v-else-if="lesson.content_section_type === 'quiz'">
+                      <div class="flex items-center gap-1" v-else-if="lesson.content_section_type === 'quiz'">
                         <QuestionMarkCircleIcon class="h-4 w-4 text-gray-600" />
                       </div>
                     </div>
@@ -188,12 +181,16 @@ import { useQuizStore } from '@/store/quiz';
 import confetti from "canvas-confetti";
 import Button from '@/components/ui/button/Button.vue';
 import VuePdf from "vue-pdf-next";
+import { useReviewsStore } from '@/store/review';
 const route = useRoute();
 const idCourse = Number(route.params.id);
 const courseStore = useCourseStore();
 const quizStore = useQuizStore();
 const { studyCourse, currentContent, allContent, progress } = storeToRefs(courseStore);
 const { fetchStudyCourse, changeContent } = courseStore;
+const reviewStore = useReviewsStore()
+const { fetchReviews } = reviewStore
+const { state } = storeToRefs(reviewStore)
 const activeName = ref("first")
 const videoElement = ref<HTMLVideoElement | null>(null);
 // PDF
@@ -248,6 +245,7 @@ onUnmounted(() => {
 // end
 onMounted(async () => {
   await fetchStudyCourse(idCourse);
+  await fetchReviews(idCourse)
 });
 
 const handleChangeContent = async (lesson: any) => {
@@ -298,7 +296,7 @@ const handleVideoEnd = () => {
 
 const handleNextLesson = async () => {
   const currentSection = allContent.value.find(section =>
-      section.section_content.some((lesson: any) => lesson.id === currentContent.value.id)
+    section.section_content.some((lesson: any) => lesson.id === currentContent.value.id)
   );
   videoCurrentTime.value = 0
   const sectionLessons = currentSection.section_content;
@@ -428,5 +426,4 @@ const handleExitReviewLesson = () => {
   z-index: 9999;
   pointer-events: none;
 }
-
 </style>

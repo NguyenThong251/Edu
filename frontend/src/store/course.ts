@@ -124,7 +124,7 @@ export const useCourseStore = defineStore('courseStore', () => {
   }
 
   // Teacher
-  const fetchTecherCourse = async (params: any = {}) => {
+  const fetchTeacherCourse = async (params: any = {}) => {
     try {
       const response = await api.get('auth/instructor/course', { params })
       listCourseAdmin.value = response.data.data
@@ -153,6 +153,6 @@ export const useCourseStore = defineStore('courseStore', () => {
     changeContent,
     fetchMyCourseFilter,
     searchLetureStudy,
-    fetchTecherCourse
+    fetchTeacherCourse
   }
 })

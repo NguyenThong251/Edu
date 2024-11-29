@@ -338,7 +338,7 @@ onMounted(async () => {
 onUnmounted(() => {
     if (channel.value) {
         channel.value.unListen('.MessageSent');
-        echo.leave(`chat.${authStore.state.user.id}`);
+        echo.leave(`chat.${authStore.state.user?.id}`);
     }
 });
 // Xử lý upload hình ảnh ngay khi chọn
@@ -451,6 +451,7 @@ const user = computed(() => authStore.state.user);
 watch(selectedUser, () => {
     // Có thể thêm logic để cleanup các kênh trước nếu cần
 });
+
 </script>
 
 <style scoped>
