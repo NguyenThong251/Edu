@@ -131,6 +131,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/payout/process/{id}', [PayoutController::class, 'processPayout']);
             // Liệt kê các yêu cầu rút tiền
             Route::get('/payout/requests', [PayoutController::class, 'listPayoutRequests']);
+            Route::get('/payout/', [PayoutController::class, 'index']);
+            Route::get('/payout/report-payment', [PayoutController::class, 'report']);
+
             //get all user
             Route::get('/get-all-user', [AuthController::class, 'getAllUser']);
             Route::post('/create-user', [AuthController::class, 'adminCreateUser']);

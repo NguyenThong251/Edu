@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\PayoutRequest;
 use App\Models\Wishlist;
 use App\Models\Review;
 use Carbon\Carbon;

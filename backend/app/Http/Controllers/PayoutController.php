@@ -28,26 +28,71 @@ class PayoutController extends Controller
             ]);
     }
 
+    public function index(Request $request)
+    {
+        $userId = auth()->id();
+
+        $payoutRequests = PayoutRequest::query()
+            ->where('user_id', $userId) // Lọc theo user_id
+            ->when($request->has('start_date') && $request->has('end_date'), function ($query) use ($request) {
+                $query->whereBetween('created_at', [
+                    $request->input('start_date'),
+                    $request->input('end_date')
+                ]);
+            })
+            ->paginate(10);
+
+        return formatResponse('OK', $payoutRequests);
+    }
+
+    public function report()
+    {
+        $userId = auth()->id();
+
+        $pendingPayouts = PayoutRequest::where('user_id', $userId)
+            ->whereIn('status', ['pending', 'processing'])
+            ->sum('amount');
+        $pendingPayouts = PayoutRequest::where('user_id', $userId)
+            ->whereIn('status', ['pending', 'processing'])
+            ->sum('amount');
+
+        $totalRevenue = \App\Models\Order::join('order_items', 'orders.id', '=', 'order_items.order_id')
+            ->join('courses', 'order_items.course_id', '=', 'courses.id')
+            ->where('courses.created_by', $userId)
+            ->where('orders.payment_status', 'paid')
+            ->whereNull('orders.deleted_at')
+            ->whereNull('order_items.deleted_at')
+            ->sum('order_items.price');
+        $moneyReceived = PayoutRequest::where(['user_id' => $userId, 'status' => 'paid'])->sum('amount');
+
+        return formatResponse('OK', [
+            'pendingPayouts' => $pendingPayouts,
+            'totalRevenue' => $totalRevenue,
+            'moneyReceived' => $moneyReceived,
+        ]);
+    }
+
+
     public function requestPayout(Request $request)
     {
 
         \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
 
-//        $balance = \Stripe\Balance::retrieve();
-        $charge = \Stripe\Charge::create([
-            'amount' => 1000, // 10 USD (tính bằng cents)
-            'currency' => 'usd',
-            'source' => 'tok_visa', // Token test
-            'description' => 'Test charge to increase balance',
-        ]);
-
-        // Chuyển tiền từ platform account đến connected account
-        $transfer = \Stripe\Transfer::create([
-            'amount' => 1000, // 10 USD
-            'currency' => 'usd',
-            'destination' => 'acct_1QOXVvCzrOkmIPq4', // ID của connected account
-            'description' => 'Test transfer to connected account',
-        ]);
+////        $balance = \Stripe\Balance::retrieve();
+//        $charge = \Stripe\Charge::create([
+//            'amount' => 1000, // 10 USD (tính bằng cents)
+//            'currency' => 'usd',
+//            'source' => 'tok_visa', // Token test
+//            'description' => 'Test charge to increase balance',
+//        ]);
+//
+//        // Chuyển tiền từ platform account đến connected account
+//        $transfer = \Stripe\Transfer::create([
+//            'amount' => 1000, // 10 USD
+//            'currency' => 'usd',
+//            'destination' => 'acct_1QOXVvCzrOkmIPq4', // ID của connected account
+//            'description' => 'Test transfer to connected account',
+//        ]);
 
         $user = Auth::user();
         // Kiểm tra dữ liệu đầu vào
