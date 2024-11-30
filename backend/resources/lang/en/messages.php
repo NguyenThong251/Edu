@@ -185,6 +185,16 @@ return [
     'lecture_not_found' => 'Lecture not found.',
     'quiz_not_found' => 'Quiz not found.',
 
+    //QUIZ
+    'quiz_not_found' => 'Quiz not found.',
+    'quiz_fetch_success' => 'Quizzes fetched successfully.',
+    'quiz_detail_success' => 'Quiz details retrieved successfully.',
+    'quiz_create_success' => 'Quiz created successfully.',
+    'quiz_update_success' => 'Quiz updated successfully.',
+    'quiz_soft_delete_success' => 'Quiz soft deleted successfully.',
+    'quiz_restore_success' => 'Quiz restored successfully.',
+    'quiz_force_delete_success' => 'Quiz permanently deleted successfully.',
+
     //STUDY
     'course_not_purchased' => 'You have not purchased this course.',
     'course_access_granted' => 'You can access this course.',
