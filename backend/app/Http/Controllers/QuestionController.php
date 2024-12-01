@@ -4,46 +4,43 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Question;
+use App\Models\Quiz;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class QuestionController extends Controller
 {
-    // Lấy danh sách câu hỏi
     public function getListAdmin(Request $request)
     {
         $questionsQuery = Question::query();
 
         if ($request->has('deleted') && $request->deleted == 1) {
-            // Lấy các language đã xóa
             $questionsQuery->onlyTrashed();
         } else {
-            // Chỉ lấy các language chưa xóa (mặc định)
             $questionsQuery->whereNull('deleted_at');
         }
-        // Lọc theo quiz_id
-        if ($request->has('quiz_id')) {
-            $questionsQuery->where('quiz_id', $request->quiz_id);
-        }
 
-        // Lọc theo keyword
         if ($request->has('keyword') && !empty($request->keyword)) {
             $questionsQuery->where('question', 'like', '%' . $request->keyword . '%');
         }
 
-        // Lọc theo status
-        if ($request->has('status')) {
-            $questionsQuery->where('status', $request->status);
+        if ($request->has('quiz_id') && !empty($request->quiz_id)) {
+            $questionsQuery->where('quiz_id', $request->quiz_id);
         }
 
-        // Sắp xếp
-        $order = $request->get('order', 'asc'); // Mặc định là asc
+        if ($request->has('status') && !is_null($request->status)) {
+            $questionsQuery->where('status', $request->status);
+        }
+        if ($request->has('created_by') && !empty($request->created_by)) {
+            $questionsQuery->where('created_by', $request->created_by);
+        }
+
+        $order = $request->get('order', 'desc');
         $questionsQuery->orderBy('created_at', $order);
 
-        // Phân trang
-        $perPage = (int)$request->get('per_page', 10);
-        $page = (int)$request->get('page', 1);
+        $perPage = (int) $request->get('per_page', 10);
+        $page = (int) $request->get('page', 1);
 
         $questions = $questionsQuery->get();
         $total = $questions->count();
@@ -60,63 +57,39 @@ class QuestionController extends Controller
             ]
         );
 
-        return formatResponse(
-            STATUS_OK,
-            $pagination->toArray(),
-            '',
-            __('messages.question_fetch_success')
-        );
+        $questions = $pagination->toArray();
+
+        return formatResponse(STATUS_OK, $questions, '', __('messages.question_fetch_success'));
     }
+
     public function editForm($id)
     {
-        // Tìm question theo ID
-        $question = Question::find($id);
+        $question = Question::withTrashed()->find($id);
 
+        // $question->options = json_decode($question->options);
         if (!$question) {
-            return formatResponse(
-                STATUS_FAIL,
-                '',
-                '',
-                __('messages.question_not_found')
-            );
+            return formatResponse(STATUS_FAIL, '', '', __('messages.question_not_found'));
         }
 
-        // Chuẩn bị dữ liệu trả về
-        $response = [
-            'id' => $question->id,
-            'quiz_id' => $question->quiz_id,
-            'question' => $question->question,
-            'options' => json_decode($question->options), // Giải mã JSON để trả về dạng mảng
-            'answer' => $question->answer,
-            'status' => $question->status,
-            'order' => $question->order,
-            'created_at' => $question->created_at,
-            'updated_at' => $question->updated_at,
-        ];
-
-        return formatResponse(
-            STATUS_OK,
-            $response,
-            '',
-            __('messages.question_edit_form_success')
-        );
+        return formatResponse(STATUS_OK, $question, '', __('messages.question_detail_success'));
     }
 
-
-    // Thêm mới câu hỏi
     public function store(Request $request)
     {
+        $user = auth()->user();
+
         $validator = Validator::make($request->all(), [
             'quiz_id' => 'required|exists:quizzes,id',
             'question' => 'required|string',
-            'options' => 'required|json',
+            'options' => 'required|array', // Kiểm tra options là một mảng
             'answer' => 'required|string',
             'status' => 'required|in:active,inactive',
         ], [
-            'quiz_id.required' => __('messages.quiz_required'), // Sửa message
-            'quiz_id.exists' => __('messages.quiz_not_found'), // Sửa message khi không tồn tại
+            'quiz_id.required' => __('messages.quiz_id_required'),
+            'quiz_id.exists' => __('messages.quiz_id_invalid'),
             'question.required' => __('messages.question_required'),
             'options.required' => __('messages.options_required'),
+            'options.array' => __('messages.options_invalid_format'), // Thông báo nếu options không phải là mảng
             'answer.required' => __('messages.answer_required'),
             'status.required' => __('messages.status_required'),
             'status.in' => __('messages.status_invalid'),
@@ -125,39 +98,46 @@ class QuestionController extends Controller
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
-
-        $maxOrder = Question::where('quiz_id', $request->quiz_id)->max('order') ?? 0;
 
         $question = new Question();
         $question->quiz_id = $request->quiz_id;
         $question->question = $request->question;
-        $question->options = $request->options;
+        $question->options = $request->options; // Encode mảng options thành JSON
         $question->answer = $request->answer;
         $question->status = $request->status;
-        $question->order = $request->order ?? $maxOrder + 1; // Lấy order lớn nhất + 1 nếu không nhập
-        $question->created_by = auth()->id();
+
+        $maxOrder = Question::where('quiz_id', $request->quiz_id)->max('order');
+        $question->order = ($maxOrder) ? $maxOrder + 1 : 1;
+
+        $question->created_by = $user->id;
         $question->save();
+
+        // Decode options để trả về dữ liệu thân thiện
+        // $question->options = json_decode($question->options);
 
         return formatResponse(STATUS_OK, $question, '', __('messages.question_create_success'));
     }
 
-
-    // Cập nhật câu hỏi
-    public function update(Request $request, $id)
+    public function update(Request $request, $questionId)
     {
-        $question = Question::find($id);
+        $question = Question::find($questionId);
+
         if (!$question) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.question_not_found'));
         }
 
         $validator = Validator::make($request->all(), [
+            'quiz_id' => 'required|exists:quizzes,id',
             'question' => 'required|string',
-            'options' => 'required|json',
+            'options' => 'required|array', // Kiểm tra options là một mảng
             'answer' => 'required|string',
             'status' => 'required|in:active,inactive',
         ], [
+            'quiz_id.required' => __('messages.quiz_id_required'),
+            'quiz_id.exists' => __('messages.quiz_id_invalid'),
             'question.required' => __('messages.question_required'),
             'options.required' => __('messages.options_required'),
+            'options.array' => __('messages.options_invalid_format'), // Thông báo nếu options không phải là mảng
             'answer.required' => __('messages.answer_required'),
             'status.required' => __('messages.status_required'),
             'status.in' => __('messages.status_invalid'),
@@ -167,55 +147,140 @@ class QuestionController extends Controller
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
 
+        $question->quiz_id = $request->quiz_id;
         $question->question = $request->question;
-        $question->options = $request->options;
+        $question->options = $request->options; // Encode mảng options thành JSON
         $question->answer = $request->answer;
         $question->status = $request->status;
-        $question->order = $request->order ?? $question->order;
-        $question->updated_by = auth()->id();
+        $question->updated_by = auth()->user()->id;
+
         $question->save();
+
+        // Decode options để trả về dữ liệu thân thiện
+        // $question->options = json_decode($question->options);
 
         return formatResponse(STATUS_OK, $question, '', __('messages.question_update_success'));
     }
 
-    // Xóa mềm câu hỏi
-    public function destroy($id)
+
+    public function updateQuestionAttributes(Request $request, $id)
     {
+        // Tìm câu hỏi cần cập nhật
         $question = Question::find($id);
         if (!$question) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.question_not_found'));
         }
 
-        $question->deleted_by = auth()->id();
-        $question->save();
-        $question->delete();
+        // Cập nhật quiz_id nếu có
+        if ($request->has('quiz_id')) {
+            $quizId = (int)$request->input('quiz_id');
+            $quiz = Quiz::find($quizId);
+            if (!$quiz) {
+                return formatResponse(STATUS_FAIL, '', '', __('messages.quiz_not_found'));
+            }
+            $question->quiz_id = $quizId;
+        }
 
-        return formatResponse(STATUS_OK, $question, '', __('messages.question_soft_delete_success'));
+        // Cập nhật trạng thái nếu có
+        if ($request->has('status')) {
+            $status = $request->input('status');
+            if (!in_array($status, ['active', 'inactive'])) {
+                return formatResponse(STATUS_FAIL, '', '', __('messages.invalid_status'));
+            }
+            $question->status = $status;
+        }
+
+        // Lưu các thay đổi
+        $question->save();
+        // $question->options = json_decode($question->options);
+
+        return formatResponse(STATUS_OK, $question, '', __('messages.question_update_success'));
     }
 
-    // Khôi phục câu hỏi
-    public function restore($id)
+    public function showQuestionsByQuiz($quizId)
     {
-        $question = Question::onlyTrashed()->find($id);
+        // Lấy tất cả các câu hỏi thuộc quiz
+        $questions = Question::where('quiz_id', $quizId)
+            ->whereNull('deleted_at') // Lọc các câu hỏi chưa bị xóa
+            ->orderBy('order', 'asc') // Sắp xếp theo order tăng dần
+            ->get();
+
+        // Trả về danh sách câu hỏi
+        return formatResponse(STATUS_OK, $questions, '', __('messages.questions_fetch_success'));
+    }
+    public function updateQuestionOrder(Request $request)
+    {
+        // Lấy dữ liệu từ request
+        $sortedQuestions = $request->input('sorted_questions');
+
+        // Kiểm tra nếu không có 'sorted_questions' hoặc không phải là mảng
+        if (!$sortedQuestions || !is_array($sortedQuestions)) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.invalid_data_format'));
+        }
+
+        // Duyệt qua từng item trong mảng data và cập nhật lại order cho từng câu hỏi
+        foreach ($sortedQuestions as $item) {
+            // Kiểm tra nếu phần tử không có id hoặc order
+            if (!isset($item['id']) || !isset($item['order'])) {
+                continue; // Bỏ qua phần tử không hợp lệ
+            }
+
+            // Cập nhật order cho câu hỏi
+            $question = Question::find($item['id']);
+            if ($question) {
+                $question->order = $item['order']; // Cập nhật order mới
+                $question->save();
+            }
+        }
+
+        // Trả về phản hồi thành công
+        return formatResponse(STATUS_OK, '', '', __('messages.questions_order_update_success'));
+    }
+
+
+
+    public function destroy($id)
+    {
+        $question = Question::find($id);
+
         if (!$question) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.question_not_found'));
         }
 
-        $question->deleted_by = null;
+        $question->deleted_by = auth()->user()->id;
+        $question->delete();
+
+        $question = Question::onlyTrashed()->find($id);
+        // $question->options = json_decode($question->options);
+
+        return formatResponse(STATUS_OK, $question, '', __('messages.question_soft_delete_success'));
+    }
+
+    public function restore($id)
+    {
+        $question = Question::onlyTrashed()->find($id);
+
+        if (!$question) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.question_not_found'));
+        }
+
+        $question->deleted_by = auth()->user()->id;
         $question->restore();
+        // $question->options = json_decode($question->options);
 
         return formatResponse(STATUS_OK, $question, '', __('messages.question_restore_success'));
     }
 
-    // Xóa vĩnh viễn câu hỏi
     public function forceDelete($id)
     {
         $question = Question::onlyTrashed()->find($id);
+
         if (!$question) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.question_not_found'));
         }
 
         $question->forceDelete();
+        // $question->options = json_decode($question->options);
 
         return formatResponse(STATUS_OK, $question, '', __('messages.question_force_delete_success'));
     }
