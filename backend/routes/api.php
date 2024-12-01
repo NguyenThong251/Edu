@@ -183,14 +183,20 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('quizzes', [QuizController::class, 'getListAdmin'])->name('quizzes.getListAdmin');
             Route::get('quizzes/edit-form/{id}', [QuizController::class, 'editForm'])->name('quizzes.editForm');
 
-
-
             Route::post('questions', [QuestionController::class, 'store'])->name('questions.store');
-            Route::get('questions/{id}', [QuestionController::class, 'editForm'])->name('questions.editForm');
+            Route::get('questions/{id}', [QuestionController::class, 'show'])->name('questions.show');
             Route::put('questions/{id}', [QuestionController::class, 'update'])->name('questions.update');
             Route::get('questions/restore/{id}', [QuestionController::class, 'restore'])->name('questions.restore');
             Route::delete('questions/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
-            Route::delete('questions/permanent-delete/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+            Route::delete('questions/permanent-delete/{id}', [QuestionController::class, 'forceDelete'])->name('questions.destroy');
+            Route::patch('questions/{id}/status', [QuestionController::class, 'updateQuestionAttributes'])->name('questions.updateStatus');
+            Route::patch('questions/{id}/quiz', [QuestionController::class, 'updateQuestionAttributes'])->name('questions.updateQuestion');
+            Route::get('questions', [QuestionController::class, 'getListAdmin'])->name('questions.getListAdmin');
+            Route::get('questions/edit-form/{id}', [QuestionController::class, 'editForm'])->name('questions.editForm');
+            Route::get('show-question-of-quiz/{id}', [QuestionController::class, 'showQuestionsByQuiz'])->name('questions.showQuestionOfQuiz');
+            Route::put('sort-question-of-quiz', [QuestionController::class, 'updateQuestionOrder'])->name('questions.updateOrder');
+
+
 
             Route::get('instructor/course', [InstructorController::class, 'getListCourses']);
             Route::get('instructor/report', [InstructorController::class, 'getReport']);
