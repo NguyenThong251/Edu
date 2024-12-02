@@ -93,6 +93,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::post('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+            Route::put('categories/{id}/status', [CategoryController::class, 'updateStatus'])->name('categories.updateStatus');
             Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
             Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
