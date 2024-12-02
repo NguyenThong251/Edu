@@ -65,12 +65,22 @@ class StudyController extends Controller
             ->get()
             ->map(function ($course) use ($userId) {
                 // Lấy tổng số lecture của course qua Section và Lecture
-                $totalLectures = Lecture::where('status', 'active')
+
+                $totalQuizzes = Quiz::where('status', 'active')
+                ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
+                ->count();
+                $totalLectures =$totalQuizzes + Lecture::where('status', 'active')
                     ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
                     ->count();
-
+                
+                $completedQuizzes = ProgressQuiz::where('user_id', $userId)
+                ->where('percent', '>=', 100) // Thêm điều kiện percent >= 100
+                ->whereIn('quiz_id', Quiz::where('status', 'active')
+                    ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
+                    ->pluck('id'))
+                ->count();
                 // Lấy số lượng lecture đã hoàn thành trong ProgressLecture
-                $completedLectures = ProgressLecture::where('user_id', $userId)
+                $completedLectures =$completedQuizzes+ ProgressLecture::where('user_id', $userId)
                     ->where('percent', '>=', 100) // Thêm điều kiện percent >= 100
                     ->whereIn('lecture_id', Lecture::where('status', 'active')
                         ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
