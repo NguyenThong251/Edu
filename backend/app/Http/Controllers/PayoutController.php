@@ -15,6 +15,7 @@ use Stripe\Exception\ApiErrorException;
 use Stripe\Payout;
 use Stripe\Stripe;
 use Stripe\Webhook;
+use Stripe\Checkout\Session as StripeSession;
 
 class PayoutController extends Controller
 {
@@ -68,6 +69,7 @@ class PayoutController extends Controller
         return formatResponse('OK', [
             'pendingPayouts' => $pendingPayouts,
             'totalRevenue' => $totalRevenue,
+            'availablePayout' => $totalRevenue * 0.7 - $pendingPayouts,
             'moneyReceived' => $moneyReceived,
         ]);
     }
@@ -76,7 +78,8 @@ class PayoutController extends Controller
     public function requestPayout(Request $request)
     {
 
-        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+//        Stripe::setApiKey(env('STRIPE_SECRET'));
+//        Stripe::setApiKey(config('services.stripe.secret'));
 
 ////        $balance = \Stripe\Balance::retrieve();
 //        $charge = \Stripe\Charge::create([
@@ -139,10 +142,8 @@ class PayoutController extends Controller
 
     private function calculateAvailableBalance($userId)
     {
-//        var_dump($userId); die;
-
         //Tính từ tổng doanh thu đã bán - đã rút
-        $totalRevenue = \App\Models\Order::join('order_items', 'orders.id', '=', 'order_items.order_id')
+        $totalRevenue = Order::join('order_items', 'orders.id', '=', 'order_items.order_id')
             ->join('courses', 'order_items.course_id', '=', 'courses.id')
             ->where('courses.created_by', $userId)
             ->where('orders.payment_status', 'paid')
@@ -150,11 +151,9 @@ class PayoutController extends Controller
             ->whereNull('order_items.deleted_at')
             ->sum('order_items.price');
 
-
         // phần trăm giáo viên 70%
         $sharePercentage = 70;
         $availableBalance = ($totalRevenue * $sharePercentage) / 100;
-
 
         // Trừ đi các yêu cầu rút tiền đã được duyệt nhưng chưa hoàn thành
         $pendingPayouts = PayoutRequest::where('user_id', $userId)
@@ -166,60 +165,96 @@ class PayoutController extends Controller
     //admin xử lý
     public function processPayout(Request $request, $id)
     {
-//        $admin = Auth::user();
         // Tìm yêu cầu rút tiền
         $payoutRequest = PayoutRequest::find($id);
         if (!$payoutRequest) {
-            return formatResponse(STATUS_FAIL, '', '', __('messages.payout_request_not_found'), 404);
+            return response()->json([
+                'status' => 'FAIL',
+                'data' => '',
+                'error' => __('messages.payout_request_not_found'),
+                'message' => __('messages.payout_request_not_found'),
+                'code' => 404
+            ], 404);
         }
 
         if ($payoutRequest->status !== 'pending') {
-            return formatResponse(STATUS_FAIL, '', '', __('messages.payout_request_not_pending'), 400);
+            return response()->json([
+                'status' => 'FAIL',
+                'data' => '',
+                'error' => __('messages.payout_request_not_pending'),
+                'message' => __('messages.payout_request_not_pending'),
+                'code' => 400
+            ], 400);
         }
 
         // Lấy phương thức thanh toán của user (Stripe nếu có)
-        $paymentMethod = PaymentMethod::where('user_id', $payoutRequest->user_id)
-            ->where('type', 'stripe')
-            ->where('status', 'active')
+        $paymentMethod = PaymentMethod::join('users', 'payment_methods.user_id', '=', 'users.id')
+            ->where('payment_methods.user_id', $payoutRequest->user_id)
+            ->where('payment_methods.type', 'stripe')
+            ->where('payment_methods.status', 'active')
+            ->select('payment_methods.*', 'users.first_name', 'users.last_name')
             ->first();
 
         if (!$paymentMethod) {
-            return formatResponse(STATUS_FAIL, '', '', __('messages.stripe_not_linked'), 400);
+            return response()->json([
+                'status' => 'FAIL',
+                'data' => '',
+                'error' => __('messages.stripe_not_linked'),
+                'message' => __('messages.stripe_not_linked'),
+                'code' => 400
+            ], 400);
         }
 
-        // Thực hiện payout qua Stripe
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey(config('services.stripe.secret'));
 
         try {
-            // Tạo payout trên Stripe
-            $stripePayout = Payout::create([
-                'amount' => $payoutRequest->amount * 100, // Stripe yêu cầu tính bằng cents
-                'currency' => $payoutRequest->currency,
-                'description' => 'Payout for user ID: ' . $payoutRequest->user_id,
+            // Tạo Stripe Checkout Session
+            $session = StripeSession::create([
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => $payoutRequest->currency,
+                        'product_data' => [
+                            'name' => 'Payout for User: ' . $paymentMethod->first_name . " " . $paymentMethod->last_name,
+                        ],
+                        'unit_amount' => $payoutRequest->amount = ($payoutRequest->currency === 'usd') ? $payoutRequest->amount * 100 : $payoutRequest->amount, // Tính bằng cents
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => config('services.frontend_url') . 'payout/process-request/success',
+                'cancel_url' => config('services.frontend_url') . 'payout/process-request/cancel',
                 'metadata' => [
+                    'type' => 'payout',
                     'payout_request_id' => $payoutRequest->id,
                 ],
-            ], [
-                'stripe_account' => $paymentMethod->details['stripe_account_id'],
             ]);
 
-            // Cập nhật yêu cầu rút tiền với thông tin Stripe
             $payoutRequest->update([
                 'status' => 'processing',
-                'reason' => null, // Reset lý do nếu có
             ]);
 
-            return formatResponse(STATUS_OK, $payoutRequest, '', __('messages.payout_processing'), 200);
-        } catch (ApiErrorException $e) {
-            // Cập nhật trạng thái yêu cầu rút tiền nếu có lỗi
-            $payoutRequest->update([
-                'status' => 'failed',
-                'reason' => $e->getMessage(),
-            ]);
-
-            return formatResponse(STATUS_FAIL, '', 'Stripe Error: ' . $e->getMessage(), __('messages.payout_failed'), 500);
+            return response()->json([
+                'status' => 'SUCCESS',
+                'data' => [
+                    'transaction_link' => $session->url,
+                    'payout_request' => $payoutRequest,
+                ],
+                'message' => __('messages.payout_processing'),
+                'code' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Stripe Checkout Session Error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'FAIL',
+                'data' => '',
+                'error' => 'Stripe Error: ' . $e->getMessage(),
+                'message' => __('messages.payout_failed'),
+                'code' => 500
+            ], 500);
         }
     }
+
 
     //admin
     public function listPayoutRequests(Request $request)
@@ -233,54 +268,58 @@ class PayoutController extends Controller
     }
 
 
-    public function handleWebhook(Request $request)
-    {
-        $payload = $request->getContent();
-        $sigHeader = $request->header('Stripe-Signature');
-        $endpointSecret = env('STRIPE_WEBHOOK_SECRET');
-
-        try {
-            $event = Webhook::constructEvent($payload, $sigHeader, $endpointSecret);
-        } catch (\UnexpectedValueException $e) {
-            // Invalid payload
-            return response()->json(['message' => 'Invalid payload'], 400);
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
-            // Invalid signature
-            return response()->json(['message' => 'Invalid signature'], 400);
-        }
-
-        // Xử lý sự kiện
-        if ($event->type === 'payout.paid' || $event->type === 'payout.failed') {
-            $payout = $event->data->object; // StripePayout object
-
-            // Lấy payout_request_id từ metadata
-            $payoutRequestId = $payout->metadata->payout_request_id ?? null;
-
-            if ($payoutRequestId) {
-                $payoutRequest = PayoutRequest::find($payoutRequestId);
-
-                if ($payoutRequest) {
-                    if ($event->type === 'payout.paid') {
-                        $payoutRequest->update([
-                            'status' => 'completed',
-                            'reason' => null,
-                        ]);
-                    } elseif ($event->type === 'payout.failed') {
-                        $payoutRequest->update([
-                            'status' => 'failed',
-                            'reason' => $payout->failure_code ?? 'Unknown error',
-                        ]);
-                    }
-                } else {
-                    Log::warning('PayoutRequest not found for payout_request_id: ' . $payoutRequestId);
-                }
-            } else {
-                Log::warning('payout_request_id not found in payout metadata.');
-            }
-        }
-
-        // Xử lý các sự kiện khác nếu cần
-
-        return response()->json(['message' => 'Webhook handled'], 200);
-    }
+//    public function handleWebhook(Request $request)
+//    {
+//        $payload = $request->getContent();
+//        $sig_header = $request->header('Stripe-Signature');
+//        $endpoint_secret = config('services.stripe.webhook_secret');
+//
+//        try {
+//            $event = Webhook::constructEvent(
+//                $payload, $sig_header, $endpoint_secret
+//            );
+//        } catch (\UnexpectedValueException $e) {
+//            // Invalid payload
+//            return response()->json(['error' => 'Invalid payload'], 400);
+//        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+//            // Invalid signature
+//            return response()->json(['error' => 'Invalid signature'], 400);
+//        }
+//
+//        // Xử lý sự kiện
+//        switch ($event->type) {
+//            case 'checkout.session.completed':
+//                $session = $event->data->object;
+//
+//                // Lấy payout_request_id từ metadata
+//                $payoutRequestId = $session->metadata->payout_request_id;
+//                $payoutRequest = PayoutRequest::find($payoutRequestId);
+//
+//                if ($payoutRequest && $payoutRequest->status == 'processing') {
+//                    $payoutRequest->update([
+//                        'status' => 'paid',
+////                        'transaction_id' => $session->payment_intent, // Hoặc thông tin liên quan khác
+//                    ]);
+//                }
+//                break;
+//
+//            case 'checkout.session.expired':
+//                $session = $event->data->object;
+//                $payoutRequestId = $session->metadata->payout_request_id;
+//                $payoutRequest = PayoutRequest::find($payoutRequestId);
+//
+//                if ($payoutRequest && $payoutRequest->status == 'processing') {
+//                    $payoutRequest->update([
+//                        'status' => 'failed',
+//                        'reason' => 'Checkout session expired',
+//                    ]);
+//                }
+//                break;
+//
+//            // Xử lý các sự kiện khác nếu cần
+//            default:
+//                Log::info('Unhandled event type ' . $event->type);
+//        }
+//        return response()->json(['status' => 'success'], 200);
+//    }
 }

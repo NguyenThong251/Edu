@@ -8,7 +8,12 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use PHPUnit\Exception;
+use Stripe\Balance;
+use Stripe\Charge;
+use Stripe\Exception\ApiErrorException;
 use Stripe\OAuth;
 use Stripe\Stripe;
 
@@ -17,16 +22,6 @@ class PaymentMethodController extends Controller
     public function linkStripe()
     {
         $user = Auth::user();
-
-//        // Kiểm tra xem người dùng đã có phương thức Stripe chưa
-//        $existingStripe = PaymentMethod::where('user_id', $user->id)
-//            ->where('type', 'stripe')
-//            ->where('status', 'active')
-//            ->first();
-//
-//        if ($existingStripe) {
-//            return formatResponse(STATUS_FAIL, '', '', __('messages.stripe_already_linked'));
-//        }
 
         // Tạo payload cho JWT
         $payload = [
@@ -46,24 +41,29 @@ class PaymentMethodController extends Controller
      */
     public function handleStripeCallback(Request $request)
     {
+        $redirectUrl = env('URL_DOMAIN') . "/teacher/payment-method";
+
         $code = $request->input('code');
         $state = $request->input('state');
 
         if (!$code || !$state) {
-            return formatResponse(STATUS_FAIL, '', '', __('messages.stripe_invalid_code'));
+            return redirect($redirectUrl . "/fail");
+//            return formatResponse(STATUS_FAIL, '', '', __('messages.stripe_invalid_code'));
         }
-
         try {
             $decoded = JWT::decode($state, new Key(env('JWT_SECRET'), 'HS256'));
             $user = User::find($decoded->user_id);
             if (!$user) {
-                return formatResponse(STATUS_FAIL, '', '', 'user_not_found');
+                return redirect($redirectUrl . "/fail");
+//                return formatResponse(STATUS_FAIL, '', '', 'user_not_found');
             }
             if ($decoded->exp < now()->timestamp) {
-                return formatResponse(STATUS_FAIL, '', '', 'stripe_state_expired');
+                return redirect($redirectUrl . "/fail");
+//                return formatResponse(STATUS_FAIL, '', '', 'stripe_state_expired');
             }
         } catch (\Exception $e) {
-            return formatResponse(STATUS_FAIL, '', $e->getMessage(), 'stripe_invalid_state');
+            return redirect($redirectUrl . "/fail");
+//            return formatResponse(STATUS_FAIL, '', $e->getMessage(), 'stripe_invalid_state');
         }
 
         Stripe::setApiKey(env('STRIPE_SECRET'));
@@ -79,7 +79,8 @@ class PaymentMethodController extends Controller
                 ->where('status', 'active')
                 ->first();
             if ($existingStripe) {
-                return formatResponse(STATUS_FAIL, '', '', __('messages.stripe_already_linked'));
+                return redirect($redirectUrl . "/fail");
+//                return formatResponse(STATUS_FAIL, '', '', __('messages.stripe_already_linked'));
             }
 
             PaymentMethod::create([
@@ -94,9 +95,11 @@ class PaymentMethodController extends Controller
                 'account_info_number' => $response->stripe_user_id,
                 'status' => 'active',
             ]);
-            return formatResponse(STATUS_OK, '', '', 'Stripe account linked successfully.');
+            return redirect($redirectUrl . "/success");
+//            return formatResponse(STATUS_OK, '', '', 'Stripe account linked successfully.');
         } catch (\Exception $e) {
-            return formatResponse(STATUS_FAIL, '', $e->getMessage(), __('messages.stripe_link_fail'));
+            return redirect($redirectUrl . "/fail");
+//            return formatResponse(STATUS_FAIL, '', $e->getMessage(), __('messages.stripe_link_fail'));
         }
     }
 
@@ -156,4 +159,72 @@ class PaymentMethodController extends Controller
         $paymentMethod->delete();
         return formatResponse(STATUS_OK, '', '', __('messages.payment_method_deleted'));
     }
+
+//    public function test()
+//    {
+//        Stripe::setApiKey(config('services.stripe.secret'));
+//
+//        try {
+//            $balance = Balance::retrieve();
+//            // Hiển thị thông tin số dư
+//            return response()->json([
+//                'status' => 'SUCCESS',
+//                'data' => $balance,
+//                'message' => 'Balance retrieved successfully',
+//                'code' => 200
+//            ], 200);
+//        } catch (\Exception $e) {
+//            Log::error('Stripe Balance Error: ' . $e->getMessage());
+//            return response()->json([
+//                'status' => 'FAIL',
+//                'data' => '',
+//                'error' => 'Stripe Error: ' . $e->getMessage(),
+//                'message' => __('messages.balance_retrieval_failed'),
+//                'code' => 500
+//            ], 500);
+//        }
+
+//        // Thông tin giao dịch thử nghiệm
+//        $amount = 5000; // Số tiền (ví dụ: 2000 = $20.00)
+//        $currency = 'usd';
+//        $source = 'tok_visa'; // Token test của Stripe
+//        $description = 'Test Transaction nèeeeeeeee';
+//        $connectedAccountId = 'acct_1Example12345'; // Thay bằng Account ID của bạn
+//
+//        try {
+//            // Tạo một Charge trên tài khoản chủ (Platform)
+//            $charge = Charge::create([
+//                'amount' => $amount,
+//                'currency' => $currency,
+//                'source' => $source,
+//                'description' => $description,
+//                'on_behalf_of' => "acct_1QOXVvCzrOkmIPq4", // Đảm bảo tiền được định cư tại tài khoản kết nối
+//                'transfer_data' => [
+//                    'destination' => "acct_1QOXVvCzrOkmIPq4",
+//                ],
+//            ]);
+//
+//            // Trả về kết quả thành công
+//            return response()->json([
+//                'status' => 'success',
+//                'charge_id' => $charge->id,
+//                'amount' => $charge->amount,
+//                'currency' => $charge->currency,
+//                'description' => $charge->description,
+//                'destination_account' => $connectedAccountId,
+//            ], 200);
+//
+//
+//        } catch (ApiErrorException $e) {
+//            // Ghi log lỗi để dễ dàng debug
+//            Log::error('Stripe Charge Error: ' . $e->getMessage());
+//
+//            // Trả về kết quả lỗi
+//            return response()->json([
+//                'status' => 'fail',
+//                'message' => 'Giao dịch thất bại: ' . $e->getMessage(),
+//            ], 500);
+//        }
+//    }
+
 }
