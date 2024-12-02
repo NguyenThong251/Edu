@@ -278,7 +278,7 @@ Route::get('course-levels/{id}', [CourseLevelController::class, 'show'])->name('
 
 Route::get('languages', [LanguageController::class, 'index'])->name('languages.index');
 Route::get('languages/{id}', [LanguageController::class, 'show'])->name('languages.show');
-
+Route::get('vouchers/list-vouchers-admin', [VoucherController::class, 'getListAdmin']);
 Route::get('courses', [CourseController::class, 'search'])->name('courses.search');
 Route::get('courses/{id}', [CourseController::class, 'detail'])->name('courses.detail');
 Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses'])->name('courses.getPopularCourses');
