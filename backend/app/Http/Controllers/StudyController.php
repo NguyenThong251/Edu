@@ -611,11 +611,15 @@ class StudyController extends Controller
             }
         }
 
-        $course = Course::where('id', $courseId)
+        $course = Course::with('creator')
+            ->where('id', $courseId)
             ->where('status', 'active')
             ->first();
         $responseData = [
             'created_by' => $course->created_by,
+            'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
+                ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
+                : ''),
             'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
@@ -839,11 +843,15 @@ class StudyController extends Controller
         $totalContentDone = $data['total_lecture_done'];
         $progress = $data['progress_percent'];
 
-        $course = Course::where('id', $courseId)
+        $course = Course::with('creator')
+            ->where('id', $courseId)
             ->where('status', 'active')
             ->first();
         $responseData = [
             'created_by' => $course->created_by,
+            'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
+                ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
+                : ''),
             'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
