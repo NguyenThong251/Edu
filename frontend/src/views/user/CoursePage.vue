@@ -139,10 +139,11 @@ import UserCourseFilter from '@/components/user/UserCourseFilter.vue';
 import UserHero2 from '@/components/user/UserHero2.vue';
 import UserNewsLetter from '@/components/user/UserNewsLetter.vue';
 import { UsersIcon, FunnelIcon } from "@heroicons/vue/24/outline";
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 const fillter = ref(false)
 import { useFilter } from '@/composables/user/useFilter';
 import { useShop } from '@/composables/user/useShop';
+import { useRoute } from 'vue-router';
 // const { fetchCate } = useHome()
 const { coursesFilterSection, activeFilter, fetchCoursesSection, changeFilter } = useShop()
 const { fetchCourseFilter, coursesFilter, noProduct, lastPage, totalCourses, currentPage, paginationLinks, perPageData } = useFilter();
@@ -151,7 +152,17 @@ const handlePageChange = (newPage: number) => {
     currentPage.value = newPage;
     fetchCourseFilter(currentPage.value, pageSize, perPageData.value, {}); // Truyền filters nếu có
 };
+// const route = useRoute();
+// const fetchCourses = async () => {
+//     const categoryId = route.query.category_id ? Number(route.query.category_id) : null;
+//     const filters = categoryId ? { category_ids: [categoryId] } : {}; // Áp dụng bộ lọc theo danh mục
+//     await fetchCourseFilter(currentPage.value, 0, perPageData.value, filters);
+// };
+
+// Theo dõi sự thay đổi của `category_id` trong `query`
+// watch(() => route.query.category_id, fetchCourses, { immediate: true });
 onMounted(() => {
+    // fetchCourses();
     fetchCoursesSection(activeFilter.value)
     fetchCourseFilter(currentPage.value, pageSize, perPageData.value, {}); // Truyền filters nếu có
 });

@@ -32,9 +32,10 @@
                         <UserCourseOption :contents="course.course_contents" />
                     </el-tab-pane>
                     <el-tab-pane label="Đánh giá" name="reviews">
-                        <UserCourseReview :reviews="course.reviews.review_list"
+                        <UserCourseReview :id="course.id" :reviews="course.reviews.review_list"
                             :totalReviews="course.reviews.total_reviews" :averageRating="course.reviews.average_rating"
-                            :ratingPercentages="course.reviews.rating_percentages" />
+                            :ratingPercentages="course.reviews.rating_percentages"
+                            :created_at="course.reviews.created_at" />
                     </el-tab-pane>
                     <el-tab-pane label="Giảng viên" name="lecturer">
                         <UserCourseLecturer :rate="course.instructor.average_rating"
@@ -159,7 +160,6 @@ import CardCourse from '@/components/ui/card/CardCourse.vue';
 import { useCart } from '@/composables/user/useCart';
 import VideoCourse from '@/components/ui/video/VideoCourse.vue';
 import VideoFreeItem from '@/components/ui/video/VideoFreeItem.vue';
-
 const activeTab = ref('description');
 const outerVisible = ref(false);
 const route = useRoute();

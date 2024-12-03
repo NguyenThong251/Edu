@@ -87,12 +87,12 @@ const menuGroups = ref<MenuGroup[]>([
         label: 'Người dùng',
         route: '/admin/user',
       },
-      {
-        icon: ChatBubbleLeftRightIcon,
-        label: 'Tin nhắn',
-        route: '/admin/message',
-      }
-      ,
+      // {
+      //   icon: ChatBubbleLeftRightIcon,
+      //   label: 'Tin nhắn',
+      //   route: '/admin/message',
+      // }
+      // ,
       {
         icon: TicketIcon,
         label: 'Mã giảm giá',
@@ -202,11 +202,18 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
         icon: ChatBubbleLeftRightIcon,
         label: 'Tin nhắn',
         route: '/teacher/message',
-      },
+      }
+      ,
       {
-        icon: CreditCardIcon,
+        icon: BanknotesIcon,
         label: 'Rút tiền',
         route: '/teacher/payment',
+      }
+      ,
+      {
+        icon: CreditCardIcon,
+        label: 'Phương thức thanh toán',
+        route: '/teacher/payment-method',
       }
 
     ]

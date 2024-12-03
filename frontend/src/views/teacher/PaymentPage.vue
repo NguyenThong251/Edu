@@ -10,16 +10,20 @@
         <!-- Tổng quan -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-5">
             <div class="bg-white p-5 shadow rounded-lg flex flex-col items-center justify-center">
-                <h2 class="text-2xl font-bold text-indigo-500">96</h2>
+                <h2 class="text-2xl font-bold text-indigo-500">{{ state.dataReportPayment.moneyReceived }}</h2>
                 <p class="text-gray-600">Tiền đã nhận</p>
             </div>
             <div class="bg-white p-5 shadow rounded-lg flex flex-col items-center justify-center">
-                <h2 class="text-2xl font-bold text-indigo-500">96</h2>
+                <h2 class="text-2xl font-bold text-indigo-500">{{ state.dataReportPayment.totalRevenue }}</h2>
                 <p class="text-gray-600">Tổng thu nhập</p>
             </div>
             <div class="bg-white p-5 shadow rounded-lg flex flex-col items-center justify-center">
-                <h2 class="text-2xl font-bold text-indigo-500">96</h2>
+                <h2 class="text-2xl font-bold text-indigo-500">{{ state.dataReportPayment.pendingPayouts }}</h2>
                 <p class="text-gray-600">Tiền đang yêu cầu</p>
+            </div>
+            <div class="bg-white p-5 shadow rounded-lg flex flex-col items-center justify-center">
+                <h2 class="text-2xl font-bold text-indigo-500">{{ state.dataReportPayment.availablePayout }}</h2>
+                <p class="text-gray-600">Số tiền có thể rút</p>
             </div>
         </div>
 
@@ -35,100 +39,140 @@
             </div>
 
             <!-- Bảng -->
-            <el-table :data="tableData" stripe class="mt-5" style="width: 100%">
+            <el-table :data="state.listPayout" stripe class="mt-5" style="width: 100%">
                 <el-table-column prop="id" label="#" width="50" />
-                <el-table-column prop="amount" label="Số tiền rút" />
-                <el-table-column prop="requestDate" label="Ngày yêu cầu" />
-                <el-table-column prop="paymentDate" label="Ngày thanh toán" />
+                <el-table-column prop="amount" label="Số tiền rút">
+                    <template #default="{ row }">
+                        {{ formatPrice(row.amount) }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="Ngày yêu cầu">
+                    <template #default="{ row }">
+                        {{ formatDate(row.created_at) }}
+                    </template>
+                </el-table-column>
                 <el-table-column prop="status" label="Trạng thái">
-                    <template #default="scope">
-                        <span v-if="scope.row.status === 'Đã thanh toán'"
-                            class="bg-green-100 text-green-600 px-3 py-1 rounded-md">
-                            {{ scope.row.status }}
+                    <template #default="{ row }">
+                        <span v-if="row.status === 'pending'" class="bg-red-100 text-red-600 px-3 py-1 rounded-md">
+                            Chưa giải quyết
                         </span>
-                        <span v-else class="bg-red-100 text-red-600 px-3 py-1 rounded-md">
-                            {{ scope.row.status }}
+                        <span v-else-if="row.status === 'processing'"
+                            class="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-md">
+
+                            Xử lý
+                        </span>
+                        <span v-else class="bg-green-100 text-green-600 px-3 py-1 rounded-md">
+                            Đã thanh toán
                         </span>
                     </template>
                 </el-table-column>
             </el-table>
+
         </div>
 
-        <!-- Modal Rút Tiền -->
-        <el-dialog title="Yêu cầu rút tiền" v-model="isWithdrawModalVisible" width="500px">
-            <div class="space-y-4">
-                <el-form ref="withdrawForm" :model="withdrawForm" :rules="rules" label-width="120px">
-                    <el-form-item label="Số tiền rút" prop="amount">
-                        <el-input v-model="withdrawForm.amount" type="number" placeholder="Nhập số tiền muốn rút" />
-                    </el-form-item>
-                    <el-form-item label="Số tài khoản Stripe" prop="stripeAccount">
-                        <el-input v-model="withdrawForm.stripeAccount" placeholder="Nhập số tài khoản Stripe" />
-                    </el-form-item>
-                </el-form>
-            </div>
-            <template #footer>
-                <el-button @click="isWithdrawModalVisible = false">Hủy</el-button>
-                <el-button type="primary" @click="submitWithdrawForm">Xác nhận</el-button>
-            </template>
+
+        <el-dialog v-model="isWithdrawModalVisible" title="Yêu cầu Rút Tiền" width="500px">
+            <form @submit.prevent="submitWithdrawForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium">Số tiền muốn rút</label>
+                    <el-input v-model="withdrawForm.amount" type="number" placeholder="Nhập số tiền muốn rút" min="1"
+                        clearable />
+                </div>
+                <div class="flex justify-end mt-4">
+                    <el-button @click="isWithdrawModalVisible = false">Hủy</el-button>
+                    <el-button type="primary" native-type="submit">Xác nhận</el-button>
+                </div>
+            </form>
         </el-dialog>
     </div>
 </template>
-
 <script setup lang="ts">
-import { ref } from "vue";
+import { useTeacherStore } from "@/store/teacher";
+import { formatPrice } from "@/utils/formatPrice";
+import { ElMessage } from "element-plus";
+import { storeToRefs } from "pinia";
+import { computed, onMounted, ref } from "vue";
 
 // Modal và Form
 const isWithdrawModalVisible = ref(false);
 const withdrawForm = ref({
-    amount: '',
-    stripeAccount: ''
+    amount: '', // Số tiền cần rút
 });
 const rules = {
     amount: [{ required: true, message: 'Vui lòng nhập số tiền muốn rút', trigger: 'blur' }],
-    stripeAccount: [{ required: true, message: 'Vui lòng nhập số tài khoản Stripe', trigger: 'blur' }]
 };
-
-// Dữ liệu bộ lọc và bảng
+const formatDate = (date: string): string => {
+    if (!date) return "Không xác định";
+    const options: Intl.DateTimeFormatOptions = {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    };
+    return new Date(date).toLocaleDateString("vi-VN", options);
+};
+// Bộ lọc và dữ liệu bảng
 const filterDate = ref<[Date, Date] | null>(null);
-const tableData = ref([
-    {
-        id: 1,
-        amount: "234,000,000 vnd",
-        requestDate: "12/09/2024 - 11:00 pm",
-        paymentDate: "12/09/2024 - 11:00 pm",
-        status: "Đã thanh toán",
-    },
-    {
-        id: 2,
-        amount: "234,000,000 vnd",
-        requestDate: "12/09/2024 - 11:00 pm",
-        paymentDate: "12/09/2024 - 11:00 pm",
-        status: "Đang chờ xử lý",
-    },
-]);
 
-// Xử lý lọc
-const handleFilter = () => {
-    console.log("Lọc dữ liệu theo ngày:", filterDate.value);
-};
+// Store
+const teacherStore = useTeacherStore();
+const { state } = storeToRefs(teacherStore);
+const {
+    fetchReportTeacherPayment,
+    fetchListTeacherPayout,
+    requestPayout,
+} = teacherStore;
 
 // Hiển thị Modal Rút Tiền
 const handleWithdrawClick = () => {
     isWithdrawModalVisible.value = true;
 };
 
-// Xử lý Gửi Form Rút Tiền
-const submitWithdrawForm = () => {
-    const form = ref(null);
-    form.value?.validate((valid: boolean) => {
-        if (valid) {
-            console.log("Yêu cầu rút tiền thành công:", withdrawForm.value);
-            isWithdrawModalVisible.value = false;
-        } else {
-            console.error("Lỗi trong form.");
-        }
-    });
-};
-</script>
+// Gửi Form Rút Tiền
+const submitWithdrawForm = async () => {
+    const amount = parseFloat(withdrawForm.value.amount);
+    if (amount < 13000) {
+        ElMessage.error("Số tiền không đạt mức tối thiểu ₫13,000!")
+        return;
+    }
 
-<style scoped></style>
+    if (!amount || amount <= 0) {
+        console.error("Số tiền không hợp lệ!");
+        return;
+    }
+
+    try {
+        const data = {
+            amount,
+            currency: "vnd",
+        };
+        await requestPayout(data);
+        isWithdrawModalVisible.value = false;
+        withdrawForm.value.amount = '';
+    } catch (error: any) {
+        if (error?.response?.data?.error) {
+            const errorDetails = error.response.data.error;
+            if (errorDetails.amount) {
+                console.error(`Lỗi số tiền: ${errorDetails.amount[0]}`);
+            }
+            if (errorDetails.currency) {
+                console.error(`Lỗi tiền tệ: ${errorDetails.currency[0]}`);
+            }
+        } else {
+            console.error("Lỗi không xác định:", error);
+        }
+    }
+};
+
+const handleFilter = async () => {
+    const [startDate, endDate] = filterDate.value || [];
+    const params = {
+        start_date: startDate ? startDate.toISOString().split("T")[0] : undefined,
+        end_date: endDate ? endDate.toISOString().split("T")[0] : undefined,
+    };
+    await fetchListTeacherPayout(params);
+};
+onMounted(async () => {
+    await fetchReportTeacherPayment();
+    await fetchListTeacherPayout();
+});
+</script>

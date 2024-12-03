@@ -21,6 +21,7 @@ import Security from '@/views/user/Security.vue'
 import MyProfile from '@/views/user/MyProfile.vue'
 import Payment from '@/views/admin/Payment.vue'
 import Review from '@/views/admin/Review.vue'
+import ProcessRequest from '@/views/ProcessRequest.vue'
 const admin = [
   {
     path: '/admin',
@@ -185,6 +186,12 @@ const admin = [
         meta: { requiresAuth: true, role: 'admin', title: 'Đánh giá người dùng| Edunity' }
       }
     ]
+  },
+  {
+    path: '/payout/process-request/:status',
+    name: 'admin.process-request',
+    component: ProcessRequest,
+    meta: { requiresAuth: true, role: 'admin', title: 'Đánh giá người dùng| Edunity' }
   }
 ]
 export default admin

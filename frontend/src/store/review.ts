@@ -33,7 +33,7 @@ export const useReviewsStore = defineStore('reviews', () => {
   const fetchReviews = async (id: number) => {
     try {
       const response = await api.get(`/courses/${id}/reviews`)
-      state.value.listReview = response.data.reviews
+      state.value.listReview = response.data.data.data
     } catch (error) {
       console.log(error)
     }
@@ -41,7 +41,7 @@ export const useReviewsStore = defineStore('reviews', () => {
   const fetchReviewsDelete = async (id: number) => {
     try {
       const response = await api.get(`/auth/reviews/${id}/deleted`)
-      state.value.listReviewDelete = response.data.reviews
+      state.value.listReviewDelete = response.data.data.data
     } catch (error) {
       console.log(error)
     }
@@ -93,12 +93,16 @@ export const useReviewsStore = defineStore('reviews', () => {
       )
       const response = await api.post(`/auth/reviews/${idReview}/restore`)
       await fetchReviews(id)
+      await fetchReviewsDelete(id)
       ElMessage.success('Khôi phục đánh giá thành công!')
     } catch (error: any) {
       ElMessage.error(error.response.data.message)
     }
   }
-
+  const filterReview = async (id: number, params: any = {}) => {
+    const res = await api.get(`courses/${id}/reviews/filter`, { params })
+    state.value.listReview = res.data.data.data
+  }
   return {
     state,
     fetchReviews,
@@ -106,6 +110,7 @@ export const useReviewsStore = defineStore('reviews', () => {
     updateReview,
     deleteReview,
     restoreReview,
-    fetchReviewsDelete
+    fetchReviewsDelete,
+    filterReview
   }
 })

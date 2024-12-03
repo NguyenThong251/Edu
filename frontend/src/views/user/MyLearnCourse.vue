@@ -1,9 +1,9 @@
 <template>
   <main class="px-10 bg-indigo-100 py-10">
+    <h2 class="text-xl font-bold mb-3">{{ currentContent.title }}</h2>
     <div class="flex lg:flex-row  flex-col  gap-5">
       <div class="lg:w-4/6 w-full">
         <div v-if="currentContent && currentContent.title">
-          <h2 class="text-xl font-bold mb-3">{{ currentContent.title }}</h2>
         </div>
         <div class=" border-2 bg-white  p-5 rounded-2xl">
           <!-- <VideoCourse :src="videoUrl" /> -->
@@ -101,6 +101,11 @@
             <el-tab-pane label="Đánh giá" name="fourth">
               <UserFeedback :idCourse="idCourse" :listReview="state.listReview" />
             </el-tab-pane>
+            <el-tab-pane label="Hỗ trợ giảng viên" name="five">
+              <div class="">
+                <Button @click="startChat">Bắt đầu trò chuyện</Button>
+              </div>
+            </el-tab-pane>
           </el-tabs>
         </div>
       </div>
@@ -112,6 +117,10 @@
             <div class="flex flex-col gap-3">
               <h3 class="text-xl font-medium text-white">Danh sách chương học</h3>
               <el-progress :percentage="progress" status="success" />
+              <button @click="openChungChi" class="text-white bg-indigo-600 rounded-sm w-28 text-[12px] py-[2px] "
+                v-if="progress >= 100">Nhận
+                chứng
+                chỉ</button>
             </div>
 
           </header>
@@ -164,24 +173,35 @@
       </div>
     </div>
   </main>
+  <el-dialog v-model="isChungChiVisible" title="Chứng chỉ khóa học">
+
+
+    <div id="certificate">
+
+      <Certificate :courseName="currentContent.title" :issueDate="issueDate" :instructorName="studyCourse.creator" />
+    </div>
+    <div class="flex justify-end mt-5">
+      <Button variant="primary" @click="printCertificate">Print</Button>
+    </div>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
-import { PlayCircleIcon, CheckCircleIcon as CheckOuline, QuestionMarkCircleIcon, DocumentIcon } from "@heroicons/vue/24/outline";
-import { useRoute } from 'vue-router';
-import { useCourseStore } from '@/store/course';
-import { storeToRefs } from 'pinia';
-import type { TLesson } from '@/interfaces';
-import UserSearch from '@/components/user/mycourse/UserSearch.vue';
-import UserQuestion from '@/components/user/mycourse/UserQuestion.vue';
-import UserNote from '@/components/user/mycourse/UserNote.vue';
-import UserFeedback from '@/components/user/mycourse/UserFeedback.vue';
-import { useQuizStore } from '@/store/quiz';
-import confetti from "canvas-confetti";
 import Button from '@/components/ui/button/Button.vue';
-import VuePdf from "vue-pdf-next";
+import UserFeedback from '@/components/user/mycourse/UserFeedback.vue';
+import UserNote from '@/components/user/mycourse/UserNote.vue';
+import UserQuestion from '@/components/user/mycourse/UserQuestion.vue';
+import UserSearch from '@/components/user/mycourse/UserSearch.vue';
+import type { TLesson } from '@/interfaces';
+import { useCourseStore } from '@/store/course';
+import { useQuizStore } from '@/store/quiz';
 import { useReviewsStore } from '@/store/review';
+import { CheckCircleIcon as CheckOuline, DocumentIcon, PlayCircleIcon, QuestionMarkCircleIcon } from "@heroicons/vue/24/outline";
+import confetti from "canvas-confetti";
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import VuePdf from "vue-pdf-next";
+import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const idCourse = Number(route.params.id);
 const courseStore = useCourseStore();
@@ -189,11 +209,14 @@ const quizStore = useQuizStore();
 const { studyCourse, currentContent, allContent, progress } = storeToRefs(courseStore);
 const { fetchStudyCourse, changeContent } = courseStore;
 const reviewStore = useReviewsStore()
+
+
 const { fetchReviews } = reviewStore
 const { state } = storeToRefs(reviewStore)
 const activeName = ref("first")
 const videoElement = ref<HTMLVideoElement | null>(null);
 // PDF
+const issueDate = ref(new Date());
 const pdfViewerRef = ref(null);
 const learned = ref(0); // Biến lưu số giây đã học
 const isLearning = ref(false); // Trạng thái đang học
@@ -209,7 +232,7 @@ const startLearning = () => {
       if (learned.value >= duration.value) {
         updateLearned({ id: currentContent.value.id, learned: duration.value });
         clearInterval(timer); // Dừng timer
-        handleNextLesson();
+        // handleNextLesson();
       }
     }, 2000); // Mỗi giây tăng 1
   }
@@ -402,6 +425,53 @@ const handleReviewLesson = () => {
 const handleExitReviewLesson = () => {
   isReviewMode.value = false;
 };
+// chung chi
+const isChungChiVisible = ref(false);
+const openChungChi = () => {
+  isChungChiVisible.value = true;
+};
+
+
+import { ElNotification } from 'element-plus';
+import printJS from "print-js";
+import Certificate from '@/components/user/Certificate.vue';
+import { useMessageStore } from '@/store/message';
+const printCertificate = () => {
+  try {
+    printJS({
+      printable: "certificate", // ID của phần tử cần in
+      type: "html",
+      style: `
+        body {
+          font-family: Arial, sans-serif;
+          text-align: center;
+          margin: 0;
+          padding: 20px;
+        }
+        h2 {
+          font-size: 24px;
+          font-weight: bold;
+        }
+        p {
+          font-size: 14px;
+          margin: 10px 0;
+        }
+      `,
+    });
+  } catch (error) {
+    ElNotification({
+      title: "Lỗi",
+      message: "Không thể in chứng chỉ.",
+      type: "error",
+    });
+  }
+};
+const router = useRouter();
+const messageStore = useMessageStore();
+const startChat = () => {
+  messageStore.setWaitingUserChat(studyCourse.value.created_by); // Lưu ID giảng viên vào store
+  router.push('/mymessage'); // Điều hướng sang trang chat
+}
 </script>
 <style scoped>
 .pdf-viewer {

@@ -1,5 +1,11 @@
 <template>
     <div class="z-10 bg-white drop-shadow-md shadow-sm sticky top-0">
+        <div v-if="firstActiveVoucher" class=" bg-indigo-600  ">
+            <div class="text-white font-semibold container-user py-1 flex gap-1 items-center justify-center">
+                <span class="font-normal">Chương trình giảm giá</span>
+                <h2>{{ firstActiveVoucher.code }}</h2>
+            </div>
+        </div>
         <div class="container-user py-2 ">
             <div class="flex items-center justify-between">
                 <div class="lg:hidden" @click="toggleMenu">
@@ -66,8 +72,6 @@
             </div>
         </div>
     </div>
-
-
     <el-drawer size="50%" v-model="isOpenNav" title="I am the title" :direction="direction">
         <span>Hi, there!</span>
     </el-drawer>
@@ -96,13 +100,14 @@ import { useAuthStore } from '@/store/auth';
 import { Bars3Icon, MagnifyingGlassIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
 import { ElNotification, type DrawerProps } from 'element-plus';
 import { storeToRefs } from 'pinia';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import logo from '../../assets/images/logo1.svg';
 import SearchProduct from '../ui/dialog/SearchProduct.vue';
 import ViewCart from '../ui/dialog/ViewCart.vue';
 import MenuDesktop from '../ui/menu/MenuDesktop.vue';
 import UserProfile from './UserProfile.vue';
+import { useVoucherStore } from '@/store/voucher';
 const direction = ref<DrawerProps['direction']>('ltr')
 const isOpenNav = ref(false)
 const isOpenCart = ref(false)
@@ -125,5 +130,11 @@ onMounted(async () => {
     await userData()
 })
 
+const voucherStore = useVoucherStore();
 
+
+const firstActiveVoucher = computed(() => voucherStore.firstActiveVoucher);
+onMounted(() => {
+    voucherStore.fetchVouchers()
+})
 </script>

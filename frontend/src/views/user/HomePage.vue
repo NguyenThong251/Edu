@@ -96,6 +96,18 @@
                         :level="course.level" :current_price="course.current_price" :old_price="course.old_price" />
                 </div>
             </div>
+            <div class="mt-16">
+                <h3 class="mt-5 font-semibold text-2xl">
+                    Khóa học mới
+                </h3>
+                <div class="mt-5 gap-5 grid xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2">
+                    <CardCourse v-for="course in apiStore.coursesNew" :key="course.id" :id="course.id"
+                        :title="course.title"
+                        :thumbnail="course.thumbnail || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'"
+                        :creator="course.creator" :tag="course.tag" :lectures_count="course.lectures_count"
+                        :level="course.level" :current_price="course.current_price" :old_price="course.old_price" />
+                </div>
+            </div>
         </section>
 
     </main>
@@ -105,7 +117,10 @@
     <div class="my-16">
         <UserNewsLetter />
     </div>
+    <div class="">
 
+        <ChatWidget />
+    </div>
 
 
 </template>
@@ -124,6 +139,9 @@ import { onMounted, ref } from 'vue';
 import { apisStore } from '@/store/apis';
 import api from '@/services/axiosConfig';
 import { ElNotification } from 'element-plus';
+import Certificate from '@/components/user/Certificate.vue';
+import Chatbot from '@/components/user/Chatbot.vue';
+import ChatWidget from '@/components/user/ChatWidget.vue';
 const { locale } = useI18n();
 // const changeLanguage = (event: Event) => {
 //     const selectedLanguage = (event.target as HTMLSelectElement).value;
@@ -147,6 +165,7 @@ onMounted(async () => {
     apiStore.fetchCourse()
     apiStore.fetchPopularCourse()
     apiStore.fetchRateCourse()
+    apiStore.fetchNewCourse()
 
     const sessionId = route.query.session_id as string | undefined;
     session_id.value = sessionId

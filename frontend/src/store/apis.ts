@@ -16,6 +16,7 @@ export const apisStore = defineStore('fetchApi', () => {
   const languagies = ref<Tlevel[]>([])
   const coursesPopular = ref<TCardCourse[]>([])
   const coursesRate = ref<TCardCourse[]>([])
+  const coursesNew = ref<TCardCourse[]>([])
   const billHistory = ref<TBill[]>([])
   const billHistoryDetail = ref<TBill | null>(null)
 
@@ -40,6 +41,14 @@ export const apisStore = defineStore('fetchApi', () => {
     try {
       const res = await api.get('/get-popular-courses?limit=5')
       coursesPopular.value = res.data.data
+    } catch (error) {
+      console.error('Error fetching :', error)
+    }
+  }
+  const fetchNewCourse = async () => {
+    try {
+      const res = await api.get('/get-new-courses?limit=5')
+      coursesNew.value = res.data.data
     } catch (error) {
       console.error('Error fetching :', error)
     }
@@ -116,6 +125,7 @@ export const apisStore = defineStore('fetchApi', () => {
   })
 
   return {
+    coursesNew,
     billHistoryDetail,
     billHistory,
     languagies,
@@ -134,6 +144,7 @@ export const apisStore = defineStore('fetchApi', () => {
     fetchPopularCourse,
     fetchBill,
     fetchBillDetail,
+    fetchNewCourse,
     getCourses,
     categoriesWithChildren,
     categoriesWithoutChildren

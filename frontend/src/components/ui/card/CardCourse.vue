@@ -44,7 +44,7 @@
                         class="bg-indigo-500 hover:bg-indigo-600 hover:transition-all transition-all hover:duration-300 duration-300 p-2 rounded-full">
                         <ShoppingCartIcon class="h-5 w-5  text-white" />
                     </button>
-                    <button @click="toggleWishlist(id)"
+                    <button v-if="state.token" @click="toggleWishlist(id)"
                         class="bg-indigo-500 hover:bg-indigo-600 hover:transition-all transition-all hover:duration-300 duration-300 p-2 rounded-full">
 
                         <HeartIconSolid v-if="isInWishlist(id)" class="h-5 w-5  text-white" />
@@ -70,6 +70,9 @@ import { useRouter } from 'vue-router';
 import { useWishlistStore } from '@/store/wishlist';
 import { storeToRefs } from 'pinia';
 import { ElNotification } from 'element-plus';
+import { useAuthStore } from '@/store/auth';
+const useAuth = useAuthStore()
+const { state } = storeToRefs(useAuth)
 defineProps<TCardCourse>();
 // const { navigateToDetail } = useCourseDetail()
 const router = useRouter();

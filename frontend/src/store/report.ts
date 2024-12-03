@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { ref } from 'vue'
 import api from '@/services/axiosConfig'
+import { ElMessage } from 'element-plus'
 
 interface TchartDataTotal {
   date: string
@@ -15,6 +16,16 @@ interface TchartDataUserOrder {
 interface TchartDataOrder {
   period: string
   orders: number
+}
+interface TListAuthPayout {
+  id: number
+  user_id: number
+  amount: number
+  currency: string
+  status: 'peding' | 'paid'
+  reason: string
+  created_at: string
+  updated_at: string
 }
 
 export const useReportStore = defineStore('report', () => {
@@ -32,6 +43,7 @@ export const useReportStore = defineStore('report', () => {
   const chartDataTotalTeacher = ref<TchartDataTotal[]>([])
   const chartDataUser = ref<TchartDataUserOrder[]>([])
   const chartDataOrder = ref<TchartDataOrder[]>([])
+  const listAuthPayout = ref<TListAuthPayout[]>([])
 
   const total_students = ref<number>(0)
   const fetchReport = async () => {
@@ -119,7 +131,31 @@ export const useReportStore = defineStore('report', () => {
       console.error('Error fetching line chart:', error)
     }
   }
+
+  const fetchRequestPayment = async (params: any = {}) => {
+    try {
+      const res = await api.get('/auth/admin', { params })
+      listAuthPayout.value = res.data.data
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const payoutProcess = async (id: number, data: any) => {
+    try {
+      const res = await api.post(`/auth/payout/process/${id}`, data)
+      console.log(res.data)
+      if (res.data.status === 'SUCCESS') {
+        window.location.href = res.data.data.transaction_link
+      } else {
+        ElMessage.error('Thanh toán thất bại. Vui lòng thử lại.')
+      }
+    } catch (error) {
+      ElMessage.error('Thanh toán thất bại. Vui lòng thử lại.')
+      // console.log(error)
+    }
+  }
   return {
+    listAuthPayout,
     total_revenue,
     total_payouts,
     net_revenue,
@@ -140,6 +176,8 @@ export const useReportStore = defineStore('report', () => {
     fetchLineChartUser,
     fetchLineChartOrder,
     fetchReportTeacher,
-    fetchLineChartTotalTeacher
+    fetchLineChartTotalTeacher,
+    fetchRequestPayment,
+    payoutProcess
   }
 })

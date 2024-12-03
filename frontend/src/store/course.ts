@@ -102,7 +102,8 @@ export const useCourseStore = defineStore('courseStore', () => {
         }
       })
       currentContent.value = response.data.data.currentContent
-      // console.log(response.data.data.currentContent)
+      allContent.value = response.data.data.allContent // Cập nhật toàn bộ nội dung mới
+      progress.value = response.data.data.progress_percent // Cập nhật tiến trình
     } catch (err) {
       console.error('Error changing content:', err)
       error.value = 'Không thể chuyển bài học.'

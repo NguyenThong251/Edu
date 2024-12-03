@@ -5,6 +5,8 @@ import CourseListPage from '@/views/teacher/CourseListPage.vue'
 import PaymentPage from '@/views/teacher/PaymentPage.vue'
 import MyProfile from '@/views/user/MyProfile.vue'
 import Security from '@/views/user/Security.vue'
+import PaymentMethodPage from '../views/teacher/PaymentMethodPage.vue'
+import RedirectHandler from '@/views/RedirectHandler.vue'
 
 const teacher = [
   {
@@ -42,6 +44,17 @@ const teacher = [
         name: 'teacher.payment',
         component: PaymentPage,
         meta: { requiresAuth: true, role: 'instructor', title: 'Bảo mật | Edunity' }
+      },
+      {
+        path: '/teacher/payment-method',
+        name: 'teacher.payment-method',
+        component: PaymentMethodPage,
+        meta: { requiresAuth: true, role: 'instructor', title: 'Phương thức | Edunity' }
+      },
+      {
+        path: '/teacher/payment-method/:status',
+        name: 'RedirectHandler',
+        component: RedirectHandler
       }
     ]
   }

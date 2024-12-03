@@ -69,7 +69,10 @@
 
     <el-dialog v-model="deletedCommentsDialogVisible" title="Danh sách bình luận đã xóa">
         <el-table :data="state.listReviewDelete">
-            <el-table-column prop="content" label="Bình luận" />
+            <el-table-column prop="comment" label="Bình luận" />
+            <el-table-column prop="user.last_name" label="Người dùng" />
+            <el-table-column prop="status" label="Trạng thái" />
+            <el-table-column prop="created_at" label="Ngày tạo" />
             <el-table-column label="Hành động">
                 <template #default="{ row }">
                     <el-button @click="restoreComment(row.id)">Khôi phục</el-button>
@@ -125,5 +128,6 @@ const handleDelete = (commentId: number) => {
 };
 const restoreComment = (commentId: number) => {
     restoreReview(props.id, commentId)
+    deletedCommentsDialogVisible.value = false;
 }
 </script>
