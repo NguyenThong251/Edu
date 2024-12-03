@@ -134,8 +134,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/payout/process/{id}', [PayoutController::class, 'processPayout']);
             // Liệt kê các yêu cầu rút tiền
             Route::get('/payout/requests', [PayoutController::class, 'listPayoutRequests']);
-            Route::get('/payout/success/{id}', [PayoutController::class, 'payoutSuccess'])->name('payout.success');
-            Route::get('/payout/cancel/{id}', [PayoutController::class, 'payoutCancel'])->name('payout.cancel');
+//            Route::get('/payout/success/{id}', [PayoutController::class, 'payoutSuccess'])->name('payout.success');
+//            Route::get('/payout/cancel/{id}', [PayoutController::class, 'payoutCancel'])->name('payout.cancel');
+            Route::post('/payout/rejected/{id}', [PayoutController::class, 'rejectRequest']);
 
 
             //get all user
