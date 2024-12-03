@@ -47,7 +47,10 @@ class LectureController extends Controller
         if ($request->has('status') && !is_null($request->status)) {
             $lecturesQuery->where('status', $request->status);
         }
-
+        if ($request->is_instructor == 1) {
+            // Lọc theo người dùng hiện tại và đảm bảo trường `created_at` không null
+            $lecturesQuery->where('created_by', auth()->id());
+        }
         // Sắp xếp theo `created_at` (mặc định là `desc`)
         $order = $request->get('order', 'desc'); // Giá trị mặc định là desc
         $lecturesQuery->orderBy('created_at', $order);
