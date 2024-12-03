@@ -21,12 +21,14 @@ class PayoutController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api',
+        $this->middleware(
+            'auth:api',
             [
                 'except' => [
                     'handleWebhook',
                 ]
-            ]);
+            ]
+        );
     }
 
     public function index(Request $request)
@@ -78,24 +80,24 @@ class PayoutController extends Controller
     public function requestPayout(Request $request)
     {
 
-//        Stripe::setApiKey(env('STRIPE_SECRET'));
-//        Stripe::setApiKey(config('services.stripe.secret'));
+        //        Stripe::setApiKey(env('STRIPE_SECRET'));
+        //        Stripe::setApiKey(config('services.stripe.secret'));
 
-////        $balance = \Stripe\Balance::retrieve();
-//        $charge = \Stripe\Charge::create([
-//            'amount' => 1000, // 10 USD (tính bằng cents)
-//            'currency' => 'usd',
-//            'source' => 'tok_visa', // Token test
-//            'description' => 'Test charge to increase balance',
-//        ]);
-//
-//        // Chuyển tiền từ platform account đến connected account
-//        $transfer = \Stripe\Transfer::create([
-//            'amount' => 1000, // 10 USD
-//            'currency' => 'usd',
-//            'destination' => 'acct_1QOXVvCzrOkmIPq4', // ID của connected account
-//            'description' => 'Test transfer to connected account',
-//        ]);
+        ////        $balance = \Stripe\Balance::retrieve();
+        //        $charge = \Stripe\Charge::create([
+        //            'amount' => 1000, // 10 USD (tính bằng cents)
+        //            'currency' => 'usd',
+        //            'source' => 'tok_visa', // Token test
+        //            'description' => 'Test charge to increase balance',
+        //        ]);
+        //
+        //        // Chuyển tiền từ platform account đến connected account
+        //        $transfer = \Stripe\Transfer::create([
+        //            'amount' => 1000, // 10 USD
+        //            'currency' => 'usd',
+        //            'destination' => 'acct_1QOXVvCzrOkmIPq4', // ID của connected account
+        //            'description' => 'Test transfer to connected account',
+        //        ]);
 
         $user = Auth::user();
         // Kiểm tra dữ liệu đầu vào
@@ -267,59 +269,98 @@ class PayoutController extends Controller
         return formatResponse(STATUS_OK, $payoutRequests, '', __('messages.payout_requests_list'), 200);
     }
 
+    public function rejectRequest(Request $request, $id)
+    {
+        $reason = $request->input('reason');
+        $payoutRequest = PayoutRequest::find($id);
+        if (!$payoutRequest) {
+            return response()->json([
+                'status' => 'FAIL',
+                'data' => '',
+                'message' => 'Payout request not found',
+                'code' => 404
+            ], 404);
+        }
 
-//    public function handleWebhook(Request $request)
-//    {
-//        $payload = $request->getContent();
-//        $sig_header = $request->header('Stripe-Signature');
-//        $endpoint_secret = config('services.stripe.webhook_secret');
-//
-//        try {
-//            $event = Webhook::constructEvent(
-//                $payload, $sig_header, $endpoint_secret
-//            );
-//        } catch (\UnexpectedValueException $e) {
-//            // Invalid payload
-//            return response()->json(['error' => 'Invalid payload'], 400);
-//        } catch (\Stripe\Exception\SignatureVerificationException $e) {
-//            // Invalid signature
-//            return response()->json(['error' => 'Invalid signature'], 400);
-//        }
-//
-//        // Xử lý sự kiện
-//        switch ($event->type) {
-//            case 'checkout.session.completed':
-//                $session = $event->data->object;
-//
-//                // Lấy payout_request_id từ metadata
-//                $payoutRequestId = $session->metadata->payout_request_id;
-//                $payoutRequest = PayoutRequest::find($payoutRequestId);
-//
-//                if ($payoutRequest && $payoutRequest->status == 'processing') {
-//                    $payoutRequest->update([
-//                        'status' => 'paid',
-////                        'transaction_id' => $session->payment_intent, // Hoặc thông tin liên quan khác
-//                    ]);
-//                }
-//                break;
-//
-//            case 'checkout.session.expired':
-//                $session = $event->data->object;
-//                $payoutRequestId = $session->metadata->payout_request_id;
-//                $payoutRequest = PayoutRequest::find($payoutRequestId);
-//
-//                if ($payoutRequest && $payoutRequest->status == 'processing') {
-//                    $payoutRequest->update([
-//                        'status' => 'failed',
-//                        'reason' => 'Checkout session expired',
-//                    ]);
-//                }
-//                break;
-//
-//            // Xử lý các sự kiện khác nếu cần
-//            default:
-//                Log::info('Unhandled event type ' . $event->type);
-//        }
-//        return response()->json(['status' => 'success'], 200);
-//    }
+        if ($payoutRequest->status !== 'pending') {
+            return response()->json([
+                'status' => 'FAIL',
+                'data' => '',
+                'error' => '',
+                'message' => 'Payout request not status pending',
+                'code' => 400
+            ], 400);
+        }
+
+        if (!$payoutRequest->update(['status' => 'rejected', 'reason' => $reason ?? null])) {
+            return response()->json([
+                'status' => 'FAIL',
+                'data' => '',
+                'error' => '',
+                'message' => 'Rejected Payout Request failed.',
+                'code' => 400
+            ]);
+        }
+        return response()->json([
+            'status' => 'SUCCESS',
+            'data' => $payoutRequest,
+            'message' => 'Payout request rejected.',
+        ]);
+    }
+
+
+    //    public function handleWebhook(Request $request)
+    //    {
+    //        $payload = $request->getContent();
+    //        $sig_header = $request->header('Stripe-Signature');
+    //        $endpoint_secret = config('services.stripe.webhook_secret');
+    //
+    //        try {
+    //            $event = Webhook::constructEvent(
+    //                $payload, $sig_header, $endpoint_secret
+    //            );
+    //        } catch (\UnexpectedValueException $e) {
+    //            // Invalid payload
+    //            return response()->json(['error' => 'Invalid payload'], 400);
+    //        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+    //            // Invalid signature
+    //            return response()->json(['error' => 'Invalid signature'], 400);
+    //        }
+    //
+    //        // Xử lý sự kiện
+    //        switch ($event->type) {
+    //            case 'checkout.session.completed':
+    //                $session = $event->data->object;
+    //
+    //                // Lấy payout_request_id từ metadata
+    //                $payoutRequestId = $session->metadata->payout_request_id;
+    //                $payoutRequest = PayoutRequest::find($payoutRequestId);
+    //
+    //                if ($payoutRequest && $payoutRequest->status == 'processing') {
+    //                    $payoutRequest->update([
+    //                        'status' => 'paid',
+    ////                        'transaction_id' => $session->payment_intent, // Hoặc thông tin liên quan khác
+    //                    ]);
+    //                }
+    //                break;
+    //
+    //            case 'checkout.session.expired':
+    //                $session = $event->data->object;
+    //                $payoutRequestId = $session->metadata->payout_request_id;
+    //                $payoutRequest = PayoutRequest::find($payoutRequestId);
+    //
+    //                if ($payoutRequest && $payoutRequest->status == 'processing') {
+    //                    $payoutRequest->update([
+    //                        'status' => 'failed',
+    //                        'reason' => 'Checkout session expired',
+    //                    ]);
+    //                }
+    //                break;
+    //
+    //            // Xử lý các sự kiện khác nếu cần
+    //            default:
+    //                Log::info('Unhandled event type ' . $event->type);
+    //        }
+    //        return response()->json(['status' => 'success'], 200);
+    //    }
 }
