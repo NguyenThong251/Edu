@@ -28,7 +28,7 @@
                 <!-- Bảng -->
                 <el-table :data="listAuthPayout" stripe class="mt-5" style="width: 100%">
                     <el-table-column prop="id" label="#" width="50" />
-                    <el-table-column prop="teacher" label="Tên giáo viên" />
+                    <el-table-column prop="user.email" label="Tên giáo viên" />
                     <el-table-column prop="amount" label="Số tiền rút">
                         <template #default="{ row }">
                             {{ formatPrice(row.amount) }}
@@ -49,6 +49,11 @@
 
                                 Xử lý
                             </span>
+                            <span v-else-if="row.status === 'rejected'"
+                                class="bg-pink-100  text-pink-600 px-3 py-1 rounded-md">
+
+                                Từ chối
+                            </span>
                             <span v-else class="bg-green-100 text-green-600 px-3 py-1 rounded-md">
                                 Đã thanh toán
                             </span>
@@ -62,7 +67,7 @@
                                     Xác nhận
                                 </el-button>
                                 <el-button v-if="scope.row.status === 'pending'" type="danger" size="small"
-                                    @click="handleReject(scope.row)">
+                                    @click="openRejectModal(scope.row)">
                                     Từ chối
                                 </el-button>
                             </div>
@@ -74,6 +79,13 @@
 
 
     </div>
+    <el-dialog v-model="isRejectModalVisible" title="Nhập lý do từ chối" width="500px">
+        <el-input type="textarea" v-model="rejectReason" placeholder="Nhập lý do từ chối" rows="4" />
+        <template #footer>
+            <el-button @click="isRejectModalVisible = false">Hủy</el-button>
+            <el-button type="danger" @click="confirmReject">Xác nhận</el-button>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -88,14 +100,16 @@ const filterDate = ref<[Date, Date] | null>(null); // Dải ngày
 const filterStatus = ref(''); // Trạng thái
 const useReport = useReportStore()
 const { listAuthPayout } = storeToRefs(useReport)
-const { fetchRequestPayment, payoutProcess } = useReport
+const { fetchRequestPayment, payoutProcess, payoutRejected } = useReport
 const { fetchReportTeacherPayment,
     getListPaymentByUser,
     fetchListTeacherPayout, } = useTeacherStore()
-
+// Modal Từ Chối
+const isRejectModalVisible = ref(false);
+const rejectReason = ref('');
+const selectedRequest = ref<any>(null);
 // Modal Xác nhận
 const isApproveModalVisible = ref(false);
-const selectedRequest = ref<any>(null);
 const formatDate = (date: string): string => {
     if (!date) return "Không xác định";
     const options: Intl.DateTimeFormatOptions = {
@@ -127,14 +141,25 @@ const handleApprove = async (row: any) => {
     await fetchReportTeacherPayment()
     await getListPaymentByUser()
     await fetchListTeacherPayout()
+    await fetchRequestPayment()
 }
 // Xử lý từ chối yêu cầu
-const handleReject = (row: any) => {
-    console.log('Từ chối yêu cầu của:', row);
-    // Gọi API hoặc xử lý tại đây
+const openRejectModal = (row: any) => {
+    selectedRequest.value = row;
+    isRejectModalVisible.value = true;
 };
 
+// Xác nhận Từ Chối
+const confirmReject = async () => {
 
+    const data = {
+        reason: rejectReason.value
+    }
+    await payoutRejected(selectedRequest.value.id, data);
+    isRejectModalVisible.value = false; // Đóng modal
+    rejectReason.value = ''; // Reset lý do
+    await fetchRequestPayment(); // Cập nhật lại danh sách
+};
 
 onMounted(async () => {
     await fetchRequestPayment()

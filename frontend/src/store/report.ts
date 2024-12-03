@@ -143,7 +143,6 @@ export const useReportStore = defineStore('report', () => {
   const payoutProcess = async (id: number, data: any) => {
     try {
       const res = await api.post(`/auth/payout/process/${id}`, data)
-      console.log(res.data)
       if (res.data.status === 'SUCCESS') {
         window.location.href = res.data.data.transaction_link
       } else {
@@ -151,6 +150,19 @@ export const useReportStore = defineStore('report', () => {
       }
     } catch (error) {
       ElMessage.error('Thanh toán thất bại. Vui lòng thử lại.')
+      // console.log(error)
+    }
+  }
+  const payoutRejected = async (id: number, data: any) => {
+    try {
+      const res = await api.post(`/auth/payout/rejected/${id}`, data)
+      if (res.data.status === 'SUCCESS') {
+        ElMessage.success('Xóa thanh toán thành công')
+      } else {
+        ElMessage.error('Xóa thanh toán thất bại. Vui lòng thử lại.')
+      }
+    } catch (error) {
+      ElMessage.error('Xóa thanh toán thất bại. Vui lòng thử lại.')
       // console.log(error)
     }
   }
@@ -178,6 +190,7 @@ export const useReportStore = defineStore('report', () => {
     fetchReportTeacher,
     fetchLineChartTotalTeacher,
     fetchRequestPayment,
-    payoutProcess
+    payoutProcess,
+    payoutRejected
   }
 })

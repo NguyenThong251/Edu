@@ -61,11 +61,19 @@
 
                             Xử lý
                         </span>
+                        <span v-else-if="row.status === 'rejected'"
+                            class="bg-pink-100  text-pink-600 px-3 py-1 rounded-md">
+
+                            Từ chối
+                        </span>
                         <span v-else class="bg-green-100 text-green-600 px-3 py-1 rounded-md">
                             Đã thanh toán
                         </span>
                     </template>
                 </el-table-column>
+                <el-table-column prop="reason" label="Ghi chú" />
+
+
             </el-table>
 
         </div>
