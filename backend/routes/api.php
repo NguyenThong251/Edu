@@ -22,6 +22,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\QuizController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,7 +59,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     Route::get('/google/call-back', [AuthController::class, 'loginGoogleCallback']);
     //callback connect stripe
     Route::get('/payment-methods/stripe/callback', [PaymentMethodController::class, 'handleStripeCallback'])->name('payment_methods.stripe.callback');
-    Route::post('/payout/stripe/webhook', [PayoutController::class, 'handleWebhook']);
+    Route::get('/payment-methods/stripe/test', [PaymentMethodController::class, 'test'])->name('payment_methods.stripe.callback');
+
 
     //Logged in
     Route::middleware(['jwt'])->group(function () {
@@ -75,6 +77,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::middleware(['role:admin'])->group(function () {
             // Quản lý, ManageController
             Route::get('courses', [CourseController::class, 'getListAdmin'])->name('courses.getListAdmin');
+
 
             Route::get('categories', [CategoryController::class, 'getListAdmin'])->name('categories.getListAdmin');
             Route::get('getAdmin', [ManageController::class, 'getAdmin'])->name('users.admins');
@@ -116,26 +119,31 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 // Get all vouchers
                 Route::get('/', [VoucherController::class, 'index']);
                 Route::get('list-vouchers-admin', [VoucherController::class, 'getListAdmin']);
+                // Get voucher by id or code
+                Route::get('/{idOrCode}', [VoucherController::class, 'show']);
+                Route::post('/create', [VoucherController::class, 'store']);
+                Route::put('/{id}', [VoucherController::class, 'update']);
+                Route::post('/delete', [VoucherController::class, 'destroy']);
                 Route::get('/filter', [VoucherController::class, 'filter']);
                 // Get all deleted vouchers
                 Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
-                // Get voucher by id or code
-                Route::get('/{idOrCode}', [VoucherController::class, 'show']);
-                Route::post('/create', [VoucherController::class, 'create']);
-                Route::post('/delete', [VoucherController::class, 'destroy']);
                 Route::post('/restore', [VoucherController::class, 'restoreVoucher']);
-                Route::put('/{id}', [VoucherController::class, 'update']);
             });
 
             // Review in Admin
             // Xem tất cả các review (bao gồm cả bị xóa)
-            Route::get('reviews/{courseId}/all', [ReviewController::class, 'getAllReviews']);
+            Route::get('reviews/{courseId}/deleted', [ReviewController::class, 'getDeletedReviews']);
             Route::post('reviews/{id}/restore', [ReviewController::class, 'restore']);
 
             // admin Xử lý rút tiền stripe
             Route::post('/payout/process/{id}', [PayoutController::class, 'processPayout']);
             // Liệt kê các yêu cầu rút tiền
             Route::get('/payout/requests', [PayoutController::class, 'listPayoutRequests']);
+//            Route::get('/payout/success/{id}', [PayoutController::class, 'payoutSuccess'])->name('payout.success');
+//            Route::get('/payout/cancel/{id}', [PayoutController::class, 'payoutCancel'])->name('payout.cancel');
+            Route::post('/payout/rejected/{id}', [PayoutController::class, 'rejectRequest']);
+
+
             //get all user
             Route::get('/get-all-user', [AuthController::class, 'getAllUser']);
             Route::post('/create-user', [AuthController::class, 'adminCreateUser']);
@@ -147,6 +155,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('block/unblock-user/{id}', [AuthController::class, 'blockOrUnlockUser']);
 
             //admin report
+            Route::get('admin/', [AdminController::class, 'index']);
             Route::get('admin/get-report', [AdminController::class, 'getAdminReport']);
             Route::get('admin/get-line-chart/revenue', [AdminController::class, 'getAdminLineChartData']);
             Route::get('admin/get-line-chart/user', [AdminController::class, 'getUserRegistrationLineChart']);
@@ -187,14 +196,35 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::patch('lectures/{id}/status', [LectureController::class, 'updateLectureStatus'])->name('lectures.updateStatus');
             Route::patch('lectures/{id}/section', [LectureController::class, 'updateLectureSection'])->name('lectures.updateSection');
             Route::get('show-content-of-section/{id}', [LectureController::class, 'showContentBySection'])->name('lectures.showContentBySection');
+            Route::get('lectures', [LectureController::class, 'getListAdmin'])->name('lectures.getListAdmin');
+            Route::get('lectures/edit-form/{id}', [LectureController::class, 'editForm'])->name('lectures.editForm');
 
+
+            Route::post('quizzes', [QuizController::class, 'store'])->name('quizzes.store');
+            Route::get('quizzes/{id}', [QuizController::class, 'show'])->name('quizzes.show');
+            Route::put('quizzes/{id}', [QuizController::class, 'update'])->name('quizzes.update');
+            Route::get('quizzes/restore/{id}', [QuizController::class, 'restore'])->name('quizzes.restore');
+            Route::delete('quizzes/{id}', [QuizController::class, 'destroy'])->name('quizzes.destroy');
+            Route::delete('quizzes/permanent-delete/{id}', [QuizController::class, 'forceDelete'])->name('quizzes.destroy');
+            Route::patch('quizzes/{id}/status', [QuizController::class, 'updateQuizStatus'])->name('quizzes.updateStatus');
+            Route::patch('quizzes/{id}/section', [QuizController::class, 'updateQuizSection'])->name('quizzes.updateSection');
+            Route::get('quizzes', [QuizController::class, 'getListAdmin'])->name('quizzes.getListAdmin');
+            Route::get('quizzes/edit-form/{id}', [QuizController::class, 'editForm'])->name('quizzes.editForm');
 
             Route::post('questions', [QuestionController::class, 'store'])->name('questions.store');
-            Route::get('questions/{id}', [QuestionController::class, 'editForm'])->name('questions.editForm');
+            Route::get('questions/{id}', [QuestionController::class, 'show'])->name('questions.show');
             Route::put('questions/{id}', [QuestionController::class, 'update'])->name('questions.update');
             Route::get('questions/restore/{id}', [QuestionController::class, 'restore'])->name('questions.restore');
             Route::delete('questions/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
-            Route::delete('questions/permanent-delete/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+            Route::delete('questions/permanent-delete/{id}', [QuestionController::class, 'forceDelete'])->name('questions.destroy');
+            Route::patch('questions/{id}/status', [QuestionController::class, 'updateQuestionAttributes'])->name('questions.updateStatus');
+            Route::patch('questions/{id}/quiz', [QuestionController::class, 'updateQuestionAttributes'])->name('questions.updateQuestion');
+            Route::get('questions', [QuestionController::class, 'getListAdmin'])->name('questions.getListAdmin');
+            Route::get('questions/edit-form/{id}', [QuestionController::class, 'editForm'])->name('questions.editForm');
+            Route::get('show-question-of-quiz/{id}', [QuestionController::class, 'showQuestionsByQuiz'])->name('questions.showQuestionOfQuiz');
+            Route::put('sort-question-of-quiz', [QuestionController::class, 'updateQuestionOrder'])->name('questions.updateOrder');
+
+
 
             Route::get('instructor/course', [InstructorController::class, 'getListCourses']);
             Route::get('instructor/report', [InstructorController::class, 'getReport']);
@@ -202,6 +232,10 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('instructor/course-statistics', [InstructorController::class, 'getCourseStatistics']);
 
             // Liên kết Stripe
+            Route::get('/payout/', [PayoutController::class, 'index']);
+            Route::get('/payout/report-payment', [PayoutController::class, 'report']);
+
+
             Route::get('/payment-methods/stripe/link', [PaymentMethodController::class, 'linkStripe'])->name('payment_methods.stripe.link');
             // Liệt kê các phương thức thanh toán
             Route::get('/payment-methods', [PaymentMethodController::class, 'listPaymentMethods']);
@@ -263,10 +297,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
 // All Review
 Route::get('courses/{courseId}/reviews', [ReviewController::class, 'index']);
+Route::get('courses/{courseId}/reviews/filter', [ReviewController::class, 'filter']);
 
 // Order webhook
 Route::get('/orders/verify-payment', [OrderController::class, 'verifyPayment']);
 Route::post('/stripe/webhook', [OrderController::class, 'handleWebhook']);
+
+Route::post('/payout/stripe/webhook', [PayoutController::class, 'handleWebhook']);
 
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');

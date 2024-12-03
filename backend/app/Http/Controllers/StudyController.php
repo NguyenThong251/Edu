@@ -65,12 +65,22 @@ class StudyController extends Controller
             ->get()
             ->map(function ($course) use ($userId) {
                 // Lấy tổng số lecture của course qua Section và Lecture
-                $totalLectures = Lecture::where('status', 'active')
+
+                $totalQuizzes = Quiz::where('status', 'active')
+                ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
+                ->count();
+                $totalLectures =$totalQuizzes + Lecture::where('status', 'active')
                     ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
                     ->count();
-
+                
+                $completedQuizzes = ProgressQuiz::where('user_id', $userId)
+                ->where('percent', '>=', 100) // Thêm điều kiện percent >= 100
+                ->whereIn('quiz_id', Quiz::where('status', 'active')
+                    ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
+                    ->pluck('id'))
+                ->count();
                 // Lấy số lượng lecture đã hoàn thành trong ProgressLecture
-                $completedLectures = ProgressLecture::where('user_id', $userId)
+                $completedLectures =$completedQuizzes+ ProgressLecture::where('user_id', $userId)
                     ->where('percent', '>=', 100) // Thêm điều kiện percent >= 100
                     ->whereIn('lecture_id', Lecture::where('status', 'active')
                         ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
@@ -611,11 +621,15 @@ class StudyController extends Controller
             }
         }
 
-        $course = Course::where('id', $courseId)
+        $course = Course::with('creator')
+            ->where('id', $courseId)
             ->where('status', 'active')
             ->first();
         $responseData = [
             'created_by' => $course->created_by,
+            'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
+                ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
+                : ''),
             'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,
@@ -839,11 +853,15 @@ class StudyController extends Controller
         $totalContentDone = $data['total_lecture_done'];
         $progress = $data['progress_percent'];
 
-        $course = Course::where('id', $courseId)
+        $course = Course::with('creator')
+            ->where('id', $courseId)
             ->where('status', 'active')
             ->first();
         $responseData = [
             'created_by' => $course->created_by,
+            'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
+                ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
+                : ''),
             'course_title' => $course->title,
             'currentContent' => $currentContent,
             'allContent' => $allContent,

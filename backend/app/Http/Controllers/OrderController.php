@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Cart, CartItem, Order, OrderItem, Voucher};
+use App\Models\{Cart, CartItem, Order, OrderItem, PayoutRequest, Voucher};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB, Log};
 use Illuminate\Support\Str;
@@ -280,6 +280,11 @@ class OrderController extends Controller
 
             if ($event->type === 'checkout.session.completed') {
                 $session = $event->data->object;
+                $type = $session->metadata->type ?? null;
+                if ($type === 'payout') {
+                    $this->handlePayoutCompleted($session);
+                    return response()->json(['status' => 'success'], 200);
+                }
                 $order = Order::where('payment_code', $session->id)->first();
 
                 if ($order && $order->payment_status === 'pending') {
@@ -290,6 +295,11 @@ class OrderController extends Controller
                 }
             } elseif ($event->type === 'checkout.session.expired') {
                 $session = $event->data->object;
+                $type = $session->metadata->type ?? null;
+                if ($type === 'payout') {
+                    $this->handlePayoutExpired($session);
+                    return response()->json(['status' => 'success'], 200);
+                }
                 $order = Order::where('payment_code', $session->id)->first();
 
                 if ($order && $order->payment_status === 'pending') {
@@ -307,6 +317,44 @@ class OrderController extends Controller
         } catch (\Stripe\Exception\SignatureVerificationException $e) {
             Log::error('Invalid signature');
             return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 400);
+        }
+    }
+
+
+    private function handlePayoutCompleted($session)
+    {
+        $payoutRequestId = $session->metadata->payout_request_id ?? null;
+        if ($payoutRequestId) {
+            $payoutRequest = PayoutRequest::find($payoutRequestId);
+            if ($payoutRequest && $payoutRequest->status == 'processing') {
+                $payoutRequest->update([
+                    'status' => 'paid',
+                ]);
+                Log::info("PayoutRequest #{$payoutRequest->id} has been marked as paid.");
+            } else {
+                Log::warning("PayoutRequest not found or already processed for payout_request_id: {$payoutRequestId}");
+            }
+        } else {
+            Log::warning('PayoutRequest ID not found in metadata.');
+        }
+    }
+
+    private function handlePayoutExpired($session)
+    {
+        $payoutRequestId = $session->metadata->payout_request_id ?? null;
+        if ($payoutRequestId) {
+            $payoutRequest = PayoutRequest::find($payoutRequestId);
+            if ($payoutRequest && $payoutRequest->status == 'processing') {
+                $payoutRequest->update([
+                    'status' => 'failed',
+                    'reason' => 'Checkout session expired',
+                ]);
+                Log::info("PayoutRequest #{$payoutRequest->id} has been marked as failed due to expired session.");
+            } else {
+                Log::warning("PayoutRequest not found or already processed for payout_request_id: {$payoutRequestId}");
+            }
+        } else {
+            Log::warning('PayoutRequest ID not found in metadata.');
         }
     }
 }

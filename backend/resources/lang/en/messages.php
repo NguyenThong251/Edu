@@ -185,6 +185,16 @@ return [
     'lecture_not_found' => 'Lecture not found.',
     'quiz_not_found' => 'Quiz not found.',
 
+    //QUIZ
+    'quiz_not_found' => 'Quiz not found.',
+    'quiz_fetch_success' => 'Quizzes fetched successfully.',
+    'quiz_detail_success' => 'Quiz details retrieved successfully.',
+    'quiz_create_success' => 'Quiz created successfully.',
+    'quiz_update_success' => 'Quiz updated successfully.',
+    'quiz_soft_delete_success' => 'Quiz soft deleted successfully.',
+    'quiz_restore_success' => 'Quiz restored successfully.',
+    'quiz_force_delete_success' => 'Quiz permanently deleted successfully.',
+
     //STUDY
     'course_not_purchased' => 'You have not purchased this course.',
     'course_access_granted' => 'You can access this course.',
@@ -192,19 +202,30 @@ return [
     'courses_retrieved_successfully' => 'Courses retrieved successfully.',
 
     // Question
-    'question_fetch_success' => 'Questions fetched successfully.',
+    'quiz_id_required' => 'Quiz ID is required.',
+    'quiz_id_invalid' => 'Quiz ID is invalid.',
+    'question_required' => 'The question field is required.',
+    'options_required' => 'Options are required.',
+    'options_invalid_format' => 'Options must be a valid JSON array.',
+    'answer_required' => 'Answer is required.',
+    'status_required' => 'Status is required.',
+    'status_invalid' => 'Status must be either active or inactive.',
+    'question_not_found' => 'Question not found.',
     'question_create_success' => 'Question created successfully.',
     'question_update_success' => 'Question updated successfully.',
     'question_soft_delete_success' => 'Question soft deleted successfully.',
     'question_restore_success' => 'Question restored successfully.',
     'question_force_delete_success' => 'Question permanently deleted successfully.',
+    'question_fetch_success' => 'Questions fetched successfully.',
+    'question_detail_success' => 'Question details fetched successfully.',
+    'validation_error' => 'Validation failed.',
     'question_not_found' => 'Question not found.',
-    'quiz_required' => 'Quiz is required.',
     'quiz_not_found' => 'Quiz not found.',
-    'question_required' => 'Question is required.',
-    'options_required' => 'Options are required.',
-    'answer_required' => 'Answer is required.',
-    'question_edit_form_success' => 'Question details fetched for editing successfully.',
+    'invalid_status' => 'Invalid status. Allowed values are active or inactive.',
+    'question_update_success' => 'Question updated successfully.',
+    'questions_fetch_success' => 'Questions fetched successfully.',
+    'questions_order_update_success' => 'Questions order updated successfully.',
+    'invalid_data_format' => 'Invalid data format provided.',
 
 
 
