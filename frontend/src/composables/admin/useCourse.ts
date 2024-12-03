@@ -20,6 +20,7 @@ export default function useCourse() {
   const dialogEditSection = ref<boolean>(false);
   const dialogAddnewLecture = ref<boolean>(false)
   const dialogAddnewSection = ref<boolean>(false)
+  const dialogAddnewQuiz = ref<boolean>(false)
   const dialogEditLecture = ref<boolean>(false)
   const imageUrl = ref<string | null>(null)
   const courseId = ref<string|number | null>(null)
@@ -164,6 +165,7 @@ export default function useCourse() {
       loading.value = true;
       courseId.value = route.params.id as string; // Lấy ID từ URL  
       const response = await api.get(`/auth/courses/${courseId.value}`);
+      console.log('data nè', response);
       if (response.data.status === 'OK') {
         formDataEditCourse.value = response.data.data;
         section.value = response.data.data.sections;
@@ -749,6 +751,7 @@ export default function useCourse() {
     dialogEditSection,
     dialogAddnewLecture,
     dialogAddnewSection,
+    dialogAddnewQuiz,
     dialogEditLecture,
     handelFormSection,
     courseLevels,

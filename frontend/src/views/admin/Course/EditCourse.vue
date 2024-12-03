@@ -316,65 +316,7 @@
                   </div>
                 </el-tab-pane>
 
-                <el-tab-pane>
-                  <template #label>
-                    <span class="tab-items-style">
-                      <InformationCircleIcon class="w-5 font-bold" />
-                      <span>Thông tin</span>
-                    </span>
-                  </template>
-                  <div class="px-2">
-                    <RadioGroup
-                      label="Faq"
-                      required="*"
-                      inputPlaceHoder="Nhập đường dẫn video"
-                      customsClass="flex flex-row"
-                      customsClassChild="basis-2/12"
-                      customsClassChild2="basis-10/12 w-full"
-                      :inputId="inputId"
-                    >
-                      <div class="">
-                        <InputItems :icon="PlusIcon" inputPlaceHoder="Câu hỏi" />
-                        <textarea
-                          :id="inputId"
-                          :name="inputId"
-                          placeholder="Trả lời"
-                          :value="value"
-                          :v-model="modelValue"
-                          rows="2"
-                          class="block p-2.5 input-style mt-2"
-                          :class="customsClassChild2"
-                        >
-                        </textarea>
-                      </div>
-                    </RadioGroup>
-                    <RadioGroup
-                      label="Yêu cầu"
-                      required="*"
-                      customsClass="flex flex-row"
-                      customsClassChild="basis-2/12"
-                      customsClassChild2="basis-10/12 w-full"
-                    >
-                      <div class="">
-                        <InputItems :icon="PlusIcon" inputPlaceHoder="Nhập yêu cầu" />
-                        <InputItems :icon="MinusIcon" inputPlaceHoder="Nhập yêu cầu" class="mt-2" />
-                      </div>
-                    </RadioGroup>
 
-                    <RadioGroup
-                      label="Kết quả"
-                      required="*"
-                      customsClass="flex flex-row"
-                      customsClassChild="basis-2/12"
-                      customsClassChild2="basis-10/12 w-full"
-                    >
-                      <div class="">
-                        <InputItems :icon="PlusIcon" inputPlaceHoder="Nhập kết quả" />
-                        <InputItems :icon="MinusIcon" inputPlaceHoder="Nhập kết quả" class="my-2" />
-                      </div>
-                    </RadioGroup>
-                  </div>
-                </el-tab-pane>
 
                 <el-tab-pane>
                   <template #label>
@@ -433,67 +375,6 @@
                   </div>
                 </el-tab-pane>
 
-                <el-tab-pane>
-                  <template #label>
-                    <span class="tab-items-style">
-                      <TagIcon class="w-5 font-bold" />
-                      <span>SEO</span>
-                    </span>
-                  </template>
-                  <div class="px-2">
-                    <InputGroup
-                      label="Tiêu đề SEO (Tên khoá học)"
-                      required="*"
-                      inputId="name"
-                      inputPlaceHoder="Nhập tiêu đề SEO"
-                    />
-                    <InputOptionGroup
-                      label="Từ khoá SEO"
-                      required="*"
-                      inputId="name"
-                      inputPlaceHoder="Nhập từ khoá seo"
-                    />
-                    <DescriptionGroup
-                      label="Mô tả SEO"
-                      required="*"
-                      inputId="name"
-                      inputPlaceHoder="Nhập từ khoá seo"
-                    />
-                    <InputGroup
-                      label="Robot SEO"
-                      required="*"
-                      inputId="name"
-                      inputPlaceHoder="Robot SEO"
-                    />
-                    <InputGroup
-                      label="URL SEO"
-                      required="*"
-                      inputId="name"
-                      inputPlaceHoder="https://demo.edunity.com/edunity-laravel"
-                    />
-                    <InputGroup
-                      label="Tiêu đề Og"
-                      required="*"
-                      inputId="name"
-                      inputPlaceHoder="Responsive Web Design Essentials - HTML5 CSS Bootstrap"
-                    />
-                    <DescriptionGroup
-                      label="Mô tả Og"
-                      required="*"
-                      inputId="name"
-                      inputPlaceHoder="Khóa học tốt nhất để học những kiến ​thức cơ bản về HTML5 và CSS3 từ đầu. Bao gồm 5 dự án, hoàn hảo cho người mới bắt đầu."
-                    />
-                    <RadioGroup label="Hình ảnh SEO">
-                      <img
-                        v-if="imageUrl"
-                        :src="imageUrl"
-                        alt="Uploaded Image"
-                        class="mt-2 w-full"
-                      />
-                      <UploadGroup @update:image="updateImage" />
-                    </RadioGroup>
-                  </div>
-                </el-tab-pane>
               </el-tabs>
             </div>
           </form>
@@ -801,12 +682,7 @@
     @close="dialogAddnewQuiz = false"
   >
     <InputGroup inputId="nameQuiz" label="Tên quiz" inputPlaceHoder="Nhập tên quiz" />
-    <InputGroup
-      inputId="timeQuiz"
-      label="Thời gian làm bài"
-      inputPlaceHoder="Nhập thời gian làm bài"
-    />
-    <InputGroup inputId="numberQuestion" label="Số câu hỏi" inputPlaceHoder="Nhập số câu hỏi" />
+
   </DialogArea>
   <!-- End Dialog thêm quiz -->
 
@@ -915,7 +791,8 @@ const {
   dialogEditSection,
   dialogAddnewLecture,
   dialogEditLecture,
-  dialogAddnewSection
+  dialogAddnewSection,
+  dialogAddnewQuiz
 } = useCourse()
 
 const { categories, fetchCategoriesCRUD } = useCategoryStore()
@@ -936,7 +813,7 @@ const paid = ref('1')
 const linkVideo = ref<number| string>('1')
 const checked2 = ref(false)
 
-//dialog thêm chương
+//dialog Quiz
 const addChapter = () => {
   dialogAddnewSection.value = true
 }
@@ -965,7 +842,6 @@ const editLesson = (id: number | string)  => {
 //end dialog bài học
 
 //dialog quiz
-const dialogAddnewQuiz = ref<boolean>(false)
 const addQuiz = () => {
   dialogAddnewQuiz.value = true
 }
