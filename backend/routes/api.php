@@ -58,7 +58,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     Route::get('/google/call-back', [AuthController::class, 'loginGoogleCallback']);
     //callback connect stripe
     Route::get('/payment-methods/stripe/callback', [PaymentMethodController::class, 'handleStripeCallback'])->name('payment_methods.stripe.callback');
-    Route::post('/payout/stripe/webhook', [PayoutController::class, 'handleWebhook']);
+    Route::get('/payment-methods/stripe/test', [PaymentMethodController::class, 'test'])->name('payment_methods.stripe.callback');
+
 
     //Logged in
     Route::middleware(['jwt'])->group(function () {
@@ -129,6 +130,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/payout/process/{id}', [PayoutController::class, 'processPayout']);
             // Liệt kê các yêu cầu rút tiền
             Route::get('/payout/requests', [PayoutController::class, 'listPayoutRequests']);
+            Route::get('/payout/success/{id}', [PayoutController::class, 'payoutSuccess'])->name('payout.success');
+            Route::get('/payout/cancel/{id}', [PayoutController::class, 'payoutCancel'])->name('payout.cancel');
+
 
             //get all user
             Route::get('/get-all-user', [AuthController::class, 'getAllUser']);
@@ -270,6 +274,8 @@ Route::get('courses/{courseId}/reviews/filter', [ReviewController::class, 'filte
 // Order webhook
 Route::get('/orders/verify-payment', [OrderController::class, 'verifyPayment']);
 Route::post('/stripe/webhook', [OrderController::class, 'handleWebhook']);
+
+Route::post('/payout/stripe/webhook', [PayoutController::class, 'handleWebhook']);
 
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{id}', [CategoryController::class, 'show'])->name('categories.show');
