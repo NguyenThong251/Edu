@@ -267,6 +267,45 @@ class PayoutController extends Controller
         return formatResponse(STATUS_OK, $payoutRequests, '', __('messages.payout_requests_list'), 200);
     }
 
+    public function rejectRequest(Request $request, $id)
+    {
+        $reason = $request->input('reason');
+        $payoutRequest = PayoutRequest::find($id);
+        if (!$payoutRequest) {
+            return response()->json([
+                'status' => 'FAIL',
+                'data' => '',
+                'message' => 'Payout request not found',
+                'code' => 404
+            ], 404);
+        }
+
+        if ($payoutRequest->status !== 'pending') {
+            return response()->json([
+                'status' => 'FAIL',
+                'data' => '',
+                'error' => '',
+                'message' => 'Payout request not status pending',
+                'code' => 400
+            ], 400);
+        }
+
+        if (!$payoutRequest->update(['status' => 'rejected', 'reason' => $reason ?? null])) {
+            return response()->json([
+                'status' => 'FAIL',
+                'data' => '',
+                'error' => '',
+                'message' => 'Rejected Payout Request failed.',
+                'code' => 400
+            ]);
+        }
+        return response()->json([
+            'status' => 'SUCCESS',
+            'data' => $payoutRequest,
+            'message' => 'Payout request rejected.',
+        ]);
+    }
+
 
 //    public function handleWebhook(Request $request)
 //    {
