@@ -2,8 +2,15 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/services/axiosConfig'
-import type { TCardCourse, TCardMyCourse } from '@/interfaces/course.interface'
-import type { TChangeContent, TLesson } from '@/interfaces/ui.interface'
+import type {
+  TContentOfSection,
+  TCardCourse,
+  TCardMyCourse,
+  TLecture
+} from '@/interfaces/course.interface'
+import type { TChangeContent } from '@/interfaces/ui.interface'
+import { ElMessage } from 'element-plus'
+import { id } from 'element-plus/es/locale/index.mjs'
 
 export const useCourseStore = defineStore('courseStore', () => {
   // State
@@ -19,6 +26,9 @@ export const useCourseStore = defineStore('courseStore', () => {
   const progress = ref(0)
   const activeNames = ref(['0'])
   const studyCourse = ref<any>(null)
+  const listContentOfSection = ref<TContentOfSection[]>([])
+  const listLecturesAdmin = ref<TContentOfSection[]>([])
+  const dataForm = ref<TContentOfSection>()
   // Actions
 
   const fetchCourseDetail = async (courseId: string) => {
@@ -133,6 +143,159 @@ export const useCourseStore = defineStore('courseStore', () => {
       console.error(error)
     }
   }
+
+  // ADMIM COURSE
+
+  //course
+
+  // lecture
+
+  const showContentOfSection = async (id: number) => {
+    try {
+      const res = await api.get(`/auth/show-content-of-section/${id}`)
+      listContentOfSection.value = res.data.data
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const fetchListLecturesAdmin = async (params: any) => {
+    try {
+      const res = await api.get('/auth/lectures', { params })
+      listLecturesAdmin.value = res.data.data
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const lectureEditFrom = async (id: number) => {
+    try {
+      const res = await api.get(`auth/lectures/edit-form/${id}`)
+      dataForm.value = res.data.data
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const createLecture = async (id: number, data: TLecture) => {
+    try {
+      const res = await api.post('auth/lectures', data)
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Thêm bài học thất bại')
+      } else {
+        ElMessage.success('Thêm bài học thành công')
+        await showContentOfSection(id)
+        // await fetchListLecturesAdmin()
+      }
+    } catch (error) {
+      ElMessage.error('Thêm bài học thất bại')
+      console.log(error)
+    }
+  }
+
+  const updateLecture = async (id: number, id_lecture: number, data: TLecture) => {
+    try {
+      const res = await api.post(`auth/lectures/${id_lecture}`, data)
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Cập nhật bài học thất bại')
+      } else {
+        ElMessage.success('Cập nhật bài học thành công')
+        await showContentOfSection(id)
+        // await fetchListLecturesAdmin()
+      }
+    } catch (error) {
+      ElMessage.error('Cập nhật bài học thất bại')
+      console.log(error)
+    }
+  }
+
+  const deleteLecture = async (id: number, id_lecture: number) => {
+    try {
+      const res = await api.delete(`auth/lectures/${id_lecture}`)
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Xóa bài học thất bại')
+      } else {
+        ElMessage.success('Xóa bài học thành công')
+        await showContentOfSection(id)
+        // await fetchListLecturesAdmin()
+      }
+    } catch (error) {
+      ElMessage.error('Xóa bài học thất bại')
+      console.log(error)
+    }
+  }
+
+  const updateSectionLecture = async (
+    id: number,
+    id_lecture: number,
+    data: { section_id: number }
+  ) => {
+    try {
+      const res = await api.patch(`auth/lectures/${id_lecture}/section`, {
+        params: data
+      })
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Cập nhật bài học thất bại')
+      } else {
+        ElMessage.success('Cập nhật bài học thành công')
+        await showContentOfSection(id)
+        // await fetchListLecturesAdmin()
+      }
+    } catch (error) {
+      ElMessage.error('Cập nhật bài học thất bại')
+      console.log(error)
+    }
+  }
+  const updateStatusLecture = async (
+    id: number,
+    id_lecture: number,
+    data: { status: 'active' | 'inactive' }
+  ) => {
+    try {
+      const res = await api.patch(`auth/lectures/${id_lecture}/status`, {
+        params: data
+      })
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Cập nhật bài học thất bại')
+      } else {
+        ElMessage.success('Cập nhật bài học thành công')
+        await showContentOfSection(id)
+        // await fetchListLecturesAdmin()
+      }
+    } catch (error) {
+      ElMessage.error('Cập nhật bài học thất bại')
+      console.log(error)
+    }
+  }
+  const sortContentOfSection = async (
+    id: number,
+    data: { sorted_content: TContentOfSection[] }
+  ) => {
+    try {
+      const res = await api.put('auth/sort-content-of-section', {
+        params: data
+      })
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Cập nhật bài học thất bại')
+      } else {
+        ElMessage.success('Cập nhật bài học thành công')
+        await showContentOfSection(id)
+        // await fetchListLecturesAdmin()
+      }
+    } catch (error) {
+      ElMessage.error('Cập nhật bài học thất bại')
+      console.log(error)
+    }
+  }
+
+  // quizz
+
   // Getter
   const getCourse = () => course.value
   fetchMyCourse()
@@ -154,6 +317,19 @@ export const useCourseStore = defineStore('courseStore', () => {
     changeContent,
     fetchMyCourseFilter,
     searchLetureStudy,
-    fetchTeacherCourse
+    fetchTeacherCourse,
+    // admin
+    listContentOfSection,
+    listLecturesAdmin,
+    dataForm,
+    showContentOfSection,
+    fetchListLecturesAdmin,
+    lectureEditFrom,
+    createLecture,
+    updateLecture,
+    deleteLecture,
+    updateSectionLecture,
+    updateStatusLecture,
+    sortContentOfSection
   }
 })

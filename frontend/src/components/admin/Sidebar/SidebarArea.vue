@@ -134,11 +134,7 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
         label: 'Bảng điều khiển',
         route: '/teacher'
       },
-      {
-        icon: SquaresPlusIcon,
-        label: 'Danh mục',
-        route: '/teacher/category'
-      },
+
       {
         icon: ArchiveBoxIcon,
         label: 'Khoá học',

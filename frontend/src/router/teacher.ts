@@ -7,6 +7,7 @@ import MyProfile from '@/views/user/MyProfile.vue'
 import Security from '@/views/user/Security.vue'
 import PaymentMethodPage from '../views/teacher/PaymentMethodPage.vue'
 import RedirectHandler from '@/views/RedirectHandler.vue'
+import CourseEditPage from '@/views/teacher/CourseEditPage.vue'
 
 const teacher = [
   {
@@ -55,6 +56,11 @@ const teacher = [
         path: '/teacher/payment-method/:status',
         name: 'RedirectHandler',
         component: RedirectHandler
+      },
+      {
+        path: '/teacher/course/edit/:id',
+        name: 'CourseEditPage',
+        component: CourseEditPage
       }
     ]
   }

@@ -37,22 +37,16 @@
                     <del v-if="old_price" class="text-gray-500">{{ formatPrice(old_price) }}</del>
                 </div>
             </div>
-            <!-- <div
+            <div
                 class="absolute  top-2 right-2 opacity-0 translate-x-11 group-hover:translate-x-0  hover:transition-all duration-300 group-hover:opacity-100  ">
                 <div class="flex flex-col gap-2">
-                    <button @click="handleAddToCart(id)"
+                    <button @click="navigateToEditPage(id)"
                         class="bg-indigo-500 hover:bg-indigo-600 hover:transition-all transition-all hover:duration-300 duration-300 p-2 rounded-full">
-                        <ShoppingCartIcon class="h-5 w-5  text-white" />
+                        <PencilSquareIcon class="h-5 w-5  text-white" />
                     </button>
-                    <button @click="toggleWishlist(id)"
-                        class="bg-indigo-500 hover:bg-indigo-600 hover:transition-all transition-all hover:duration-300 duration-300 p-2 rounded-full">
 
-                        <HeartIconSolid v-if="isInWishlist(id)" class="h-5 w-5  text-white" />
-                        <HeartIcon v-else class="h-5 w-5  text-white" />
-
-                    </button>
                 </div>
-            </div> -->
+            </div>
         </div>
     </div>
 
@@ -61,7 +55,7 @@
 <script setup lang="ts">
 import { computed, defineProps, ref } from 'vue';
 import { formatPrice } from '@/utils/formatPrice';
-import { ClockIcon, BookOpenIcon, RocketLaunchIcon, HeartIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
+import { ClockIcon, BookOpenIcon, RocketLaunchIcon, HeartIcon, ShoppingCartIcon, PencilSquareIcon } from "@heroicons/vue/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/vue/20/solid";
 
 import type { TCardCourse } from '@/interfaces/course.interface';
@@ -78,7 +72,9 @@ const navigateToDetail = (id: number) => {
 };
 const { handleAddToCart } = useCart();
 
-
+const navigateToEditPage = (id: number) => {
+    router.push({ name: 'CourseEditPage', params: { id: String(id) } });
+};
 // wishlist 
 const wishlistStore = useWishlistStore();
 const { addToWishlist, removeFromWishlist } = wishlistStore

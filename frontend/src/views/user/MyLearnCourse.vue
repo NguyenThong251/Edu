@@ -130,8 +130,8 @@
                 <div class="px-4 !text-gray-900 flex gap-5 items-center justify-between leading-5">
                   <h3 class="text-lg">{{ content.title }}</h3>
                   <div class="flex gap-1" v-if="content.content_course_type === 'section'">
-                    <span class="text-gray-500">{{ content.content_done }}/{{
-                      content.content_count
+                    <span class="text-gray-500">{{ content.total_done }}/{{
+                      content.total_count
                     }}
                       Hoàn thành</span> •
                     <span class="text-pink-500">{{ content.duration_display }}</span>

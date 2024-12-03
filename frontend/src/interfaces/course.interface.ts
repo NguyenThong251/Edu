@@ -56,3 +56,33 @@ export interface TCourseFilters {
   sort_order?: string
   language_ids?: number[]
 }
+
+// admin
+export interface TContentOfSection {
+  id?: number
+  section_id?: number
+  type?: 'video' | 'file' | 'quiz'
+  title?: string
+  content_link?: string
+  duration?: number
+  preview?: string | null
+  status?: 'active' | 'inactive'
+  order?: number
+  deleted_at?: string | null
+  deleted_by?: number | null
+  created_at?: string
+  updated_at?: string
+  created_by?: number
+  updated_by?: number | null
+  content_type?: string
+}
+export interface TLecture {
+  section_id?: number
+  type?: 'video' | 'file' | 'quiz'
+  title?: string
+  content?: string
+  duration?: number
+  preview?: string | null
+  status?: 'active' | 'inactive'
+  order?: number
+}
