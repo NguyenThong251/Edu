@@ -42,7 +42,7 @@ class SectionController extends Controller
     {
         // Validate incoming request
         $request->validate([
-            'name' => 'required',
+            'title' => 'required',
         ]);
 
         

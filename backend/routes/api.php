@@ -183,7 +183,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('lectures/{id}', [LectureController::class, 'show'])->name('lectures.show');
             Route::post('lectures/{id}', [LectureController::class, 'update'])->name('lectures.update');
             Route::get('lectures/restore/{id}', [LectureController::class, 'restore'])->name('lectures.restore');
-            Route::delete('lectures/{id}', [LectureController::class, 'destroy'])->name('lectures.destroy');
+            Route::delete('lectures/{id}', [LectureController::class, 'delete'])->name('lectures.delete');
             Route::patch('lectures/{id}/status', [LectureController::class, 'updateLectureStatus'])->name('lectures.updateStatus');
             Route::patch('lectures/{id}/section', [LectureController::class, 'updateLectureSection'])->name('lectures.updateSection');
             Route::get('show-content-of-section/{id}', [LectureController::class, 'showContentBySection'])->name('lectures.showContentBySection');

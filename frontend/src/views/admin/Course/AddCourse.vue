@@ -26,7 +26,7 @@
             <CkeditorGroup
               label="Mô tả"
               v-model="formDataAddCourse.description"
-              @update:modelValue="updateDescription"
+              
             />
             
             <!-- <RadioGroup
@@ -46,7 +46,7 @@
             inputPlaceHoder="Chọn danh mục cho khoá học"
             required="*"
             label="Danh mục"
-            :optionsData="parentCategories.map(category => ({ label: category.name, value: category.id }))"
+            :optionsData="apiStore.categories"
             v-model="formDataAddCourse.category_id"
           />
 
@@ -54,7 +54,7 @@
             inputPlaceHoder="Chọn cấp độ cho khoá học"
             required="*"
             label="Cấp độ khoá học"
-            :optionsData="courseLevels.map(level => ({ label: level.name, value: level.id }))"
+            :optionsData="apiStore.levels"
             v-model="formDataAddCourse.level_id"
             @change="() => console.log('Cấp độ đã chọn:', formDataAddCourse.level_id)"
           />
@@ -63,20 +63,19 @@
             inputPlaceHoder="Chọn ngôn ngữ cho khoá học"
             required="*"
             label="Ngôn ngữ"
-            :optionsData="languages.map(language => ({ label: language.name, value: language.id }))"
+            :optionsData="apiStore.languagies"
             v-model="formDataAddCourse.language_id"
             @change="() => console.log('Ngôn ngữ đã chọn:', formDataAddCourse.language_id)"
           />
-            <RadioGroup
+            <!-- <RadioGroup
             label="Loại giá"
             >
             <el-radio-group class="grid" v-model="paid">
                 <el-radio value ="1">Có phí</el-radio>
                 <el-radio value ="0">Miễn phí</el-radio>
             </el-radio-group>
-            </RadioGroup>
-            <template
-            :class="{'block': paid == 1, 'hidden': paid == 0}"
+            </RadioGroup> -->
+            <div
             class="transition-opacity translate-y-2  duration-500 ease-in-out"
             >
               <InputGroup
@@ -104,7 +103,7 @@
             <div class="mt-1">
               <el-checkbox v-model="checked2" label="Click nếu khoá học này có giảm giá" size="large" />
             </div>
-          </template>
+          </div>
           <UploadGroup
             label="Tải lên hình ảnh thumbnail"
             inputId="upload"
@@ -141,27 +140,21 @@ import { ArrowPathIcon } from '@heroicons/vue/24/outline';
 import { useCategoryStore } from '@/store/category';
 
 
-const { formDataAddCourse, courseLevels, fetchCourseLevels, fetchLanguages, languages, submitForm , handlePreviewImg, imageUrl} = useCourse();
-// const { categories, fetchCategories } = useFetchCategories();
-
-const {categories, fetchCategoriesCRUD} = useCategoryStore()
-
-const parentCategories = ref([]);
-
-// Lọc danh mục có parent_id là null
-onMounted(async() => {
-  await fetchCategoriesCRUD();
-  fetchCourseLevels()
-  fetchLanguages()
-  parentCategories.value = categories.value.filter((category: TListCategories) => category.parent_id === null);
-});
+const { formDataAddCourse, submitForm , handlePreviewImg, imageUrl} = useCourse();
 const sidebarStore = useSidebarStore()
-
-
+import { apisStore } from '@/store/apis';
+import { useRouter } from 'vue-router';
+const apiStore = apisStore()
+onMounted(() => {
+    apiStore.fetchCate()
+    apiStore.fetchLevel()
+    apiStore.fetchLang()
+})
 //ck editor
 
 const updateDescription = (newDescription: string) => {
   formDataAddCourse.value.description = newDescription;
+  console.log(newDescription);
 };
 //ck editor
 
@@ -169,7 +162,6 @@ const updateDescription = (newDescription: string) => {
 
 
 // Biến cho phần "Có phí" và "Miễn phí"
-const paid = ref('1')
 const radio2 = ref('1')
 const checked2 = ref(false)
 

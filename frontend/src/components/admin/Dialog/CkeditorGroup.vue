@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref, watch, defineProps, defineEmits } from 'vue';
 import { Ckeditor } from '@ckeditor/ckeditor5-vue';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import type { CkeditorGroupProps } from '@/interfaces/admin.interface';
 
-
+// Props và emits
 const props = defineProps<CkeditorGroupProps>();
 const emit = defineEmits(['update:modelValue']);
 
+// CKEditor instance
 const editor = ClassicEditor;
 const editorInstance = ref<any>(null);
 
-// Initial value for editor
+// Giá trị ban đầu từ `modelValue` của cha
 const editorData = ref(props.modelValue || '');
 
-// Config CKEditor
+// Cấu hình CKEditor
 const editorConfig = {
   toolbar: [
     'undo', 'redo', '|',
@@ -24,7 +25,17 @@ const editorConfig = {
   ]
 };
 
-// Hàm xử lý khi nội dung CKEditor thay đổi
+// Đồng bộ dữ liệu khi `modelValue` thay đổi từ cha
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (editorInstance.value && newValue !== editorInstance.value.getData()) {
+      editorInstance.value.setData(newValue); // Cập nhật dữ liệu cho CKEditor
+    }
+  }
+);
+
+// Xử lý khi nội dung CKEditor thay đổi
 const onInput = () => {
   if (editorInstance.value) {
     const data = editorInstance.value.getData(); // Lấy dữ liệu hiện tại của CKEditor
@@ -32,11 +43,10 @@ const onInput = () => {
   }
 };
 
-// Hàm để lấy instance khi CKEditor đã sẵn sàng
+// Gán instance khi CKEditor sẵn sàng
 const onReady = (instance: any) => {
   editorInstance.value = instance;
 };
-
 </script>
 
 <template>
@@ -46,7 +56,7 @@ const onReady = (instance: any) => {
     </label>
     <ckeditor
       :editor="editor"
-      :modelValue="modelValue"
+      :modelValue="editorData"
       @input="onInput"
       class="w-full !h-[400px]"
       :config="editorConfig"
@@ -54,7 +64,6 @@ const onReady = (instance: any) => {
       :class="customsClassChild2"
       @ready="onReady"
     />
-    
   </div>
 </template>
 

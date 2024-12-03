@@ -17,15 +17,20 @@ export interface TCardCourse {
 export interface TCourseAdmin {
   id: number
   title: string
+  slug: string
   description: string
   short_description: string
-  thumbnail: string
-  price: number
+  thumbnail: string | null
+  language_id: number | string
+  level_id: number | string
+  category_id: number | string
+  price: string
   type_sale: string
-  sale_value: number
+  sale_value: number | string
   status: 'active' | 'inactive'
   created_at: string
   updated_at: string
+  [key: string]: any; // Index signature
 }
 
 export interface TCardMyCourse {
@@ -62,6 +67,7 @@ export interface TSection {
   title?: string
   order?: number | string
   lectures?: TLectures[]
+  [key: string]: any;
 }
 
 export interface TLectures {

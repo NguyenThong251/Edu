@@ -282,8 +282,7 @@ class CourseController extends Controller
             'price.required' => __('messages.price_required'),
             'type_sale.required' => __('messages.type_sale_required'),
             'status.required' => __('messages.status_required'),
-        ]);
-
+        ]); 
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }

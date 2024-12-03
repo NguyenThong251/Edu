@@ -1,11 +1,14 @@
-import type { TLectures, TSection } from '@/interfaces'
+import type { TCourseAdmin, TLectures, TSection } from '@/interfaces'
 import api from '@/services/axiosConfig'
 import * as pdfjsLib from 'pdfjs-dist';
 
 import { ElNotification, ElMessage, ElMessageBox } from 'element-plus'
 import { da } from 'element-plus/es/locale/index.mjs'
 import { computed, onMounted, ref, toRaw } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { watchEffect } from 'vue';
+import { onBeforeUpdate } from 'vue';
 
 
 
@@ -13,9 +16,10 @@ import { useRoute, useRouter } from 'vue-router'
 
 export default function useCourse() {
   const route = useRoute()
+  const router = useRouter(); 
   const dialogEditSection = ref<boolean>(false);
-  //dialog bài học
   const dialogAddnewLecture = ref<boolean>(false)
+  const dialogAddnewSection = ref<boolean>(false)
   const dialogEditLecture = ref<boolean>(false)
   const imageUrl = ref<string | null>(null)
   const courseId = ref<string|number | null>(null)
@@ -25,7 +29,7 @@ export default function useCourse() {
   //   return formDataAddCourse.value.title.replace(/\s+/g, '-');
   // });
   // State để lưu dữ liệu form của khóa học
-  const formDataAddCourse = ref({
+  const formDataAddCourse = ref<Partial<TCourseAdmin>>({
     title: '',
     slug: '',
     short_description: '',
@@ -41,12 +45,12 @@ export default function useCourse() {
   })
 
   // State để lưu danh sách cấp độ và ngôn ngữ
-  const courseLevels = ref([])
-  const section = ref<TSection[]>([])
-  const lecture = ref<TLectures[]>([])
-  const languages = ref([])
-  const loading = ref(false)
-  const error = ref(null)
+  const courseLevels = ref([]);
+  const section = ref<TSection[]>([]);
+  const lecture = ref<TLectures[]>([]);
+  const languages = ref([]);
+  const loading = ref(false);
+  const error = ref(null);
 
   // const userToken = ref(myToken);
   // Hàm lấy dữ liệu cấp độ khóa học
@@ -89,19 +93,26 @@ export default function useCourse() {
 
   // Hàm thêm khóa học
   const submitForm = async () => {
+    // In dữ liệu form   trước khi tạo FormData
+    if (formDataAddCourse.value.title) {
+      formDataAddCourse.value.slug = formDataAddCourse.value.title.replace(/\s+/g, '-');
+    } else {
+      formDataAddCourse.value.slug = ''; // Gán giá trị mặc định nếu `title` là undefined
+    }
     try {
       loading.value = true
+      // Tạo một FormData object
       const formData = new FormData();
-       // Gán các trường không phải tệp vào FormData
+
+      // Gán các trường dữ liệu vào FormData
       for (const key in formDataAddCourse.value) {
         if (formDataAddCourse.value[key]) {
           formData.append(key, formDataAddCourse.value[key]);
         }
       }
-
-      // In dữ liệu form   trước khi tạo FormData
+      
       console.log('Dữ liệu form trước khi tạo FormData:', formDataAddCourse.value)
-      formDataAddCourse.value.slug = formDataAddCourse.value.title.replace(/\s+/g, '-');
+
       const response = await api.post('/auth/courses/', formData, {
         // headers: {
         //   'Content-Type': 'multipart/form-data'
@@ -116,10 +127,10 @@ export default function useCourse() {
           message: response.data.message || 'Thêm khoá học thành công',
           type: 'success'
         })
-        // Chuyển hướng đến trang chỉnh sửa khóa học
-      const courseId = response.data.id;  // Giả sử API trả về course_id
-      const router = useRouter();
-      router.push({ name: 'editCourse', params: { id: courseId } });
+        // Chuyển hướng đến trang chỉnh sửa khóa học vừa tạo
+        const courseIdI = response.data.data.id;  // API trả về course_id
+        console.log('log id vừa tạo', courseIdI);
+        router.push(`/teacher/course/edit-course/${courseIdI}`);
       } else {
         ElNotification({
           title: 'Thất bại',
@@ -128,11 +139,12 @@ export default function useCourse() {
         })
       }
     } catch (err) {
-      // alert('Lỗi khi thêm khóa học: ' + err.message)
+      alert('Lỗi khi thêm khóa học: ' + err.message)
     } finally {
       loading.value = false
     }
   }
+
   function handlePreviewImg(event: any) {
     const file = event.target.files?.[0]
     if (file) {
@@ -167,11 +179,11 @@ export default function useCourse() {
       loading.value = false;
     }
   };
-  
+
   
   //EDIT Course
 
-  const formDataEditCourse = ref({
+  const formDataEditCourse = ref<Partial<TCourseAdmin>>({
     title: '',
     slug: '',
     short_description: '',
@@ -179,7 +191,7 @@ export default function useCourse() {
     price: '',
     type_sale: 'price',
     sale_value: '',
-    status: '',
+    status: 'active',
     language_id: '',
     level_id: '',
     category_id: '',
@@ -255,7 +267,7 @@ export default function useCourse() {
   const handelFormSection = async () => {
 
     try {
-      console.log('Dữ liệu form Section Data:', formDataAddSection.value)
+      // console.log('Dữ liệu form Section Data:', formDataAddSection.value)
       const response = await api.post('/auth/section/', formDataAddSection.value);
       
       if (response.data.status === 'OK') {
@@ -266,10 +278,10 @@ export default function useCourse() {
         });
         
         // Cập nhật section.value sau khi thêm mới
-        section.value = response.data.data // Đảm bảo sử dụng .value để cập nhật ref
         // Hoặc sử dụng một cách khác để thêm section mới vào đầu mảng
-        // section.value = [...section.value, response.data.data]; 
-
+        section.value = [...section.value, response.data.data];
+        await fetchCourseData();
+        dialogAddnewSection.value = false
       } else {
         ElNotification({
           title: 'Thất bại',
@@ -295,6 +307,7 @@ export default function useCourse() {
   });
   // get Id section
   const fetchSectionId = async (id: number | string) => {
+    
     try {
       const response = await api.get(`/auth/section/${id}`);
       formDataEditSection.value = { ...response.data.data };
@@ -315,16 +328,24 @@ export default function useCourse() {
   
   const handleEditSection = async (id: number | string) => {
     console.log('Dữ liệu trc khi chỉnh sửa:', id, formDataEditSection.value);
+    // console.log('Dữ liệu trc khi chỉnh sửa2:', id, formDataEditSection.value.target);
     try {
-      if (!formDataEditSection.value.title || !formDataEditSection.value.id) {
-        ElNotification({
-          title: 'Lỗi',
-          message: 'Dữ liệu chỉnh sửa không hợp lệ',
-          type: 'error',
-        });
-        return;
-      }
-  
+      // if (!formDataEditSection.value.title || !formDataEditSection.value.id) {
+      //   ElNotification({
+      //     title: 'Lỗi',
+      //     message: 'Dữ liệu chỉnh sửa không hợp lệ',
+      //     type: 'error',
+      //   });
+      //   return;
+      // }
+      // const formDataEdit = new FormData();
+      // // Gán các trường không phải tệp vào FormData
+      // for (const key in formDataEditSection.value) {
+      //   if (formDataEditSection.value[key]) {
+      //     formDataEdit.append(key, formDataEditSection.value[key]);
+      //   }
+      // }
+
       const response = await api.post(`/auth/section/${id}`, formDataEditSection.value);
       console.log('log dữ liệu sau khi chỉnh sửa:', response);
       
@@ -338,7 +359,7 @@ export default function useCourse() {
           message: 'Đã tải dữ liệu chỉnh sửa',
           type: 'success',
         });
-  
+        await fetchCourseData();
         dialogEditSection.value = false; // Đóng dialog sau khi chỉnh sửa thành công
   
       } else {
@@ -494,6 +515,7 @@ export default function useCourse() {
           message: response.data.message || 'Thêm bài học thành công',
           type: 'success',
         });
+        await fetchCourseData();
         dialogAddnewLecture.value = false
         resetForm()
       } else {
@@ -621,11 +643,12 @@ export default function useCourse() {
         try {
           const response = await api.delete(`/auth/lectures/${id}`);
           // Sau khi xóa thành công, cập nhật lại section.value
-          lecture.value = lecture.value.filter((s:any) => s.id !== id);
+          await fetchCourseData();
           ElNotification({
             type: 'success',
             message: 'Xóa bài học thành công!'
           });
+          
         } catch (error) {
           ElNotification({
             type: 'error',
@@ -712,8 +735,6 @@ export default function useCourse() {
   };
   // END LECTURE
 
-
-
   onMounted(() => {
       fetchCourseData();
   })
@@ -727,6 +748,7 @@ export default function useCourse() {
     formDataAddLecture,
     dialogEditSection,
     dialogAddnewLecture,
+    dialogAddnewSection,
     dialogEditLecture,
     handelFormSection,
     courseLevels,

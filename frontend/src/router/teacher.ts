@@ -14,12 +14,12 @@ const teacher = [
         name: 'teacher.index',
         component: () => import('@/views/teacher/DashboardPage.vue')
       },
-      {
-        path: '/teacher/course/manager-course',
-        name: 'teacher.course',
-        component: ManagerCourse,
-        meta: { requiresAuth: true, role: 'instructor', title: 'Khoá học | Edunity' }
-      },
+      // {
+      //   path: '/teacher/course/manager-course',
+      //   name: 'teacher.course',
+      //   component: ManagerCourse,
+      //   meta: { requiresAuth: true, role: 'instructor', title: 'Khoá học | Edunity' }
+      // },
       {
         path: '/teacher/course/add-course',
         name: 'teacher.add-course',

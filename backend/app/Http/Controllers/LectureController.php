@@ -443,7 +443,7 @@ class LectureController extends Controller
         return formatResponse(STATUS_OK, $lecture, '', __('messages.lecture_update_success'));
     }
 
-    public function destroy($id)
+    public function delete($id)
     {
         // $lecture = Lecture::find($id);
         
@@ -461,7 +461,7 @@ class LectureController extends Controller
         // // Lấy lại bài giảng đã bị xóa mềm
         // $lecture = Lecture::onlyTrashed()->find($id);
         Lecture::where('id', $id)->delete();
-        return formatResponse(STATUS_OK, $lecture, '', __('messages.lecture_soft_delete_success'));
+        return formatResponse(STATUS_OK, '', __('messages.lecture_soft_delete_success'));
     }
 
 

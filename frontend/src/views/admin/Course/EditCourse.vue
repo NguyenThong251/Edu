@@ -76,9 +76,9 @@
                       </template>
                     </div>
                     <template v-if="section.length == 0">
-                      <div class="flex flex-row mt-6">
+                      <div  class="flex flex-row mt-6">
                         <div class="mt-4 basis-8/12">
-                          <ButtonAddObject title="Thêm chương mới" />
+                          <ButtonAddObject  @click="addChapter" title="Thêm chương mới" />
                         </div>
                       </div>
                     </template>
@@ -886,6 +886,7 @@ import ButtonSecondarySm from '@/components/admin/Button/ButtonSecondarySm.vue'
 import { useRoute } from 'vue-router'
 import { useCategoryStore } from '@/store/category'
 
+
 const {
   formDataEditCourse,
   fetchCourseData,
@@ -906,18 +907,21 @@ const {
   handleSortSection,
   handleAddLecture,
   handleEditLecture,
+  
   formDataEditSection,
   formDataEditLecture,
   fetchSectionId,
   fetchLectureId,
   dialogEditSection,
   dialogAddnewLecture,
-  dialogEditLecture
+  dialogEditLecture,
+  dialogAddnewSection
 } = useCourse()
 
 const { categories, fetchCategoriesCRUD } = useCategoryStore()
 console.log('đay là categories', categories)
 
+console.log('Cập nhật section:', section.value);
 const toggleActive = ref(false)
 
 const ActiveToggle = (val: string[]) => {
@@ -933,7 +937,6 @@ const linkVideo = ref<number| string>('1')
 const checked2 = ref(false)
 
 //dialog thêm chương
-const dialogAddnewSection = ref<boolean>(false)
 const addChapter = () => {
   dialogAddnewSection.value = true
 }
@@ -1004,6 +1007,7 @@ onMounted(() => {
   fetchCategoriesCRUD()
   fetchCourseLevels()
   fetchLanguages()
+  fetchCourseData()
 })
 </script>
 <style>
