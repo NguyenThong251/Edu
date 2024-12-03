@@ -175,6 +175,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('show-content-of-section/{id}', [LectureController::class, 'showContentBySection'])->name('lectures.showContentBySection');
             Route::get('lectures', [LectureController::class, 'getListAdmin'])->name('lectures.getListAdmin');
             Route::get('lectures/edit-form/{id}', [LectureController::class, 'editForm'])->name('lectures.editForm');
+            Route::delete('lectures/permanent-delete/{id}', [LectureController::class, 'forceDelete'])->name('lectures.destroypermanent');
+
 
 
             Route::post('quizzes', [QuizController::class, 'store'])->name('quizzes.store');
@@ -182,7 +184,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::put('quizzes/{id}', [QuizController::class, 'update'])->name('quizzes.update');
             Route::get('quizzes/restore/{id}', [QuizController::class, 'restore'])->name('quizzes.restore');
             Route::delete('quizzes/{id}', [QuizController::class, 'destroy'])->name('quizzes.destroy');
-            Route::delete('quizzes/permanent-delete/{id}', [QuizController::class, 'forceDelete'])->name('quizzes.destroy');
+            Route::delete('quizzes/permanent-delete/{id}', [QuizController::class, 'forceDelete'])->name('quizzes.destroypermanent');
             Route::patch('quizzes/{id}/status', [QuizController::class, 'updateQuizStatus'])->name('quizzes.updateStatus');
             Route::patch('quizzes/{id}/section', [QuizController::class, 'updateQuizSection'])->name('quizzes.updateSection');
             Route::get('quizzes', [QuizController::class, 'getListAdmin'])->name('quizzes.getListAdmin');
@@ -193,7 +195,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::put('questions/{id}', [QuestionController::class, 'update'])->name('questions.update');
             Route::get('questions/restore/{id}', [QuestionController::class, 'restore'])->name('questions.restore');
             Route::delete('questions/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
-            Route::delete('questions/permanent-delete/{id}', [QuestionController::class, 'forceDelete'])->name('questions.destroy');
+            Route::delete('questions/permanent-delete/{id}', [QuestionController::class, 'forceDelete'])->name('questions.destroypermanent');
             Route::patch('questions/{id}/status', [QuestionController::class, 'updateQuestionAttributes'])->name('questions.updateStatus');
             Route::patch('questions/{id}/quiz', [QuestionController::class, 'updateQuestionAttributes'])->name('questions.updateQuestion');
             Route::get('questions', [QuestionController::class, 'getListAdmin'])->name('questions.getListAdmin');
