@@ -36,40 +36,49 @@ class CourseController extends Controller
         $coursesQuery = Course::with(['language', 'level', 'category']);
 
         // Lấy số lượng limit và thông tin phân trang từ request
-        $limit = $request->get('limit', null);
-        $perPage = $request->get('per_page', 10);
-        $currentPage = $request->get('page', 1);
+        $perPage = (int) $request->get('per_page', 10);
+        $page = (int) $request->get('page', 1);
 
-        // Nếu có limit thì giới hạn kết quả trước khi phân trang thủ công
-        if ($limit) {
-            // Lấy các kết quả giới hạn
-            $courses = $coursesQuery->limit($limit)->get();
+        // Lấy tất cả kết quả từ query
+        $courses = $coursesQuery->get();
+        $total = $courses->count();
 
-            $courses->makeHidden(['category_id', 'level_id', 'language_id']);
+        // Phân trang thủ công
+        $paginatedCourses = $courses->forPage($page, $perPage)->values()->map(function ($course) {
+            // Lấy tất cả các sections thuộc course
+            $sections = $course->sections;
 
-            // Lấy tổng số lượng kết quả
-            $total = $courses->count();
+            // Tính tổng số lecture và quiz
+            $totalLectures = $sections->sum(function ($section) {
+                return $section->lectures->count();
+            });
 
-            // Phân trang thủ công cho kết quả đã giới hạn
-            $courses = $courses->forPage($currentPage, $perPage)->values();
+            $totalQuizzes = $sections->sum(function ($section) {
+                return $section->quizzes->count();
+            });
 
-            $paginatedCourses = new \Illuminate\Pagination\LengthAwarePaginator(
-                $courses,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
-            );
+            // Tổng số lecture + quiz
+            $course->total_contents = $totalLectures + $totalQuizzes;
 
-            // Chuyển đổi đối tượng phân trang sang mảng với tất cả các thuộc tính chi tiết
-            $paginationData = $paginatedCourses->toArray();
+            return $course;
+        });
 
-            return formatResponse(STATUS_OK, $paginationData, '', __('messages.course_fetch_success'));
-        } else {
-            // Nếu không có limit, phân trang như bình thường
-            $courses = $coursesQuery->paginate($perPage, ['*'], 'page', $currentPage);
-            return formatResponse(STATUS_OK, $courses, '', __('messages.course_fetch_success'));
-        }
+        // Tạo đối tượng phân trang thủ công
+        $pagination = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedCourses,
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath(),
+                'query' => $request->query(),
+            ]
+        );
+
+        // Chuyển đổi đối tượng phân trang sang mảng với tất cả các thuộc tính chi tiết
+        $paginationData = $pagination->toArray();
+        return formatResponse(STATUS_OK, $paginationData, '', __('messages.course_fetch_success'));
+        
     }
 
 
