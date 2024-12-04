@@ -76,7 +76,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
             // Quản lý, ManageController
-            Route::get('courses', [CourseController::class, 'getListAdmin'])->name('courses.getListAdmin');
 
 
             Route::get('categories', [CategoryController::class, 'getListAdmin'])->name('categories.getListAdmin');
@@ -156,11 +155,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
-
-            // Section course 
-
-
-
+            Route::get('admin-courses', [CourseController::class, 'getListAdmin'])->name('courses.getListAdmin');
             Route::post('courses', [CourseController::class, 'store'])->name('courses.store');
             Route::post('courses/{id}', [CourseController::class, 'update'])->name('courses.update');
             Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
@@ -178,7 +173,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('sections/edit-form/{id}', [SectionController::class, 'editForm'])->name('sections.editForm');
             Route::get('show-sections-of-course/{id}', [SectionController::class, 'showSectionsByCourse'])->name('sections.showSectionsOfCourse');
             Route::put('sort-sections-of-course', [SectionController::class, 'updateSectionOrder'])->name('sections.updateOrder');
-            
+
 
             Route::put('sort-content-of-section', [LectureController::class, 'updateOrder'])->name('lectures.updateOrder');
             Route::post('lectures', [LectureController::class, 'store'])->name('lectures.store');
