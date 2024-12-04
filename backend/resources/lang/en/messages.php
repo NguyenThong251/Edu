@@ -144,6 +144,22 @@ return [
     'language_force_delete_success' => 'Language permanently deleted successfully.',
     'language_not_found' => 'Language not found.',
 
+    //Section
+    'section_fetch_success' => 'Sections fetched successfully.',
+    'section_create_success' => 'Section created successfully.',
+    'section_update_success' => 'Section updated successfully.',
+    'sections_order_update_success' => 'Section order updated successfully.',
+    'section_soft_delete_success' => 'Section soft deleted successfully.',
+    'section_restore_success' => 'Section restored successfully.',
+    'section_force_delete_success' => 'Section permanently deleted successfully.',
+    'section_not_found' => 'Section not found.',
+    'course_id_required' => 'Course ID is required.',
+    'course_id_invalid' => 'Invalid course ID.',
+    'title_required' => 'Title is required.',
+    'status_required' => 'Status is required.',
+    'status_invalid' => 'Invalid status.',
+    'sections_fetch_success' => 'Sections fetched successfully.',
+    'section_detail_success' => 'Section details retrieved successfully.',
 
     //Lecture
     'lecture_fetch_success' => 'Lecture list fetched successfully.',

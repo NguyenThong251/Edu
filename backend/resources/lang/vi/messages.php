@@ -146,6 +146,23 @@ return [
     'language_force_delete_success' => 'Xóa vĩnh viễn ngôn ngữ thành công.',
     'language_not_found' => 'Ngôn ngữ không tồn tại.',
 
+    //Section
+    'section_fetch_success' => 'Lấy danh sách phần học thành công.',
+    'section_create_success' => 'Tạo phần học thành công.',
+    'section_update_success' => 'Cập nhật phần học thành công.',
+    'sections_order_update_success' => 'Cập nhật thứ tự phần học thành công.',
+    'section_soft_delete_success' => 'Xóa phần học thành công.',
+    'section_restore_success' => 'Khôi phục phần học thành công.',
+    'section_force_delete_success' => 'Xóa vĩnh viễn phần học thành công.',
+    'section_not_found' => 'Không tìm thấy phần học.',
+    'course_id_required' => 'ID khóa học là bắt buộc.',
+    'course_id_invalid' => 'ID khóa học không hợp lệ.',
+    'title_required' => 'Tiêu đề là bắt buộc.',
+    'status_required' => 'Trạng thái là bắt buộc.',
+    'status_invalid' => 'Trạng thái không hợp lệ.',
+    'sections_fetch_success' => 'Lấy danh sách phần học thành công.',
+    'section_detail_success' => 'Chi tiết phần học được lấy thành công.',
+
     //Lecture
     'lecture_fetch_success' => 'Lấy danh sách bài giảng thành công.',
     'lecture_detail_success' => 'Lấy chi tiết bài giảng thành công.',

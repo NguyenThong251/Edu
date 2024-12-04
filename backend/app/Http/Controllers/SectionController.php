@@ -4,169 +4,252 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Section;
+use App\Models\Course;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class SectionController extends Controller
 {
-    // Lấy danh sách sections trong một course
-    public function getListByCourse(Request $request)
+    public function getListAdmin(Request $request)
     {
-        $courseId = $request->get('course_id');
-        $limit = $request->get('limit', null);
-        $perPage = $request->get('per_page', 10);
-        $currentPage = $request->get('page', 1);
+        $sectionsQuery = Section::query();
 
-        $sectionsQuery = Section::where('course_id', $courseId);
-
-        if ($limit) {
-            $sections = $sectionsQuery->limit($limit)->get();
-            $total = $sections->count();
-            $sections = $sections->forPage($currentPage, $perPage)->values();
-
-            $paginatedSections = new \Illuminate\Pagination\LengthAwarePaginator(
-                $sections,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
-            );
-
-            $paginationData = $paginatedSections->toArray();
-
-            return response()->json(['status' => 'success', 'data' => $paginationData]);
+        if ($request->has('deleted') && $request->deleted == 1) {
+            $sectionsQuery->onlyTrashed();
         } else {
-            $sections = $sectionsQuery->paginate($perPage, ['*'], 'page', $currentPage);
-            return response()->json(['status' => 'success', 'data' => $sections]);
+            $sectionsQuery->whereNull('deleted_at');
         }
+
+        if ($request->has('keyword') && !empty($request->keyword)) {
+            $sectionsQuery->where('title', 'like', '%' . $request->keyword . '%');
+        }
+
+        if ($request->has('course_id') && !empty($request->course_id)) {
+            $sectionsQuery->where('course_id', $request->course_id);
+        }
+
+        if ($request->has('status') && !is_null($request->status)) {
+            $sectionsQuery->where('status', $request->status);
+        }
+
+        if ($request->is_instructor == 1) {
+            $sectionsQuery->where('created_by', auth()->id());
+        }
+
+        if ($request->has('created_by') && !empty($request->created_by)) {
+            $sectionsQuery->where('created_by', $request->created_by);
+        }
+
+        $order = $request->get('order', 'desc');
+        $sectionsQuery->orderBy('created_at', $order);
+
+        $perPage = (int) $request->get('per_page', 10);
+        $page = (int) $request->get('page', 1);
+
+        $sections = $sectionsQuery->get();
+        $total = $sections->count();
+        $paginatedSections = $sections->forPage($page, $perPage)->values();
+
+        $pagination = new LengthAwarePaginator(
+            $paginatedSections,
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(),
+                'query' => $request->query(),
+            ]
+        );
+
+        $sections = $pagination->toArray();
+
+        return formatResponse(STATUS_OK, $sections, '', __('messages.section_fetch_success'));
     }
 
-    // Tạo mới section
+    public function editForm($id)
+    {
+        $section = Section::withTrashed()->find($id);
+
+        if (!$section) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.section_not_found'));
+        }
+
+        return formatResponse(STATUS_OK, $section, '', __('messages.section_detail_success'));
+    }
+
     public function store(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'status' => 'required|in:active,inactive',
-        'course_id' => 'required|exists:courses,id',
-        'order' => [
-            'integer',
-            Rule::unique('sections')->where(function ($query) use ($request) {
-                return $query->where('course_id', $request->course_id);
-            }),
-        ],
-    ]);
+    {
+        $user = auth()->user();
 
-    if ($validator->fails()) {
-        return response()->json(['status' => 'fail', 'errors' => $validator->errors()]);
-    }
+        $validator = Validator::make($request->all(), [
+            'course_id' => 'required|exists:courses,id',
+            'title' => 'required|string',
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ], [
+            'course_id.required' => __('messages.course_id_required'),
+            'course_id.exists' => __('messages.course_id_invalid'),
+            'title.required' => __('messages.title_required'),
+            'status.required' => __('messages.status_required'),
+            'status.in' => __('messages.status_invalid'),
+        ]);
 
-    // Xác định order tối ưu nếu không có `order` truyền vào
-    $order = $request->order;
-    if (!$order) {
+        if ($validator->fails()) {
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
+        }
+
+        $section = new Section();
+        $section->course_id = $request->course_id;
+        $section->title = $request->title;
+        $section->description = $request->description;
+        $section->status = $request->status;
+
         $maxOrder = Section::where('course_id', $request->course_id)->max('order');
-        $order = $maxOrder ? $maxOrder + 10 : 10; // Đặt `order` cách nhau 10 đơn vị
+        $section->order = ($maxOrder) ? $maxOrder + 1 : 1;
+
+        $section->created_by = $user->id;
+        $section->save();
+
+        return formatResponse(STATUS_OK, $section, '', __('messages.section_create_success'));
     }
 
-    $section = new Section();
-    $section->title = $request->title;
-    $section->description = $request->description;
-    $section->status = $request->status;
-    $section->course_id = $request->course_id;
-    $section->order = $order;
-    $section->created_by = auth()->id();
-    $section->save();
+    public function update(Request $request, $sectionId)
+    {
+        $section = Section::find($sectionId);
 
-    return response()->json(['status' => 'success', 'data' => $section]);
-}
+        if (!$section) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.section_not_found'));
+        }
 
+        $validator = Validator::make($request->all(), [
+            'course_id' => 'required|exists:courses,id',
+            'title' => 'required|string',
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ], [
+            'course_id.required' => __('messages.course_id_required'),
+            'course_id.exists' => __('messages.course_id_invalid'),
+            'title.required' => __('messages.title_required'),
+            'status.required' => __('messages.status_required'),
+            'status.in' => __('messages.status_invalid'),
+        ]);
 
-    // Hiển thị chi tiết một section cụ thể
-    public function show($id)
+        if ($validator->fails()) {
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
+        }
+
+        $section->course_id = $request->course_id;
+        $section->title = $request->title;
+        $section->description = $request->description;
+        $section->status = $request->status;
+        $section->updated_by = auth()->user()->id;
+
+        $section->save();
+
+        return formatResponse(STATUS_OK, $section, '', __('messages.section_update_success'));
+    }
+
+    public function updateSectionAttributes(Request $request, $id)
     {
         $section = Section::find($id);
+
         if (!$section) {
-            return response()->json(['status' => 'fail', 'message' => 'Section not found']);
+            return formatResponse(STATUS_FAIL, '', '', __('messages.section_not_found'));
         }
 
-        return response()->json(['status' => 'success', 'data' => $section]);
+        if ($request->has('course_id')) {
+            $courseId = (int) $request->input('course_id');
+            $course = Course::find($courseId);
+            if (!$course) {
+                return formatResponse(STATUS_FAIL, '', '', __('messages.course_not_found'));
+            }
+            $section->course_id = $courseId;
+        }
+
+        if ($request->has('status')) {
+            $status = $request->input('status');
+            if (!in_array($status, ['active', 'inactive'])) {
+                return formatResponse(STATUS_FAIL, '', '', __('messages.invalid_status'));
+            }
+            $section->status = $status;
+        }
+
+        $section->save();
+
+        return formatResponse(STATUS_OK, $section, '', __('messages.section_update_success'));
     }
 
-    // Cập nhật section
-    public function update(Request $request, $id)
-{
-    $section = Section::find($id);
-    if (!$section) {
-        return response()->json(['status' => 'fail', 'message' => 'Section not found']);
+    public function showSectionsByCourse($courseId)
+    {
+        $sections = Section::where('course_id', $courseId)
+            ->whereNull('deleted_at')
+            ->orderBy('order', 'asc')
+            ->get();
+
+        return formatResponse(STATUS_OK, $sections, '', __('messages.sections_fetch_success'));
     }
 
-    $validator = Validator::make($request->all(), [
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'status' => 'required|in:active,inactive',
-        'order' => [
-            'integer',
-            Rule::unique('sections')->where(function ($query) use ($request, $section) {
-                return $query->where('course_id', $section->course_id);
-            })->ignore($section->id),
-        ],
-    ]);
+    public function updateSectionOrder(Request $request)
+    {
+        $sortedSections = $request->input('sorted_sections');
 
-    if ($validator->fails()) {
-        return response()->json(['status' => 'fail', 'errors' => $validator->errors()]);
+        if (!$sortedSections || !is_array($sortedSections)) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.invalid_data_format'));
+        }
+
+        foreach ($sortedSections as $item) {
+            if (!isset($item['id']) || !isset($item['order'])) {
+                continue;
+            }
+
+            $section = Section::find($item['id']);
+            if ($section) {
+                $section->order = $item['order'];
+                $section->save();
+            }
+        }
+
+        return formatResponse(STATUS_OK, '', '', __('messages.sections_order_update_success'));
     }
 
-    $section->title = $request->title;
-    $section->description = $request->description;
-    $section->status = $request->status;
-    $section->order = $request->order ?? $section->order;
-    $section->updated_by = auth()->id();
-    $section->save();
-
-    return response()->json(['status' => 'success', 'data' => $section]);
-}
-
-    // Xóa mềm section
     public function destroy($id)
     {
         $section = Section::find($id);
+
         if (!$section) {
-            return response()->json(['status' => 'fail', 'message' => 'Section not found']);
+            return formatResponse(STATUS_FAIL, '', '', __('messages.section_not_found'));
         }
 
-        $section->deleted_by = auth()->id();
-        $section->save();
+        $section->deleted_by = auth()->user()->id;
         $section->delete();
 
-        return response()->json(['status' => 'success', 'message' => 'Section deleted successfully']);
+        return formatResponse(STATUS_OK, $section, '', __('messages.section_soft_delete_success'));
     }
 
-    // Khôi phục section bị xóa mềm
     public function restore($id)
     {
         $section = Section::onlyTrashed()->find($id);
+
         if (!$section) {
-            return response()->json(['status' => 'fail', 'message' => 'Section not found or not deleted']);
+            return formatResponse(STATUS_FAIL, '', '', __('messages.section_not_found'));
         }
 
-        $section->deleted_by = null;
-        $section->save();
         $section->restore();
 
-        return response()->json(['status' => 'success', 'message' => 'Section restored successfully']);
+        return formatResponse(STATUS_OK, $section, '', __('messages.section_restore_success'));
     }
 
-    // Xóa vĩnh viễn section
     public function forceDelete($id)
     {
         $section = Section::onlyTrashed()->find($id);
+
         if (!$section) {
-            return response()->json(['status' => 'fail', 'message' => 'Section not found']);
+            return formatResponse(STATUS_FAIL, '', '', __('messages.section_not_found'));
         }
 
         $section->forceDelete();
 
-        return response()->json(['status' => 'success', 'message' => 'Section permanently deleted']);
+        return formatResponse(STATUS_OK, $section, '', __('messages.section_force_delete_success'));
     }
 }
