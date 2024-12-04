@@ -32,6 +32,10 @@ class QuestionController extends Controller
         if ($request->has('status') && !is_null($request->status)) {
             $questionsQuery->where('status', $request->status);
         }
+        if ($request->is_instructor == 1) {
+            // Lọc theo người dùng hiện tại và đảm bảo trường `created_at` không null
+            $questionsQuery->where('created_by', auth()->id());
+        }
         if ($request->has('created_by') && !empty($request->created_by)) {
             $questionsQuery->where('created_by', $request->created_by);
         }
