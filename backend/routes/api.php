@@ -22,6 +22,7 @@ use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\SectionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -164,6 +165,20 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('courses/{id}', [CourseController::class, 'update'])->name('courses.update');
             Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
             Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
+
+            Route::post('sections', [SectionController::class, 'store'])->name('sections.store');
+            Route::get('sections/{id}', [SectionController::class, 'editForm'])->name('sections.show');
+            Route::put('sections/{id}', [SectionController::class, 'update'])->name('sections.update');
+            Route::get('sections/restore/{id}', [SectionController::class, 'restore'])->name('sections.restore');
+            Route::delete('sections/{id}', [SectionController::class, 'destroy'])->name('sections.destroy');
+            Route::delete('sections/permanent-delete/{id}', [SectionController::class, 'forceDelete'])->name('sections.destroypermanent');
+            Route::patch('sections/{id}/status', [SectionController::class, 'updateSectionAttributes'])->name('sections.updateStatus');
+            Route::patch('sections/{id}/course', [SectionController::class, 'updateSectionAttributes'])->name('sections.updateCourse');
+            Route::get('sections', [SectionController::class, 'getListAdmin'])->name('sections.getListAdmin');
+            Route::get('sections/edit-form/{id}', [SectionController::class, 'editForm'])->name('sections.editForm');
+            Route::get('show-sections-of-course/{id}', [SectionController::class, 'showSectionsByCourse'])->name('sections.showSectionsOfCourse');
+            Route::put('sort-sections-of-course', [SectionController::class, 'updateSectionOrder'])->name('sections.updateOrder');
+            
 
             Route::put('sort-content-of-section', [LectureController::class, 'updateOrder'])->name('lectures.updateOrder');
             Route::post('lectures', [LectureController::class, 'store'])->name('lectures.store');
