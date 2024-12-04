@@ -185,7 +185,18 @@ class SectionController extends Controller
         $sections = Section::where('course_id', $courseId)
             ->whereNull('deleted_at')
             ->orderBy('order', 'asc')
-            ->get();
+            ->get()
+            ->map(function ($section) {
+                // Tính tổng số lecture và quiz của section
+                $totalLectures = $section->lectures->count();
+                $totalQuizzes = $section->quizzes->count();
+
+                // Gán tổng số vào section
+                $section->total_contents = $totalLectures + $totalQuizzes;
+
+                return $section;
+            });
+
 
         return formatResponse(STATUS_OK, $sections, '', __('messages.sections_fetch_success'));
     }
