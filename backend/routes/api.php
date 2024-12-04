@@ -160,6 +160,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('courses/{id}', [CourseController::class, 'update'])->name('courses.update');
             Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
             Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
+            Route::delete('courses/permanent-delete/{id}', [CourseController::class, 'forceDelete'])->name('courses.destroypermanent');
+            Route::patch('courses/{id}/status', [CourseController::class, 'updateStatus'])->name('courses.updateStatus');
+
 
             Route::post('sections', [SectionController::class, 'store'])->name('sections.store');
             Route::get('sections/{id}', [SectionController::class, 'editForm'])->name('sections.show');
