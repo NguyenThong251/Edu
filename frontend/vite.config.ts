@@ -11,14 +11,5 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'pdf.worker': ['pdfjs-dist/build/pdf.worker']
-        }
-      }
-    }
   }
 })
