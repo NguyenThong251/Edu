@@ -14,10 +14,7 @@ use App\Http\Controllers\AuthController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-use App\Http\Controllers\LectureController;
 
-Route::get('upload', [LectureController::class, 'showUploadForm'])->name('upload.form');
-Route::post('upload-to-s3', [LectureController::class, 'uploadToS3'])->name('upload.to.s3');
 Route::get('/', function () {
     return view('emails.welcome');
 });
