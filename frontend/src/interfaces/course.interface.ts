@@ -61,7 +61,7 @@ export interface TCourseFilters {
 export interface TContentOfSection {
   id?: number
   section_id?: number
-  type?: 'video' | 'file' | 'quiz'
+  type?: 'video' | 'file'
   title?: string
   content_link?: string
   duration?: number
@@ -78,11 +78,33 @@ export interface TContentOfSection {
 }
 export interface TLecture {
   section_id?: number
-  type?: 'video' | 'file' | 'quiz'
+  type?: 'video' | 'file'
   title?: string
-  content?: string
+  content?: File
+  content_type?: string
   duration?: number
-  preview?: string | null
+  preview?: 'cant' | 'can'
+  status?: 'active' | 'inactive'
+  order?: number
+}
+
+// section
+export interface TSectionOfCourse {
+  id: number
+  course_id: number
+  title: string
+  description: string
+  status: 'inactive' | 'active'
+  order: number
+  created_by: number
+  total_contents?: number
+}
+
+export interface TSection {
+  id?: number
+  course_id?: number
+  title?: string
+  description?: string
   status?: 'active' | 'inactive'
   order?: number
 }

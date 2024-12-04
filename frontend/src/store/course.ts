@@ -6,10 +6,12 @@ import type {
   TContentOfSection,
   TCardCourse,
   TCardMyCourse,
-  TLecture
+  TLecture,
+  TSectionOfCourse,
+  TSection
 } from '@/interfaces/course.interface'
 import type { TChangeContent } from '@/interfaces/ui.interface'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { id } from 'element-plus/es/locale/index.mjs'
 
 export const useCourseStore = defineStore('courseStore', () => {
@@ -29,6 +31,7 @@ export const useCourseStore = defineStore('courseStore', () => {
   const listContentOfSection = ref<TContentOfSection[]>([])
   const listLecturesAdmin = ref<TContentOfSection[]>([])
   const dataForm = ref<TContentOfSection>()
+  const loading = ref(false)
   // Actions
 
   const fetchCourseDetail = async (courseId: string) => {
@@ -177,9 +180,14 @@ export const useCourseStore = defineStore('courseStore', () => {
     }
   }
 
-  const createLecture = async (id: number, data: TLecture) => {
+  const createLecture = async (id: number, data: FormData) => {
     try {
-      const res = await api.post('auth/lectures', data)
+      loading.value = true
+      const res = await api.post('auth/lectures', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
 
       if (res.data.status === 'FAIL') {
         ElMessage.error('Thêm bài học thất bại')
@@ -191,6 +199,8 @@ export const useCourseStore = defineStore('courseStore', () => {
     } catch (error) {
       ElMessage.error('Thêm bài học thất bại')
       console.log(error)
+    } finally {
+      loading.value = false // Tắt trạng thái loading
     }
   }
 
@@ -296,10 +306,108 @@ export const useCourseStore = defineStore('courseStore', () => {
 
   // quizz
 
+  // section
+
+  const listSection = ref<TSectionOfCourse[]>([])
+
+  const showSectionOfCourse = async (id: number) => {
+    try {
+      const res = await api.get(`auth/show-sections-of-course/${id}`)
+      listSection.value = res.data.data
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const createSection = async (id: number, data: TSection) => {
+    try {
+      const res = await api.post('auth/sections', data)
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Thêm chương thất bại')
+      } else {
+        ElMessage.success('Thêm chương thành công')
+        await showSectionOfCourse(id)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const updateSection = async (id: number, section_id: number, data: TSection) => {
+    try {
+      const res = await api.put(`auth/sections/${section_id}`, data)
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Cập nhật chương thất bại')
+      } else {
+        ElMessage.success('Cập nhật chương thành công')
+        await showSectionOfCourse(id)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const deleteSection = async (id: number, section_id: number) => {
+    try {
+      await ElMessageBox.confirm(
+        'Bạn có chắc chắn muốn xóa chương học này không?',
+        'Xác nhận xóa',
+        {
+          confirmButtonText: 'Xóa',
+          cancelButtonText: 'Hủy',
+          type: 'info'
+        }
+      )
+      const res = await api.delete(`auth/sections/${section_id}`)
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Xóa chương thất bại')
+      } else {
+        ElMessage.success('Xóa chương thành công')
+        await showSectionOfCourse(id)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const deletePermanentSection = async (id: number, section_id: number) => {
+    try {
+      await ElMessageBox.confirm(
+        'Bạn có chắc chắn muốn xóa vĩnh viễn chương học này không?',
+        'Xác nhận xóa',
+        {
+          confirmButtonText: 'Xóa',
+          cancelButtonText: 'Hủy',
+          type: 'info'
+        }
+      )
+      const res = await api.delete(`auth/sections/permanent-delete/${section_id}`)
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Xóa chương thất bại')
+      } else {
+        ElMessage.success('Xóa chương thành công')
+        await showSectionOfCourse(id)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const sortSectionsOfCourse = async (sortedData: TSection[]) => {
+    try {
+      await api.put('/auth/sort-sections-of-course', {
+        sorted_sections: sortedData
+      })
+      ElMessage.success('Cập nhật thứ tự chương học thành công')
+    } catch (error) {
+      console.error('Lỗi khi sắp xếp chương học:', error)
+      ElMessage.error('Không thể cập nhật thứ tự chương học')
+    }
+  }
+
   // Getter
   const getCourse = () => course.value
   fetchMyCourse()
   return {
+    loading,
     listCourseTeacher,
     courseStudySearch,
     studyCourse,
@@ -319,6 +427,7 @@ export const useCourseStore = defineStore('courseStore', () => {
     searchLetureStudy,
     fetchTeacherCourse,
     // admin
+    // lecture
     listContentOfSection,
     listLecturesAdmin,
     dataForm,
@@ -330,6 +439,14 @@ export const useCourseStore = defineStore('courseStore', () => {
     deleteLecture,
     updateSectionLecture,
     updateStatusLecture,
-    sortContentOfSection
+    sortContentOfSection,
+    // section
+    listSection,
+    showSectionOfCourse,
+    createSection,
+    updateSection,
+    deleteSection,
+
+    sortSectionsOfCourse
   }
 })

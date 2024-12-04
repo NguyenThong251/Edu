@@ -211,6 +211,7 @@ const { fetchStudyCourse, changeContent } = courseStore;
 const reviewStore = useReviewsStore()
 
 
+
 const { fetchReviews } = reviewStore
 const { state } = storeToRefs(reviewStore)
 const activeName = ref("first")

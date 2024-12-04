@@ -140,7 +140,7 @@ import { apisStore } from '@/store/apis';
 import api from '@/services/axiosConfig';
 import { ElNotification } from 'element-plus';
 import Certificate from '@/components/user/Certificate.vue';
-import Chatbot from '@/components/user/Chatbot.vue';
+// import Chatbot from '@/components/user/Chatbot.vue';
 import ChatWidget from '@/components/user/ChatWidget.vue';
 const { locale } = useI18n();
 // const changeLanguage = (event: Event) => {

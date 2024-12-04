@@ -8,6 +8,7 @@ import Security from '@/views/user/Security.vue'
 import PaymentMethodPage from '../views/teacher/PaymentMethodPage.vue'
 import RedirectHandler from '@/views/RedirectHandler.vue'
 import CourseEditPage from '@/views/teacher/CourseEditPage.vue'
+import CourseSectionEditPage from '@/views/teacher/CourseSectionEditPage.vue'
 
 const teacher = [
   {
@@ -61,6 +62,11 @@ const teacher = [
         path: '/teacher/course/edit/:id',
         name: 'CourseEditPage',
         component: CourseEditPage
+      },
+      {
+        path: '/teacher/course/section/edit/:id',
+        name: 'CourseSectionEditPage',
+        component: CourseSectionEditPage
       }
     ]
   }
