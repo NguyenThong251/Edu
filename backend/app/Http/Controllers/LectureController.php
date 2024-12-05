@@ -116,9 +116,10 @@ class LectureController extends Controller
     
         // Kết hợp (merge) lectures và quizzes lại với nhau
         $content = $lectures->merge($quizzes);
-    
+
         // Sắp xếp theo order (tăng dần)
-        $content = $content->sortBy('order');
+        $content = $content->sortBy('order')->values();
+
     
         // Trả về kết quả
         return formatResponse(STATUS_OK, $content, '', __('messages.content_fetch_success'));

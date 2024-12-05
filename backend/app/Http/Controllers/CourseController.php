@@ -22,122 +22,122 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 class CourseController extends Controller
 {
     public function getListAdmin(Request $request)
-{
-    // Khởi tạo query với các mối quan hệ
-    $coursesQuery = Course::with(['language', 'level', 'category']);
+    {
+        // Khởi tạo query với các mối quan hệ
+        $coursesQuery = Course::with(['language', 'level', 'category']);
 
-    // Lọc các khóa học đã bị xóa mềm nếu có yêu cầu
-    if ($request->has('deleted') && $request->deleted == 1) {
-        $coursesQuery->onlyTrashed();
+        // Lọc các khóa học đã bị xóa mềm nếu có yêu cầu
+        if ($request->has('deleted') && $request->deleted == 1) {
+            $coursesQuery->onlyTrashed();
+        }
+
+        // Lọc theo từ khóa (title)
+        if ($request->has('keyword') && !empty($request->keyword)) {
+            $coursesQuery->where('title', 'like', '%' . $request->keyword . '%');
+        }
+
+        // Lọc theo category_id
+        if ($request->has('category_id') && !empty($request->category_id)) {
+            $coursesQuery->where('category_id', $request->category_id);
+        }
+
+        // Lọc theo language_id
+        if ($request->has('language_id') && !empty($request->language_id)) {
+            $coursesQuery->where('language_id', $request->language_id);
+        }
+
+        // Lọc theo level_id
+        if ($request->has('level_id') && !empty($request->level_id)) {
+            $coursesQuery->where('level_id', $request->level_id);
+        }
+
+        // Lọc theo created_by (chỉ lấy các khóa học được tạo bởi user cụ thể)
+        if ($request->has('created_by') && !empty($request->created_by)) {
+            $coursesQuery->where('created_by', $request->created_by);
+        }
+
+        // Lọc riêng cho giảng viên (lấy các khóa học do chính họ tạo)
+        if ($request->is_instructor == 1) {
+            $coursesQuery->where('created_by', auth()->id());
+        }
+
+        // Lọc theo status (active/inactive)
+        if ($request->has('status') && !is_null($request->status)) {
+            $coursesQuery->where('status', $request->status);
+        }
+
+        // Sắp xếp theo ngày tạo
+        $order = $request->order ?? 'desc';
+        $coursesQuery->orderBy('created_at', $order);
+
+        // Phân trang thủ công
+        $perPage = (int) $request->get('per_page', 10);
+        $page = (int) $request->get('page', 1);
+
+        $courses = $coursesQuery->get();
+        $total = $courses->count();
+        $paginatedCourses = $courses->forPage($page, $perPage)->values();
+
+        $pagination = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedCourses,
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath(),
+                'query' => $request->query(),
+            ]
+        );
+
+        $courses = $pagination->toArray();
+
+        // Trả về response
+        return formatResponse(STATUS_OK, $courses, '', __('messages.course_fetch_success'));
     }
-
-    // Lọc theo từ khóa (title)
-    if ($request->has('keyword') && !empty($request->keyword)) {
-        $coursesQuery->where('title', 'like', '%' . $request->keyword . '%');
-    }
-
-    // Lọc theo category_id
-    if ($request->has('category_id') && !empty($request->category_id)) {
-        $coursesQuery->where('category_id', $request->category_id);
-    }
-
-    // Lọc theo language_id
-    if ($request->has('language_id') && !empty($request->language_id)) {
-        $coursesQuery->where('language_id', $request->language_id);
-    }
-
-    // Lọc theo level_id
-    if ($request->has('level_id') && !empty($request->level_id)) {
-        $coursesQuery->where('level_id', $request->level_id);
-    }
-
-    // Lọc theo created_by (chỉ lấy các khóa học được tạo bởi user cụ thể)
-    if ($request->has('created_by') && !empty($request->created_by)) {
-        $coursesQuery->where('created_by', $request->created_by);
-    }
-
-    // Lọc riêng cho giảng viên (lấy các khóa học do chính họ tạo)
-    if ($request->is_instructor == 1) {
-        $coursesQuery->where('created_by', auth()->id());
-    }
-
-    // Lọc theo status (active/inactive)
-    if ($request->has('status') && !is_null($request->status)) {
-        $coursesQuery->where('status', $request->status);
-    }
-
-    // Sắp xếp theo ngày tạo
-    $order = $request->order ?? 'desc';
-    $coursesQuery->orderBy('created_at', $order);
-
-    // Phân trang thủ công
-    $perPage = (int) $request->get('per_page', 10);
-    $page = (int) $request->get('page', 1);
-
-    $courses = $coursesQuery->get();
-    $total = $courses->count();
-    $paginatedCourses = $courses->forPage($page, $perPage)->values();
-
-    $pagination = new \Illuminate\Pagination\LengthAwarePaginator(
-        $paginatedCourses,
-        $total,
-        $perPage,
-        $page,
-        [
-            'path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath(),
-            'query' => $request->query(),
-        ]
-    );
-
-    $courses = $pagination->toArray();
-
-    // Trả về response
-    return formatResponse(STATUS_OK, $courses, '', __('messages.course_fetch_success'));
-}
 
 
     // Tạo mới một khóa học
     public function store(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'category_id' => 'required|exists:categories,id',
-        'level_id' => 'required|exists:course_levels,id',
-        'language_id' => 'required|exists:languages,id',
-        'title' => 'required|string|max:100',
-        'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        'price' => 'required|numeric',
-        'type_sale' => 'required|in:percent,price',
-    ], [
-        'category_id.required' => __('messages.category_id_required'),
-        'category_id.exists' => __('messages.category_id_invalid'),
-        'level_id.required' => __('messages.level_id_required'),
-        'level_id.exists' => __('messages.level_id_invalid'),
-        'language_id.required' => __('messages.language_id_required'),
-        'language_id.exists' => __('messages.language_id_invalid'),
-        'title.required' => __('messages.title_required'),
-        'thumbnail.required' => __('messages.thumbnail_required'),
-        'thumbnail.image' => __('messages.thumbnail_image'),
-        'thumbnail.mimes' => __('messages.thumbnail_mimes'),
-        'thumbnail.max' => __('messages.thumbnail_max'),
-        'price.required' => __('messages.price_required'),
-        'price.numeric' => __('messages.price_numeric'),
-        'type_sale.required' => __('messages.type_sale_required'),
-        'type_sale.in' => __('messages.type_sale_invalid'),
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'category_id' => 'required|exists:categories,id',
+            'level_id' => 'required|exists:course_levels,id',
+            'language_id' => 'required|exists:languages,id',
+            'title' => 'required|string|max:100',
+            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'price' => 'required|numeric',
+            'type_sale' => 'required|in:percent,price',
+        ], [
+            'category_id.required' => __('messages.category_id_required'),
+            'category_id.exists' => __('messages.category_id_invalid'),
+            'level_id.required' => __('messages.level_id_required'),
+            'level_id.exists' => __('messages.level_id_invalid'),
+            'language_id.required' => __('messages.language_id_required'),
+            'language_id.exists' => __('messages.language_id_invalid'),
+            'title.required' => __('messages.title_required'),
+            'thumbnail.required' => __('messages.thumbnail_required'),
+            'thumbnail.image' => __('messages.thumbnail_image'),
+            'thumbnail.mimes' => __('messages.thumbnail_mimes'),
+            'thumbnail.max' => __('messages.thumbnail_max'),
+            'price.required' => __('messages.price_required'),
+            'price.numeric' => __('messages.price_numeric'),
+            'type_sale.required' => __('messages.type_sale_required'),
+            'type_sale.in' => __('messages.type_sale_invalid'),
+        ]);
 
-    if ($validator->fails()) {
-        return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
+        if ($validator->fails()) {
+            return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
+        }
+
+        $thumbnailPath = $this->uploadThumbnail($request);
+        $course = new Course();
+        $course->fill($request->all());
+        $course->thumbnail = $thumbnailPath;
+        $course->created_by = auth()->id();
+        $course->save();
+
+        return formatResponse(STATUS_OK, $course, '', __('messages.course_create_success'));
     }
-
-    $thumbnailPath = $this->uploadThumbnail($request);
-    $course = new Course();
-    $course->fill($request->all());
-    $course->thumbnail = $thumbnailPath;
-    $course->created_by = auth()->id();
-    $course->save();
-
-    return formatResponse(STATUS_OK, $course, '', __('messages.course_create_success'));
-}
 
 
     // Cập nhật khóa học
@@ -437,7 +437,7 @@ class CourseController extends Controller
     }
 
 
-    
+
 
     // Hiển thị một khóa học cụ thể
     public function detail($id, Request $request)
@@ -672,7 +672,7 @@ class CourseController extends Controller
     }
 
 
-    
+
     public function getPopularCourses(Request $request)
     {
         // Kiểm tra xem có giới hạn không, nếu không, mặc định là 10
@@ -938,7 +938,6 @@ class CourseController extends Controller
         return formatResponse(STATUS_OK, $this->transform($courses, __('messages.tag_favorite')), '', __('messages.favorite_courses_found'));
     }
 
-<<<<<<< HEAD
 
 
     //     public function filterCourses(Request $request)
@@ -1017,9 +1016,6 @@ class CourseController extends Controller
     //     }
 
     // get list of instructors list of their courses.
-=======
-// get list of instructors list of their courses.
->>>>>>> 7becd902e1607bdcba95224b0e3589f93369a38b
     public function getListInstructorCourses(Request $request)
     {
         $user = auth()->user();
