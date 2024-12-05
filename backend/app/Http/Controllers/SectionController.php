@@ -16,7 +16,9 @@ class SectionController extends Controller
         ]);
 
         // check duplicate
-        if (Section::where('course_id', $request->course_id)->where('title', $request->title)->exists()) {
+        if (Section::where('course_id', $request->course_id)
+        ->where('title', $request->title)
+        ->exists()) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.sections_code_already_exists'));
         }
 

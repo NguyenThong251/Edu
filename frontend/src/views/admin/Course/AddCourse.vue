@@ -26,7 +26,6 @@
             <CkeditorGroup
               label="Mô tả"
               v-model="formDataAddCourse.description"
-              
             />
             
             <!-- <RadioGroup

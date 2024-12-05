@@ -112,6 +112,16 @@ class QuizController extends Controller
         return formatResponse(STATUS_OK, $quiz, '', __('messages.quiz_create_success'));
     }
 
+    public function showOne($id)
+    {
+        $quiz = Quiz::with('questions')->where('id', $id)->first();
+        if (!$quiz) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.section_not_found'));
+        }
+        return formatResponse(STATUS_OK, $quiz, '', __('messages.course_found'));
+    }
+
+
     public function update(Request $request, $quizId)
     {
         $quiz = Quiz::find($quizId);
@@ -122,14 +132,14 @@ class QuizController extends Controller
         $validator = Validator::make($request->all(), [
             'section_id' => 'required|exists:sections,id',
             'title' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive',
+            // 'status' => 'required|in:active,inactive',
         ], [
             'section_id.required' => __('messages.section_id_required'),
             'section_id.exists' => __('messages.section_id_invalid'),
             'title.required' => __('messages.title_required'),
             'title.max' => __('messages.title_max'),
-            'status.required' => __('messages.status_required'),
-            'status.in' => __('messages.status_invalid'),
+            // 'status.required' => __('messages.status_required'),
+            // 'status.in' => __('messages.status_invalid'),
         ]);
 
         if ($validator->fails()) {
@@ -138,7 +148,7 @@ class QuizController extends Controller
 
         $quiz->section_id = $request->section_id;
         $quiz->title = $request->title;
-        $quiz->status = $request->status;
+        // $quiz->status = $request->status;
         $quiz->updated_by = auth()->user()->id;
 
         $quiz->save();

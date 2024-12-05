@@ -1,4 +1,4 @@
-import type { TCourseAdmin, TLectures, TSection } from '@/interfaces'
+import type { TCourseAdmin, TLectures, TQuestion, TQuiz, TSection } from '@/interfaces'
 import api from '@/services/axiosConfig'
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -20,8 +20,11 @@ export default function useCourse() {
   const dialogEditSection = ref<boolean>(false);
   const dialogAddnewLecture = ref<boolean>(false)
   const dialogAddnewSection = ref<boolean>(false)
-  const dialogAddnewQuiz = ref<boolean>(false)
+  const dialogAddnewQues = ref<boolean>(false)
   const dialogEditLecture = ref<boolean>(false)
+  const dialogAddnewQuiz = ref<boolean>(false)
+  const dialogEditQuiz = ref<boolean>(false)
+  const dialogQues = ref<boolean>(false)
   const imageUrl = ref<string | null>(null)
   const courseId = ref<string|number | null>(null)
 
@@ -49,6 +52,7 @@ export default function useCourse() {
   const courseLevels = ref([]);
   const section = ref<TSection[]>([]);
   const lecture = ref<TLectures[]>([]);
+  const question = ref<TQuestion[]>([]);
   const languages = ref([]);
   const loading = ref(false);
   const error = ref(null);
@@ -129,6 +133,7 @@ export default function useCourse() {
           type: 'success'
         })
         // Chuyển hướng đến trang chỉnh sửa khóa học vừa tạo
+        await fetchCourseData();
         const courseIdI = response.data.data.id;  // API trả về course_id
         console.log('log id vừa tạo', courseIdI);
         router.push(`/teacher/course/edit-course/${courseIdI}`);
@@ -165,7 +170,7 @@ export default function useCourse() {
       loading.value = true;
       courseId.value = route.params.id as string; // Lấy ID từ URL  
       const response = await api.get(`/auth/courses/${courseId.value}`);
-      console.log('data nè', response);
+      // console.log('data nè', response);
       if (response.data.status === 'OK') {
         formDataEditCourse.value = response.data.data;
         section.value = response.data.data.sections;
@@ -303,10 +308,7 @@ export default function useCourse() {
   
   
 // chỉnh sửa chương
-  const formDataEditSection = ref<TSection>({
-    id: '',
-    title: '',  // Các trường cần chỉnh sửa
-  });
+  
   // get Id section
   const fetchSectionId = async (id: number | string) => {
     
@@ -314,9 +316,9 @@ export default function useCourse() {
       const response = await api.get(`/auth/section/${id}`);
       formDataEditSection.value = { ...response.data.data };
       if (response.data.status === 'OK') {
-        console.log('đã tải dữ liệu chương', response.data.data) ;
+        // console.log('đã tải dữ liệu chương', response.data.data) ;
       } else {
-        console.log('Không thể lấy dữ liệu chỉnh sửa');
+        // console.log('Không thể lấy dữ liệu chỉnh sửa');
       }
     } catch (error) {
       ElNotification({
@@ -327,7 +329,10 @@ export default function useCourse() {
     }
   }
     
-  
+  const formDataEditSection = ref<TSection>({
+    id: '',
+    title: '',  // Các trường cần chỉnh sửa
+  });
   const handleEditSection = async (id: number | string) => {
     console.log('Dữ liệu trc khi chỉnh sửa:', id, formDataEditSection.value);
     // console.log('Dữ liệu trc khi chỉnh sửa2:', id, formDataEditSection.value.target);
@@ -349,6 +354,7 @@ export default function useCourse() {
       // }
 
       const response = await api.post(`/auth/section/${id}`, formDataEditSection.value);
+
       console.log('log dữ liệu sau khi chỉnh sửa:', response);
       
       if (response.data.status === 'OK') {
@@ -737,6 +743,156 @@ export default function useCourse() {
   };
   // END LECTURE
 
+
+  // QUIZ
+  //Add quiz
+  courseId.value = route.params.id as string // Lấy ID từ URL
+  
+
+  const formDataAddQuiz = ref<TQuiz>({
+    section_id: '',
+    title: '',
+    status: 'active',
+  })
+  
+  const handelFormQuiz = async () => {
+
+    try {
+      // console.log('Dữ liệu form Quiz Data:', formDataAddSection.value)
+      const response = await api.post('/auth/quizzes/', formDataAddQuiz.value);
+      
+      if (response.data.status === 'OK') {
+        ElNotification({
+          title: 'Thành công',
+          message: response.data.message || 'Thêm quizz mới thành công',
+          type: 'success'
+        });
+        
+        // Hoặc sử dụng một cách khác để thêm section mới vào đầu mảng
+        section.value = [...section.value, response.data.data];
+        await fetchCourseData();
+        dialogAddnewQuiz.value = false
+      } else {
+        ElNotification({
+          title: 'Thất bại',
+          message: response.data.message || 'Thêm quizz không thành công',
+          type: 'error'
+        });
+      }
+      
+    } catch (err) {
+      ElNotification({
+        title: 'Lỗi',
+        message: 'Có lỗi xảy ra khi thêm quizz',
+        type: 'error'
+      });
+    }
+  };
+  
+  
+// chỉnh Quizz
+  const formDataEditQuiz = ref<TQuiz>({
+    id: '',
+    section_id: '',
+    title: '',  // Các trường cần chỉnh sửa
+  });
+    // get Id section
+  const fetchQuizId = async (id: number | string) => {
+      try {
+        const response = await api.get(`/auth/quizzes/${id}`);
+        formDataEditQuiz.value = { ...response.data.data };
+        question.value = response.data.data.questions ;
+        if (response.data.status === 'OK') {
+          console.log('đã tải dữ liệu quiz', question.value) ;
+        } else {
+          console.log('Không thể lấy dữ liệu chỉnh sửa');
+        }
+      } catch (error) {
+        ElNotification({
+          title: 'Lỗi',
+          message: 'Có lỗi khi tải dữ liệu chỉnh sửa',
+          type: 'error',
+        });
+      }
+    }
+  
+  const handleEditQuiz = async (id: number | string) => {
+    console.log('Dữ liệu trc khi chỉnh sửa:', id);
+    try {
+      const response = await api.post(`/auth/quizzes/${id}`, formDataEditQuiz.value);
+      console.log('log dữ liệu sau khi chỉnh sửa:', response);
+      if (response.data.status === 'OK') {
+        // Đảm bảo rằng chỉ thay đổi dữ liệu khi thực sự cần thiết
+        if (formDataEditQuiz.value.id !== response.data.data.id) {
+          formDataEditQuiz.value = { ...response.data.data }; // Cập nhật formDataEditSection chỉ khi cần thiết
+        }
+        ElNotification({
+          title: 'Thành công',
+          message: 'Đã tải dữ liệu chỉnh sửa',
+          type: 'success',
+        });
+        await fetchCourseData();
+        dialogEditQuiz.value = false; // Đóng dialog sau khi chỉnh sửa thành công
+  
+      } else {
+        ElNotification({
+          title: 'Lỗi',
+          message: response.data.response.message || 'Không thể tải dữ liệu chỉnh sửa',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      ElNotification({
+        title: 'Lỗi',
+        message: 'Có lỗi khi tải dữ liệu chỉnh sửa',
+        type: 'error',
+      });
+    }
+  };
+  
+  // Delete quiz
+
+  const handleDeleteQuiz = async (id: number | string) => {
+  // Hiển thị hộp thoại xác nhận trước khi xóa
+    ElMessageBox.confirm(
+      'Bạn có chắc chắn muốn xóa quizz này?', // Thông báo xác nhận
+      'Xác nhận xóa', // Tiêu đề
+      {
+        confirmButtonText: 'Có',
+        cancelButtonText: 'Không',
+        type: 'warning', // Loại thông báo
+      }
+    )
+      .then(async () => {
+        // Nếu người dùng nhấn "Có", tiếp tục xóa
+        try {
+          const response = await api.delete(`/auth/quizzes/${id}`);
+          await fetchCourseData()
+          ElNotification({
+            type: 'success',
+            message: 'Xóa quizz thành công!'
+          });
+        } catch (error) {
+          ElNotification({
+            type: 'error',
+            message: 'Xóa quizz không thành công!'
+          });
+        }
+      })
+      .catch(() => {
+        // Nếu người dùng nhấn "Không", không làm gì cả
+        ElNotification({
+          type: 'info',
+          message: 'Hủy xóa quizz'
+        });
+      });
+  };
+
+    // QUESTION
+
+    // END QUESTION
+  // END QUIZ
+
   onMounted(() => {
       fetchCourseData();
   })
@@ -747,18 +903,25 @@ export default function useCourse() {
     formDataAddSection,
     formDataEditSection,
     formDataEditLecture,
+    formDataEditQuiz,
     formDataAddLecture,
+    formDataAddQuiz,
     dialogEditSection,
     dialogAddnewLecture,
     dialogAddnewSection,
-    dialogAddnewQuiz,
+    dialogAddnewQues,
     dialogEditLecture,
+    dialogAddnewQuiz,
+    dialogEditQuiz,
+    dialogQues,
     handelFormSection,
+    handelFormQuiz,
     courseLevels,
     fetchCourseLevels,
     fetchLanguages,
     fetchSectionId,
     fetchLectureId,
+    fetchQuizId,
     handlePreviewImg,
     handleFileUpload,
     languages,
@@ -768,13 +931,16 @@ export default function useCourse() {
     fetchCourseData,
     handleDeleteSection,
     handleDeleteLecture,
+    handleDeleteQuiz,
     handleEditSection,
     handleEditLecture,
+    handleEditQuiz,
     handleSortSection,
     handleAddLecture,
     courseId,
     loading,
     section,
+    question,
     error
   }
 }

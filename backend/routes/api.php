@@ -201,8 +201,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
 
             Route::post('quizzes', [QuizController::class, 'store'])->name('quizzes.store');
-            Route::get('quizzes/{id}', [QuizController::class, 'show'])->name('quizzes.show');
-            Route::put('quizzes/{id}', [QuizController::class, 'update'])->name('quizzes.update');
+            Route::get('quizzes/{id}', [QuizController::class, 'showOne'])->name('quizzes.showOne');
+            Route::post('quizzes/{id}', [QuizController::class, 'update'])->name('quizzes.update');
             Route::get('quizzes/restore/{id}', [QuizController::class, 'restore'])->name('quizzes.restore');
             Route::delete('quizzes/{id}', [QuizController::class, 'destroy'])->name('quizzes.destroy');
             Route::delete('quizzes/permanent-delete/{id}', [QuizController::class, 'forceDelete'])->name('quizzes.destroy');

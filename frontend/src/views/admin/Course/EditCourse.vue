@@ -76,9 +76,9 @@
                       </template>
                     </div>
                     <template v-if="section.length == 0">
-                      <div  class="flex flex-row mt-6">
+                      <div class="flex flex-row mt-6">
                         <div class="mt-4 basis-8/12">
-                          <ButtonAddObject  @click="addChapter" title="Thêm chương mới" />
+                          <ButtonAddObject @click="addChapter" title="Thêm chương mới" />
                         </div>
                       </div>
                     </template>
@@ -86,10 +86,7 @@
                     <template v-else>
                       <!-- Dropdown items -->
                       <div class="mt-6">
-                        <template
-                          v-for="(itemSection, index) in section"
-                          :key="itemSection.id"
-                        >
+                        <template v-for="(itemSection, index) in section" :key="itemSection.id">
                           <el-collapse class="mb-2" @change="ActiveToggle">
                             <el-collapse-item
                               name="1"
@@ -105,23 +102,28 @@
                                     'opacity-0': !toggleActive
                                   }"
                                 >
-                                  <ButtonSecondarySm   
+                                  <ButtonSecondarySm
                                     v-if="
-                                    itemSection.lectures &&
-                                    Array.isArray(itemSection.lectures) &&
-                                    itemSection.lectures.length > 0
-                                    " 
-                                    title="Sắp xếp bài học" 
+                                      itemSection.lectures &&
+                                      Array.isArray(itemSection.lectures) &&
+                                      itemSection.lectures.length > 0
+                                    "
+                                    title="Sắp xếp bài học"
                                   />
                                   <ButtonSecondarySm
                                     link="#"
                                     :icon="PencilIcon"
-                                    @click.prevent="itemSection.id !== undefined && EditChapter(itemSection.id)"
+                                    @click.prevent="
+                                      itemSection.id !== undefined && EditChapter(itemSection.id)
+                                    "
                                   />
                                   <ButtonSecondarySm
                                     link="#"
                                     :icon="TrashIcon"
-                                    @click.prevent="itemSection.id !== undefined && handleDeleteSection(itemSection.id)"
+                                    @click.prevent="
+                                      itemSection.id !== undefined &&
+                                      handleDeleteSection(itemSection.id)
+                                    "
                                   />
                                 </div>
                               </template>
@@ -141,16 +143,64 @@
                                   >
                                     {{ itemLecture.title }}
                                     <div class="flex gap-2">
-                                      {{itemLecture.type}}
-                                      <ButtonSecondarySm 
-                                      :icon="PencilIcon" 
-                                      link="#"
-                                      @click.prevent="itemLecture.id !== undefined && editLesson(itemLecture.id)"
+                                      {{ itemLecture.type }}
+                                      <ButtonSecondarySm
+                                        :icon="PencilIcon"
+                                        link="#"
+                                        @click.prevent="
+                                          itemLecture.id !== undefined && editLesson(itemLecture.id)
+                                        "
                                       />
-                                      <ButtonSecondarySm 
-                                      link="#"
-                                      :icon="TrashIcon"
-                                      @click.prevent="itemLecture.id !== undefined && handleDeleteLecture(itemLecture.id)"
+                                      <ButtonSecondarySm
+                                        link="#"
+                                        :icon="TrashIcon"
+                                        @click.prevent="
+                                          itemLecture.id !== undefined &&
+                                          handleDeleteLecture(itemLecture.id)
+                                        "
+                                      />
+                                    </div>
+                                  </div>
+                                </template>
+                              </template>
+                              <template
+                                v-else-if="
+                                  itemSection.quizzes &&
+                                  Array.isArray(itemSection.quizzes) &&
+                                  itemSection.quizzes.length > 0
+                                "
+                              >
+                                <template
+                                  v-for="itemQuizzes in itemSection.quizzes"
+                                  :key="itemQuizzes.id"
+                                >
+                                  <div
+                                    class="py-2 border-b-2 last:border-none flex justify-between"
+                                  >
+                                    {{ itemQuizzes.title }}
+                                    <div class="flex gap-2">
+                                      Quizz
+                                      <ButtonSecondarySm
+                                        :icon="QueueListIcon"
+                                        link="#"
+                                        @click.prevent="
+                                          itemQuizzes.id !== undefined && handelQues(itemQuizzes.id)
+                                        "
+                                      />
+                                      <ButtonSecondarySm
+                                        :icon="PencilIcon"
+                                        link="#"
+                                        @click.prevent="
+                                          itemQuizzes.id !== undefined && EditQuiz(itemQuizzes.id)
+                                        "
+                                      />
+                                      <ButtonSecondarySm
+                                        link="#"
+                                        :icon="TrashIcon"
+                                        @click.prevent="
+                                          itemQuizzes.id !== undefined &&
+                                          handleDeleteQuiz(itemQuizzes.id)
+                                        "
                                       />
                                     </div>
                                   </div>
@@ -316,8 +366,6 @@
                   </div>
                 </el-tab-pane>
 
-
-
                 <el-tab-pane>
                   <template #label>
                     <span class="tab-items-style">
@@ -374,7 +422,6 @@
                     />
                   </div>
                 </el-tab-pane>
-
               </el-tabs>
             </div>
           </form>
@@ -410,6 +457,7 @@
       inputPlaceHoder="Nhập tên chương"
       v-model="formDataEditSection.title"
     />
+
   </DialogArea>
   <!-- End Dialog Chỉnh sửa chương -->
 
@@ -419,8 +467,8 @@
     title="Thêm bài học mới"
     @close="dialogAddnewLecture = false"
     :submitForm="() => handleAddLecture()"
-    >
-    <label  class="label-input mt-2 mb-3 flex" > Chọn thể loại bài học</label>
+  >
+    <label class="label-input mt-2 mb-3 flex"> Chọn thể loại bài học</label>
     <el-radio-group class="w-full" v-model="formDataAddLecture.type">
       <el-radio value="video" size="large" border>Video file</el-radio>
       <el-radio value="file" size="large " border>Tài liệu</el-radio>
@@ -431,33 +479,25 @@
       inputPlaceHoder="Nhập tên bài học"
       v-model="formDataAddLecture.title"
     />
-    <RadioGroup
-    label="Chương"
-    customsClass="items-center"
-    >
-    <el-select
-          v-model="formDataAddLecture.section_id"
-          placeholder="Chọn chương cho bài học"
-          class="w-full"
-          filterable
-          >
-          <template #empty>
-              <span>Không có giá trị nào</span> 
-            </template>
-              <el-option
-                v-for="item in section"
-                :key="item.id"
-                :label="item.title"
-                :value="item.id"
-              >
-              <span>{{ item.title }}</span>
-              </el-option>
-          </el-select>
+    <RadioGroup label="Chương" customsClass="items-center">
+      <el-select
+        v-model="formDataAddLecture.section_id"
+        placeholder="Chọn chương cho bài học"
+        class="w-full"
+        filterable
+      >
+        <template #empty>
+          <span>Không có giá trị nào</span>
+        </template>
+        <el-option v-for="item in section" :key="item.id" :label="item.title" :value="item.id">
+          <span>{{ item.title }}</span>
+        </el-option>
+      </el-select>
     </RadioGroup>
     <RadioGroup
-    v-if="formDataAddLecture.type === 'video'"
-    label="Tải lên video bài học (.mp4)"
-    customsClass="items-center"
+      v-if="formDataAddLecture.type === 'video'"
+      label="Tải lên video bài học (.mp4)"
+      customsClass="items-center"
     >
       <el-upload
         class="upload-demo"
@@ -466,71 +506,62 @@
         :before-upload="(file: File) => handleFileUpload(file, 'content')"
       >
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-        <div class="el-upload__text">
-          Kéo file thả vào đây hoặc <em>click để tải lên</em>
-        </div>
+        <div class="el-upload__text">Kéo file thả vào đây hoặc <em>click để tải lên</em></div>
         <template #tip>
-          <div class="el-upload__tip">
-            các tệp .mp4 có kích thước nhỏ hơn 20mb
-          </div>
+          <div class="el-upload__tip">các tệp .mp4 có kích thước nhỏ hơn 20mb</div>
         </template>
       </el-upload>
     </RadioGroup>
     <RadioGroup
-    v-if="formDataAddLecture.type === 'file'"
-    label="Tải file tài liệu bài học (.pdf)"
-    customsClass="items-center"
+      v-if="formDataAddLecture.type === 'file'"
+      label="Tải file tài liệu bài học (.pdf)"
+      customsClass="items-center"
     >
-    <el-upload
+      <el-upload
         class="upload-demo"
         drag
         :before-upload="(file: File) => handleFileUpload(file, 'content')"
         multiple
       >
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-        <div class="el-upload__text">
-          Kéo file thả vào đây hoặc <em>click để tải lên</em>
-        </div>
+        <div class="el-upload__text">Kéo file thả vào đây hoặc <em>click để tải lên</em></div>
         <template #tip>
-          <div class="el-upload__tip">
-            các tệp pdf có kích thước nhỏ hơn 20mb
-          </div>
+          <div class="el-upload__tip">các tệp pdf có kích thước nhỏ hơn 20mb</div>
         </template>
       </el-upload>
     </RadioGroup>
 
     <RadioGroup
-    :label="formDataAddLecture.type =='video'?'Thời lượng video': 'Số trang'"
-    customsClass="items-center"
+      :label="formDataAddLecture.type == 'video' ? 'Thời lượng video' : 'Số trang'"
+      customsClass="items-center"
     >
       <el-input
-      v-model="formDataAddLecture.duration"
-      class=""
-      disabled
-      placeholder="Please input"
+        v-model="formDataAddLecture.duration"
+        class=""
+        disabled
+        placeholder="Please input"
       />
     </RadioGroup>
 
     <RadioGroup
-    :label="formDataAddLecture.type =='video'?'Chọn xem trước video': 'Chọn xem trước tài liệu'"
-    customsClass="items-center"
+      :label="
+        formDataAddLecture.type == 'video' ? 'Chọn xem trước video' : 'Chọn xem trước tài liệu'
+      "
+      customsClass="items-center"
     >
-        <el-select
-          v-model="formDataAddLecture.preview"
-          class="w-full"
-          filterable
-          placeholder="Chọn loại xem trước"
-          >
-            <template #empty>
-              <span>Không có giá trị nào</span> 
-            </template>
-              <el-option label="Xem trước" value="can"></el-option>
-              <el-option label="Không xem trước" value="cant"></el-option>
-        </el-select>
+      <el-select
+        v-model="formDataAddLecture.preview"
+        class="w-full"
+        filterable
+        placeholder="Chọn loại xem trước"
+      >
+        <template #empty>
+          <span>Không có giá trị nào</span>
+        </template>
+        <el-option label="Xem trước" value="can"></el-option>
+        <el-option label="Không xem trước" value="cant"></el-option>
+      </el-select>
     </RadioGroup>
-
-  
-
   </DialogArea>
   <!-- end Dialog thêm bài học -->
   <!-- Dialog chỉnh sửa bài học -->
@@ -539,8 +570,8 @@
     title="Chỉnh sửa bài học"
     @close="dialogEditLecture = false"
     :submitForm="() => handleEditLecture(selectedLectureId)"
-    >
-    <label  class="label-input mt-2 mb-3 flex" > Chọn thể loại bài học</label>
+  >
+    <label class="label-input mt-2 mb-3 flex"> Chọn thể loại bài học</label>
     <el-radio-group class="w-full" v-model="formDataEditLecture.type">
       <el-radio value="video" size="large" border>Video file</el-radio>
       <el-radio value="file" size="large " border>Tài liệu</el-radio>
@@ -551,33 +582,25 @@
       inputPlaceHoder="Nhập tên bài học"
       v-model="formDataEditLecture.title"
     />
-    <RadioGroup
-    label="Chương"
-    customsClass="items-center"
-    >
-    <el-select
-          v-model="formDataEditLecture.section_id"
-          placeholder="Chọn chương cho bài học"
-          class="w-full"
-          filterable
-          >
-          <template #empty>
-              <span>Không có giá trị nào</span> 
-            </template>
-              <el-option
-                v-for="item in section"
-                :key="item.id"
-                :label="item.title"
-                :value="item.id"
-              >
-              <span>{{ item.title }}</span>
-              </el-option>
-          </el-select>
+    <RadioGroup label="Chương" customsClass="items-center">
+      <el-select
+        v-model="formDataEditLecture.section_id"
+        placeholder="Chọn chương cho bài học"
+        class="w-full"
+        filterable
+      >
+        <template #empty>
+          <span>Không có giá trị nào</span>
+        </template>
+        <el-option v-for="item in section" :key="item.id" :label="item.title" :value="item.id">
+          <span>{{ item.title }}</span>
+        </el-option>
+      </el-select>
     </RadioGroup>
     <RadioGroup
-    v-if="formDataEditLecture.type === 'video'"
-    label="Tải lên video bài học (.mp4)"
-    customsClass="items-center"
+      v-if="formDataEditLecture.type === 'video'"
+      label="Tải lên video bài học (.mp4)"
+      customsClass="items-center"
     >
       <el-upload
         class="upload-demo"
@@ -586,76 +609,65 @@
         :before-upload="(file: File) => handleFileUpload(file, 'content')"
       >
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-        <div class="el-upload__text">
-          Kéo file thả vào đây hoặc <em>click để tải lên</em>
-        </div>
+        <div class="el-upload__text">Kéo file thả vào đây hoặc <em>click để tải lên</em></div>
         <template #tip>
-          <div class="el-upload__tip">
-            các tệp .mp4 có kích thước nhỏ hơn 20mb
-          </div>
+          <div class="el-upload__tip">các tệp .mp4 có kích thước nhỏ hơn 20mb</div>
         </template>
       </el-upload>
     </RadioGroup>
     <RadioGroup
-    v-if="formDataEditLecture.type === 'file'"
-    label="Tải file tài liệu bài học (.pdf)"
-    customsClass="items-center"
+      v-if="formDataEditLecture.type === 'file'"
+      label="Tải file tài liệu bài học (.pdf)"
+      customsClass="items-center"
     >
-    <el-upload
+      <el-upload
         class="upload-demo"
         drag
         :before-upload="(file: File) => handleFileUpload(file, 'content')"
         multiple
       >
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-        <div class="el-upload__text">
-          Kéo file thả vào đây hoặc <em>click để tải lên</em>
-        </div>
+        <div class="el-upload__text">Kéo file thả vào đây hoặc <em>click để tải lên</em></div>
         <template #tip>
-          <div class="el-upload__tip">
-            các tệp pdf có kích thước nhỏ hơn 20mb
-          </div>
+          <div class="el-upload__tip">các tệp pdf có kích thước nhỏ hơn 20mb</div>
         </template>
       </el-upload>
     </RadioGroup>
 
     <RadioGroup
-    :label="formDataEditLecture.type =='video'?'Thời lượng video': 'Số trang'"
-    customsClass="items-center"
+      :label="formDataEditLecture.type == 'video' ? 'Thời lượng video' : 'Số trang'"
+      customsClass="items-center"
     >
       <el-input
-      v-model="formDataEditLecture.duration"
-      class=""
-      disabled
-      placeholder="Please input"
+        v-model="formDataEditLecture.duration"
+        class=""
+        disabled
+        placeholder="Please input"
       />
     </RadioGroup>
 
     <RadioGroup
-    :label="formDataEditLecture.type =='video'?'Chọn xem trước video': 'Chọn xem trước tài liệu'"
-    customsClass="items-center"
+      :label="
+        formDataEditLecture.type == 'video' ? 'Chọn xem trước video' : 'Chọn xem trước tài liệu'
+      "
+      customsClass="items-center"
     >
-        <el-select
-          v-model="formDataEditLecture.preview"
-          class="w-full"
-          filterable
-          placeholder="Chọn loại xem trước"
-          >
-            <template #empty>
-              <span>Không có giá trị nào</span> 
-            </template>
-              <el-option label="Xem trước" value="can"></el-option>
-              <el-option label="Không xem trước" value="cant"></el-option>
-        </el-select>
+      <el-select
+        v-model="formDataEditLecture.preview"
+        class="w-full"
+        filterable
+        placeholder="Chọn loại xem trước"
+      >
+        <template #empty>
+          <span>Không có giá trị nào</span>
+        </template>
+        <el-option label="Xem trước" value="can"></el-option>
+        <el-option label="Không xem trước" value="cant"></el-option>
+      </el-select>
     </RadioGroup>
-
-  
-
   </DialogArea>
   <!-- end Dialog chỉnh sửa bài học -->
 
-
-  
   <!-- <DialogArea
     :dialogVisible="dialogAddnewLesson"
     title="Thêm bài học mới"
@@ -675,16 +687,146 @@
       inputPlaceHoder="Nhập đường dẫn video"
     />
   </DialogArea> -->
+  <!-- QUIZZES -->
   <!-- Dialog thêm quiz -->
   <DialogArea
     :dialogVisible="dialogAddnewQuiz"
-    title="Thêm quiz mới"
+    title="Thêm quizz mới"
     @close="dialogAddnewQuiz = false"
+    :submitForm="handelFormQuiz"
   >
-    <InputGroup inputId="nameQuiz" label="Tên quiz" inputPlaceHoder="Nhập tên quiz" />
-
+    <RadioGroup label="Chương" customsClass="items-center">
+      <el-select
+        v-model="formDataAddQuiz.section_id"
+        placeholder="Chọn chương cho quizz"
+        class="w-full"
+        filterable
+      >
+        <template #empty>
+          <span>Không có giá trị nào</span>
+        </template>
+        <el-option v-for="item in section" :key="item.id" :label="item.title" :value="item.id">
+          <span>{{ item.title }}</span>
+        </el-option>
+      </el-select>
+    </RadioGroup>
+    <InputGroup
+      inputId="nameQuiz"
+      label="Tên quiz"
+      inputPlaceHoder="Nhập tên quiz"
+      v-model="formDataAddQuiz.title"
+    />
   </DialogArea>
-  <!-- End Dialog thêm quiz -->
+  <!-- End Dialog chỉnh sửa quiz -->
+  <DialogArea
+    :dialogVisible="dialogEditQuiz"
+    title="Chỉnh sửa quizz"
+    @close="dialogEditQuiz = false"
+    :submitForm="() => handleEditQuiz(selectedQuizId)"
+  >
+    <RadioGroup label="Chương" customsClass="items-center">
+      <el-select
+        v-model="formDataEditQuiz.section_id"
+        placeholder="Chọn chương cho quizz"
+        class="w-full"
+        filterable
+      >
+        <template #empty>
+          <span>Không có giá trị nào</span>
+        </template>
+        <el-option v-for="item in section" :key="item.id" :label="item.title" :value="item.id">
+          <span>{{ item.title }}</span>
+        </el-option>
+      </el-select>
+    </RadioGroup>
+    <InputGroup
+      inputId="nameQuiz"
+      label="Tên quiz"
+      inputPlaceHoder="Nhập tên quiz"
+      v-model="formDataEditQuiz.title"
+    />
+  </DialogArea>
+  <!-- End Dialog chỉnh sửa quiz -->
+  <!--Dialog question -->
+  <DialogArea 
+  :dialogVisible="dialogQues" 
+  title="Câu hỏi" 
+  @close="dialogQues = false">
+    <div class="py-2 flex gap-2">
+      <ButtonPrimarySm
+        title="Thêm câu hỏi"
+        dialogVisible="dialogAddnewQues"
+        link="#"
+        @click="addQues"
+      />
+      <template v-if="question.length > 0">
+        <ButtonPrimarySm
+          title="Sắp xếp câu hỏi"
+          dialogVisible="dialogSortSection"
+          link="#"
+          @click="sortSection"
+        />
+      </template>
+    </div>
+    <template v-if="question.length == 0">
+      <div class="flex flex-row mt-6 justify-center">
+        <div class="mt-4 basis-8/12">
+          <ButtonAddObject @click="addQues" title="Thêm câu hỏi" />
+        </div>
+      </div>
+    </template>
+    <template v-else>
+      <template v-for="itemQues in question" :key="itemQues.id">
+        <div class="py-2 border-b-2 last:border-none flex justify-between">
+          {{ itemQues.question }}
+          <div class="flex gap-2">
+            {{ itemQues.type }}
+            <ButtonSecondarySm
+              :icon="PencilIcon"
+              link="#"
+              @click.prevent="itemQues.id !== undefined && editLesson(itemQues.id)"
+            />
+            <ButtonSecondarySm
+              link="#"
+              :icon="TrashIcon"
+              @click.prevent="itemQues.id !== undefined && handleDeleteQues(itemQues.id)"
+            />
+          </div>
+        </div>
+      </template>
+    </template>
+  </DialogArea>
+  <!-- End Dialog question -->
+  <!-- End Dialog thêmm question-->
+  <DialogArea
+    :dialogVisible="dialogAddnewQues"
+    title="Thêm câu hỏi"
+    @close="dialogEditQuiz = false"
+    :submitForm="() => handleEditQuiz(selectedQuizId)"
+  >
+    <CkeditorGroup
+      label="Câu hỏi"
+    />
+    <RadioGroup
+    label="Đáp án"
+    required="*"
+    customsClass="items-center"
+  
+    >
+    
+    </RadioGroup>
+    <RadioGroup
+      label="Đáp án đúng"
+      required="*"
+      customsClass="items-center"
+    
+    >
+      
+    </RadioGroup>
+  </DialogArea>
+  
+  <!-- End Dialog chỉnh sửa quiz -->
+  <!-- END QUIZZES -->
 
   <DialogArea
     :dialogVisible="dialogSortSection"
@@ -692,19 +834,10 @@
     @close="dialogSortSection = false"
     :submitForm="() => handleSortSection(section)"
   >
-      <draggable 
-      v-model="section" 
-        @start="onDragStart"
-        @end="onDragEnd"
-      item-key="id">
+    <draggable v-model="section" @start="onDragStart" @end="onDragEnd" item-key="id">
       <template #item="{ element }">
         <div>
-          <el-input
-          style="max-width: 600px"
-          class="cursor-move py-2"
-          :placeholder="element.title"
-
-          >
+          <el-input style="max-width: 600px" class="cursor-move py-2" :placeholder="element.title">
             <template #title>{{ element.name }}</template>
             <template #append>
               <ArrowsUpDownIcon class="w-5 cursor-move" />
@@ -737,6 +870,7 @@ import {
   PencilIcon,
   PencilSquareIcon,
   PlusIcon,
+  QueueListIcon,
   TagIcon,
   TrashIcon
 } from '@heroicons/vue/24/outline'
@@ -764,35 +898,44 @@ import { useCategoryStore } from '@/store/category'
 
 
 const {
-  formDataEditCourse,
   fetchCourseData,
-  courseLevels,
   fetchCourseLevels,
   fetchLanguages,
-  languages,
   submitFormEdit,
+  courseLevels,
+  languages,
   section,
+  question,
   handlePreviewImg,
   handleFileUpload,
-  formDataAddSection,
   handelFormSection,
-  formDataAddLecture,
+  handelFormQuiz,
+  handleAddLecture,
+  handleEditSection,
+  handleEditQuiz,
   handleDeleteSection,
   handleDeleteLecture,
-  handleEditSection,
+  handleDeleteQuiz,
   handleSortSection,
-  handleAddLecture,
   handleEditLecture,
-  
+  formDataEditCourse,
+  formDataAddSection,
+  formDataAddLecture,
+  formDataAddQuiz,
+  formDataEditQuiz,
   formDataEditSection,
   formDataEditLecture,
   fetchSectionId,
   fetchLectureId,
+  fetchQuizId,
   dialogEditSection,
   dialogAddnewLecture,
   dialogEditLecture,
   dialogAddnewSection,
-  dialogAddnewQuiz
+  dialogAddnewQues,
+  dialogAddnewQuiz,
+  dialogEditQuiz,
+  dialogQues
 } = useCourse()
 
 const { categories, fetchCategoriesCRUD } = useCategoryStore()
@@ -845,6 +988,22 @@ const editLesson = (id: number | string)  => {
 const addQuiz = () => {
   dialogAddnewQuiz.value = true
 }
+const selectedQuizId = ref<number | string>('')
+const EditQuiz = (id: number | string) => {
+  fetchQuizId(id)
+  selectedQuizId.value = id
+  dialogEditQuiz.value = true
+}
+  //question
+const handelQues = (id: number | string) => {
+  fetchQuizId(id)
+  dialogQues.value = true
+}
+const addQues = () => {
+  dialogQues.value = false
+  dialogAddnewQues.value = true
+}
+  //end question
 //end dialog quiz
 
 //dialog sắp xếp chương
@@ -902,5 +1061,4 @@ onMounted(() => {
 .el-radio-group .el-radio.is-bordered {
   padding: 10px;
 }
-
 </style>

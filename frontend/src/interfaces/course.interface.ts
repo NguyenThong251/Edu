@@ -63,10 +63,12 @@ export interface TCourseFilters {
 }
 export interface TSection {
   id?: number | string
-  course_id?: number[]
+  status?: string
+  course_id?: number[] | string
   title?: string
   order?: number | string
   lectures?: TLectures[]
+  quizzes?: TQuiz[]
   [key: string]: any;
 }
 
@@ -81,4 +83,23 @@ export interface TLectures {
   status?: string
   order?: number | string
   [key: string]: any;
+}
+export interface TQuiz {
+  id?: number | string
+  status?: string
+  title?: string
+  type?: string
+  section_id?: number | string
+  order?: number | string
+  questions?: TQuestion[]
+}
+export interface TQuestion {
+  id?: number | string
+  question?: string[]
+  answer?: string
+  status?: string
+  title?: string
+  type?: string
+  quiz_id?: number | string
+  order?: number | string
 }
