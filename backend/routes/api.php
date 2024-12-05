@@ -94,6 +94,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
             Route::post('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+            Route::put('categories/{id}/status', [CategoryController::class, 'updateStatus'])->name('categories.updateStatus');
             Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
             Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
@@ -114,11 +115,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 // Get all vouchers
                 Route::get('/', [VoucherController::class, 'index']);
                 Route::get('list-vouchers-admin', [VoucherController::class, 'getListAdmin']);
-                // Get voucher by id or code
-                Route::get('/{idOrCode}', [VoucherController::class, 'show']);
-                Route::post('/create', [VoucherController::class, 'store']);
-                Route::put('/{id}', [VoucherController::class, 'update']);
-                Route::post('/delete', [VoucherController::class, 'destroy']);
                 Route::get('/filter', [VoucherController::class, 'filter']);
                 // Get all deleted vouchers
                 Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
@@ -134,8 +130,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/payout/process/{id}', [PayoutController::class, 'processPayout']);
             // Liệt kê các yêu cầu rút tiền
             Route::get('/payout/requests', [PayoutController::class, 'listPayoutRequests']);
-//            Route::get('/payout/success/{id}', [PayoutController::class, 'payoutSuccess'])->name('payout.success');
-//            Route::get('/payout/cancel/{id}', [PayoutController::class, 'payoutCancel'])->name('payout.cancel');
+            //            Route::get('/payout/success/{id}', [PayoutController::class, 'payoutSuccess'])->name('payout.success');
+            //            Route::get('/payout/cancel/{id}', [PayoutController::class, 'payoutCancel'])->name('payout.cancel');
             Route::post('/payout/rejected/{id}', [PayoutController::class, 'rejectRequest']);
 
 
@@ -180,7 +176,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('sections/edit-form/{id}', [SectionController::class, 'editForm'])->name('sections.editForm');
             Route::get('show-sections-of-course/{id}', [SectionController::class, 'showSectionsByCourse'])->name('sections.showSectionsOfCourse');
             Route::put('sort-sections-of-course', [SectionController::class, 'updateSectionOrder'])->name('sections.updateOrder');
-            
+
 
             Route::put('sort-content-of-section', [LectureController::class, 'updateOrder'])->name('lectures.updateOrder');
             Route::post('lectures', [LectureController::class, 'store'])->name('lectures.store');
@@ -310,7 +306,7 @@ Route::get('course-levels/{id}', [CourseLevelController::class, 'show'])->name('
 
 Route::get('languages', [LanguageController::class, 'index'])->name('languages.index');
 Route::get('languages/{id}', [LanguageController::class, 'show'])->name('languages.show');
-
+Route::get('vouchers/list-vouchers-admin', [VoucherController::class, 'getListAdmin']);
 Route::get('courses', [CourseController::class, 'search'])->name('courses.search');
 Route::get('courses/{id}', [CourseController::class, 'detail'])->name('courses.detail');
 Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses'])->name('courses.getPopularCourses');

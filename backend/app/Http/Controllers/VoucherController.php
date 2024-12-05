@@ -11,56 +11,68 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 use App\Models\Cart;
 
-
 class VoucherController extends Controller
 {
     public function getListAdmin(Request $request)
     {
+        // Query cơ bản lấy danh sách voucher
         $vouchersQuery = Voucher::query();
 
+        // Kiểm tra tham số `deleted`
         if ($request->has('deleted') && $request->deleted == 1) {
-            $vouchersQuery->onlyTrashed();
+            $vouchersQuery->onlyTrashed(); // Lấy các voucher đã xóa
         } else {
-            $vouchersQuery->whereNull('deleted_at');
+            $vouchersQuery->whereNull('deleted_at'); // Mặc định chỉ lấy voucher chưa xóa
         }
 
+        // Lọc theo keyword (nếu có)
         if ($request->has('keyword') && !empty($request->keyword)) {
             $keyword = $request->keyword;
             $vouchersQuery->where('code', 'like', '%' . $keyword . '%');
         }
 
+        // Lọc theo trạng thái (nếu có)
         if ($request->has('status') && !is_null($request->status)) {
             $vouchersQuery->where('status', $request->status);
         }
 
+        // Sắp xếp theo `created_at` (mặc định là `desc`)
         $order = $request->get('order', 'desc');
         $vouchersQuery->orderBy('created_at', $order);
 
 
-        $order = $request->get('order', 'desc');
+        $order = $request->get('order', 'desc'); // Giá trị mặc định là desc
         $vouchersQuery->orderBy('created_at', $order);
 
         // Phân trang với per_page và page
-        $perPage = (int)$request->get('per_page', 10);
-        $page = (int)$request->get('page', 1);
+        $perPage = (int) $request->get('per_page', 10); // Số lượng bản ghi mỗi trang, mặc định 10
+        $page = (int) $request->get('page', 1); // Trang hiện tại, mặc định 1
 
+        // Lấy danh sách đã lọc
         $vouchers = $vouchersQuery->get();
 
+        // Tổng số lượng bản ghi
         $total = $vouchers->count();
 
+        // Phân trang thủ công
         $paginatedVouchers = $vouchers->forPage($page, $perPage)->values();
 
+        // Tạo đối tượng LengthAwarePaginator
         $pagination = new LengthAwarePaginator(
-            $paginatedVouchers,
-            $total,
-            $perPage,
-            $page,
+            $paginatedVouchers, // Dữ liệu cho trang hiện tại
+            $total,                 // Tổng số bản ghi
+            $perPage,               // Số lượng bản ghi mỗi trang
+            $page,                  // Trang hiện tại
             [
-                'path' => LengthAwarePaginator::resolveCurrentPath(),
-                'query' => $request->query()
+                'path' => LengthAwarePaginator::resolveCurrentPath(), // Đường dẫn chính
+                'query' => $request->query() // Lấy tất cả query parameters hiện tại
             ]
         );
+
+        // Chuyển đổi dữ liệu phân trang thành mảng
         $vouchers = $pagination->toArray();
+
+        // Trả về kết quả với đầy đủ thông tin filter, order và phân trang
         return formatResponse(
             STATUS_OK,
             $vouchers,

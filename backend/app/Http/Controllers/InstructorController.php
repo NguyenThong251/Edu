@@ -20,7 +20,42 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class InstructorController extends Controller
 {
-// get list of instructors list of their courses.
+    // get list of instructors list of their courses.
+    //     public function getListCourses(Request $request)
+    //     {
+    //         $user = auth()->user();
+    //         $title = $request->input('title', null);
+    //         $status = $request->input('status', null);
+    //         $page = $request->input('page', 1);
+    //         $perPage = $request->input('per_page', 10);
+    //         $priceOrder = $request->input('price_order', null);
+
+
+    //         $query = Course::where('created_by', $user->id);
+    //         if ($status) {
+    //             $query->where('status', $status);
+    //         }
+    //         if ($title) {
+    //             $query->where('title', 'like', '%' . $title . '%');
+    //         }
+    //         if ($priceOrder && in_array(strtolower($priceOrder), ['asc', 'desc'])) {
+    //             $query->orderBy('price', strtolower($priceOrder));
+    //         } else {
+    //             $query->orderBy('created_at', 'desc');
+    //         }
+    //         $courses = $query->paginate($perPage, ['*'], 'page', $page);
+
+    // //        return formatResponse(STATUS_OK,$courses->items(),'','Get list success',CODE_OK);
+    //         return response()->json(['status' => 'OK', 'data' => $courses->items(),
+    //             'pagination' => [
+    //                 'total' => $courses->total(),
+    //                 'current_page' => $courses->currentPage(),
+    //                 'last_page' => $courses->lastPage(),
+    //                 'per_page' => $courses->perPage(),
+    //             ],
+    //             'code' => 200
+    //         ]);
+    //     }
     public function getListCourses(Request $request)
     {
         $user = auth()->user();
@@ -30,8 +65,8 @@ class InstructorController extends Controller
         $perPage = $request->input('per_page', 10);
         $priceOrder = $request->input('price_order', null);
 
-
         $query = Course::where('created_by', $user->id);
+
         if ($status) {
             $query->where('status', $status);
         }
@@ -43,10 +78,51 @@ class InstructorController extends Controller
         } else {
             $query->orderBy('created_at', 'desc');
         }
+
+        // Gộp quan hệ
+        $query->with([
+            'category',
+            'level',
+            'language',
+            'creator:id,first_name,last_name',
+            'sections.lectures',
+            'reviews'
+        ])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating');
+
         $courses = $query->paginate($perPage, ['*'], 'page', $page);
 
-//        return formatResponse(STATUS_OK,$courses->items(),'','Get list success',CODE_OK);
-        return response()->json(['status' => 'OK', 'data' => $courses->items(),
+        // Định dạng lại dữ liệu
+        $formattedCourses = $courses->map(function ($course) {
+            $lectures_count = $course->sections->sum(fn($section) => $section->lectures->count());
+            $total_duration = $course->sections->sum(fn($section) => $section->lectures->sum('duration'));
+            return [
+                'id' => $course->id,
+                'title' => $course->title,
+                'old_price' => round($course->price, 0),
+                'current_price' => round(
+                    $course->type_sale === 'price' ? $course->price - $course->sale_value : $course->price * (1 - $course->sale_value / 100),
+                    0
+                ),
+                'thumbnail' => $course->thumbnail,
+                'level' => $course->level->name ?? null,
+                'language' => $course->language->name ?? null,
+                'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
+                    ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
+                    : ''),
+                'lectures_count' => $lectures_count,
+                'total_duration' => round($total_duration / 60 / 60, 1), // Đổi từ giây sang giờ
+                'rating_avg' => round($course->reviews_avg_rating, 2) ?? 0,
+                'reviews_count' => $course->reviews_count ?? 0,
+                'status' => $course->status,
+            ];
+        });
+
+        // Trả về dữ liệu
+        return response()->json([
+            'status' => 'OK',
+            'data' => $formattedCourses,
             'pagination' => [
                 'total' => $courses->total(),
                 'current_page' => $courses->currentPage(),
@@ -216,5 +292,4 @@ class InstructorController extends Controller
             'code' => 200
         ]);
     }
-
 }

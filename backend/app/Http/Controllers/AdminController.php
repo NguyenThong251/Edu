@@ -318,6 +318,7 @@ class AdminController extends Controller
     {
         // Query danh sách payout_requests
         $payoutRequests = PayoutRequest::query()
+            ->with('user:id,email')
             ->when($request->has('status'), function ($query) use ($request) {
                 $query->where('status', $request->input('status')); // Lọc theo status
             })
@@ -333,5 +334,4 @@ class AdminController extends Controller
 
         return response()->json($payoutRequests);
     }
-
 }

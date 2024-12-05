@@ -91,8 +91,8 @@ class OrderController extends Controller
                     ],
                 ],
                 'mode' => 'payment',
-                'success_url' => config('services.frontend_url') . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => config('services.frontend_url') . '/checkout/cancel',
+                'success_url' => config('services.frontend_url') . 'checkout/success?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => config('services.frontend_url') . 'checkout/cancel',
             ]);
 
             // Tạo đơn hàng trong hệ thống
@@ -232,8 +232,8 @@ class OrderController extends Controller
                     ],
                 ],
                 'mode' => 'payment',
-                'success_url' => config('services.frontend_url') . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => config('services.frontend_url') . '/checkout/cancel',
+                'success_url' => config('services.frontend_url') . 'checkout/success?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => config('services.frontend_url') . 'checkout/cancel',
             ]);
 
             // Cập nhật mã phiên thanh toán mới trong đơn hàng

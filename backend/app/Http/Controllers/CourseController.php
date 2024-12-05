@@ -132,7 +132,6 @@ class CourseController extends Controller
     $thumbnailPath = $this->uploadThumbnail($request);
     $course = new Course();
     $course->fill($request->all());
-    $course->status='inactive';
     $course->thumbnail = $thumbnailPath;
     $course->created_by = auth()->id();
     $course->save();

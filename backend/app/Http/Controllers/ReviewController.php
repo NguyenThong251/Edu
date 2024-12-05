@@ -91,7 +91,7 @@ class ReviewController extends Controller
         try {
             $review = Review::findOrFail($id);
 
-            if ($review->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
+            if (Auth::user()->role !== 'admin' && $review->user_id !== Auth::id()) {
                 return response()->json(['message' => 'Bạn chỉ có thể xóa đánh giá của mình '], 403);
             }
 
