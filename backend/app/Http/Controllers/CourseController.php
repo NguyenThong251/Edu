@@ -134,6 +134,7 @@ class CourseController extends Controller
     $course->fill($request->all());
     $course->thumbnail = $thumbnailPath;
     $course->created_by = auth()->id();
+    $course->status = 'inactive';
     $course->save();
 
     return formatResponse(STATUS_OK, $course, '', __('messages.course_create_success'));
