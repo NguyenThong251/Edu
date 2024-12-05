@@ -107,6 +107,22 @@ export interface TLecture {
   order?: number
 }
 
+// course
+
+export interface TCourseCURD {
+  category_id: string
+  level_id: string
+  title: string
+  description: string
+  short_description: string
+  price: string
+  type_sale: 'price' | 'percent'
+  sale_value: string
+  status: 'active' | 'inactive'
+  language_id: string
+  thumbnail: File | string
+}
+
 // section
 export interface TSectionOfCourse {
   id: number

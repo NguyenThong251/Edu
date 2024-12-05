@@ -11,7 +11,8 @@ import type {
   TSection,
   TSortLecture,
   TQuiz,
-  TQuestionList
+  TQuestionList,
+  TCourseCURD
 } from '@/interfaces/course.interface'
 import type { TChangeContent } from '@/interfaces/ui.interface'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -153,7 +154,28 @@ export const useCourseStore = defineStore('courseStore', () => {
   // ADMIM COURSE
 
   //course
+  const createCourse = async (data: FormData) => {
+    try {
+      loading.value = true
+      const res = await api.post('auth/courses', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
 
+      if (res.data.status === 'OK') {
+        ElMessage.success('Thêm khóa học thành công')
+        await fetchTeacherCourse()
+      } else {
+        ElMessage.error('Thêm khóa học thất bại')
+      }
+    } catch (error) {
+      ElMessage.error('Thêm bài khóa thất bại')
+      console.log(error)
+    } finally {
+      loading.value = false // Tắt trạng thái loading
+    }
+  }
   // lecture
 
   const showContentOfSection = async (id: number) => {
@@ -414,6 +436,7 @@ export const useCourseStore = defineStore('courseStore', () => {
 
   const createQuiz = async (id: number, data: TQuiz) => {
     try {
+      loading.value = true
       const res = await api.post('auth/quizzes', data)
       if (res.data.status === 'FAIL') {
         ElMessage.error('Thêm quiz thất bại')
@@ -423,6 +446,8 @@ export const useCourseStore = defineStore('courseStore', () => {
       }
     } catch (error) {
       console.log(error)
+    } finally {
+      loading.value = false // Tắt trạng thái loading
     }
   }
 
@@ -505,6 +530,72 @@ export const useCourseStore = defineStore('courseStore', () => {
     }
   }
 
+  const createQuestion = async (id: number, data: any) => {
+    try {
+      const res = await api.post('auth/questions', data)
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Thêm câu hỏi thất bại')
+      } else {
+        ElMessage.success('Thêm câu hỏi thành công')
+        await showQuestionsOfQuiz(id)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const updateQuestion = async (id: number, id_question: number, data: any) => {
+    try {
+      loading.value = true
+
+      const res = await api.put(`auth/questions/${id_question}`, data)
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Cập nhật câu hỏi thất bại')
+      } else {
+        ElMessage.success('Cập nhật câu hỏi thành công')
+        await showQuestionsOfQuiz(id)
+        // await fetchListLecturesAdmin()
+      }
+    } catch (error) {
+      ElMessage.error('Cập nhật câu hỏi thất bại')
+      console.log(error)
+    } finally {
+      loading.value = false // Tắt trạng thái loading
+    }
+  }
+
+  const deleteQuestion = async (id: number, id_question: number) => {
+    try {
+      await ElMessageBox.confirm('Bạn có chắc chắn muốn xóa câu hỏi này không?', 'Xác nhận xóa', {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy',
+        type: 'info'
+      })
+      const res = await api.delete(`auth/questions/${id_question}`)
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Xóa câu hỏi thất bại')
+      } else {
+        ElMessage.success('Xóa câu hỏi thành công')
+        await showQuestionsOfQuiz(id)
+      }
+    } catch (error) {
+      ElMessage.error('Xóa câu hỏi thất bại')
+      console.log(error)
+    }
+  }
+
+  const sortQuestionsOfQuiz = async (data: TQuestionList[]) => {
+    try {
+      await api.put('/auth/sort-question-of-quiz', {
+        sorted_questions: data
+      })
+      ElMessage.success('Cập nhật thứ tự câu hỏi thành công')
+    } catch (error) {
+      console.error('Lỗi khi sắp xếp câu hỏi:', error)
+      ElMessage.error('Không thể cập nhật thứ tự câu hỏi')
+    }
+  }
   // Getter
   const getCourse = () => course.value
   fetchMyCourse()
@@ -529,6 +620,9 @@ export const useCourseStore = defineStore('courseStore', () => {
     searchLetureStudy,
     fetchTeacherCourse,
     // admin
+
+    // course
+    createCourse,
     // lecture
     listContentOfSection,
     listLecturesAdmin,
@@ -558,6 +652,10 @@ export const useCourseStore = defineStore('courseStore', () => {
     deletePermanentQuiz,
     // question
     listQuestion,
-    showQuestionsOfQuiz
+    showQuestionsOfQuiz,
+    createQuestion,
+    updateQuestion,
+    deleteQuestion,
+    sortQuestionsOfQuiz
   }
 })

@@ -144,18 +144,18 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
             label: 'Danh sách khóa học',
             route: '/teacher/course/list'
           },
-          {
-            label: 'Quản lý khoá học',
-            route: '/teacher/course/manager-course'
-          },
-          {
-            label: 'Thêm khoá học mới',
-            route: '/teacher/course/add-course'
-          },
-          {
-            label: 'Phiếu giảm giá',
-            route: '/teacher/course/manager-coupon'
-          },
+          // {
+          //   label: 'Quản lý khoá học',
+          //   route: '/teacher/course/manager-course'
+          // },
+          // {
+          //   label: 'Thêm khoá học mới',
+          //   route: '/teacher/course/add-course'
+          // },
+          // {
+          //   label: 'Phiếu giảm giá',
+          //   route: '/teacher/course/manager-coupon'
+          // },
         ]
       },
       // {
@@ -194,12 +194,12 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
         route: '/teacher/student',
       }
       ,
-      {
-        icon: ChatBubbleLeftRightIcon,
-        label: 'Tin nhắn',
-        route: '/teacher/message',
-      }
-      ,
+      // {
+      //   icon: ChatBubbleLeftRightIcon,
+      //   label: 'Tin nhắn',
+      //   route: '/teacher/message',
+      // }
+      // ,
       {
         icon: BanknotesIcon,
         label: 'Rút tiền',
@@ -243,7 +243,7 @@ const selectedMenuGroups = computed(() => {
       class=" w-[250px] h-[97vh] max-h-screen relative dark:bg-dark-sidebar bg-primary-sidebar rounded-[16px] shadow-sidebar transform duration-100 overflow-y-auto scroll-hidden"
       :class="sidebarClass">
       <!-- SIDEBAR HEADER -->
-      <RouterLink class="flex items-center justify-center" to="/admin/dashboard">
+      <RouterLink class="flex items-center justify-center" to="/">
         <img class="pt-4 w-36  " :class="{ 'p-4': currentLogo == logoMinimal }" :src="currentLogo" alt="">
         <!-- <WindowIcon 
             class="hidden sm:block w-6 h-6 dark:hover:text-gray-200 text-gray-400"
