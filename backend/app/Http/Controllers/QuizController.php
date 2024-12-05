@@ -36,6 +36,11 @@ class QuizController extends Controller
             $quizzesQuery->where('status', $request->status);
         }
 
+        if ($request->is_instructor == 1) {
+            // Lọc theo người dùng hiện tại và đảm bảo trường `created_at` không null
+            $quizzesQuery->where('created_by', auth()->id());
+        }
+        
         $order = $request->get('order', 'desc');
         $quizzesQuery->orderBy('created_at', $order);
 

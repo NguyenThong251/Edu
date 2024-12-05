@@ -47,7 +47,10 @@ class LectureController extends Controller
         if ($request->has('status') && !is_null($request->status)) {
             $lecturesQuery->where('status', $request->status);
         }
-
+        if ($request->is_instructor == 1) {
+            // Lọc theo người dùng hiện tại và đảm bảo trường `created_at` không null
+            $lecturesQuery->where('created_by', auth()->id());
+        }
         // Sắp xếp theo `created_at` (mặc định là `desc`)
         $order = $request->get('order', 'desc'); // Giá trị mặc định là desc
         $lecturesQuery->orderBy('created_at', $order);
@@ -113,9 +116,10 @@ class LectureController extends Controller
     
         // Kết hợp (merge) lectures và quizzes lại với nhau
         $content = $lectures->merge($quizzes);
-    
+
         // Sắp xếp theo order (tăng dần)
-        $content = $content->sortBy('order');
+        $content = $content->sortBy('order')->values();
+
     
         // Trả về kết quả
         return formatResponse(STATUS_OK, $content, '', __('messages.content_fetch_success'));
@@ -124,7 +128,7 @@ class LectureController extends Controller
     public function updateOrder(Request $request)
     {
         // Kiểm tra xem dữ liệu 'data' có tồn tại trong request không
-        $sortedContent = json_decode($request->input('sorted_content'), true);
+        $sortedContent = $request->input('sorted_content');
         // Kiểm tra nếu không có 'sorted_content' hoặc nó không phải là mảng
         if (!$sortedContent || !is_array($sortedContent)) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.invalid_data_format'));
@@ -289,7 +293,10 @@ class LectureController extends Controller
     public function updateLectureSection(Request $request, $lectureId)
     {
         // Tìm bài giảng cần cập nhật
-        $lecture = Lecture::findOrFail($lectureId);
+        $lecture = Lecture::find($lectureId);
+        if (!$lecture) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.lecture_not_found'));
+        }
 
         // Lấy section_id từ request (có thể trả về 404 nếu không có)
         $sectionId = (int)$request->input('section_id');
@@ -311,7 +318,10 @@ class LectureController extends Controller
     public function updateLectureStatus(Request $request, $lectureId)
     {
         // Tìm bài giảng cần cập nhật
-        $lecture = Lecture::findOrFail($lectureId);
+        $lecture = Lecture::find($lectureId);
+        if (!$lecture) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.lecture_not_found'));
+        }
 
         // Lấy trạng thái mới từ request
         $status = $request->input('status');
@@ -349,7 +359,10 @@ class LectureController extends Controller
     private function updateContent(Request $request, $lectureId)
     {
         // Tìm bài giảng cần cập nhật
-        $lecture = Lecture::findOrFail($lectureId);
+        $lecture = Lecture::find($lectureId);
+        if (!$lecture) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.lecture_not_found'));
+        }
         
         // Kiểm tra nếu có file mới và có file cũ cần xóa
         if ($request->hasFile('content')) {
@@ -389,7 +402,10 @@ class LectureController extends Controller
     public function update(Request $request, $lectureId)
     {
         // Tìm bài giảng cần cập nhật
-        $lecture = Lecture::findOrFail($lectureId);
+        $lecture = Lecture::find($lectureId);
+        if (!$lecture) {
+            return formatResponse(STATUS_FAIL, '', '', __('messages.lecture_not_found'));
+        }
 
         $user = auth()->user();
 

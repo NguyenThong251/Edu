@@ -23,6 +23,7 @@ use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\SectionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,7 +77,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         // Routes cho admin
         Route::middleware(['role:admin'])->group(function () {
             // Quản lý, ManageController
-            Route::get('courses', [CourseController::class, 'getListAdmin'])->name('courses.getListAdmin');
 
 
             Route::get('categories', [CategoryController::class, 'getListAdmin'])->name('categories.getListAdmin');
@@ -164,11 +164,29 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
+            Route::get('admin-courses', [CourseController::class, 'getListAdmin'])->name('courses.getListAdmin');
             Route::post('courses', [CourseController::class, 'store'])->name('courses.store');
             Route::get('courses/{id}', [CourseController::class, 'showOne'])->name('courses.showOne');
             Route::put('courses/{id}', [CourseController::class, 'update'])->name('courses.update');
             Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
             Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
+            Route::delete('courses/permanent-delete/{id}', [CourseController::class, 'forceDelete'])->name('courses.destroypermanent');
+            Route::patch('courses/{id}/status', [CourseController::class, 'updateStatus'])->name('courses.updateStatus');
+
+
+            Route::post('sections', [SectionController::class, 'store'])->name('sections.store');
+            Route::get('sections/{id}', [SectionController::class, 'editForm'])->name('sections.show');
+            Route::put('sections/{id}', [SectionController::class, 'update'])->name('sections.update');
+            Route::get('sections/restore/{id}', [SectionController::class, 'restore'])->name('sections.restore');
+            Route::delete('sections/{id}', [SectionController::class, 'destroy'])->name('sections.destroy');
+            Route::delete('sections/permanent-delete/{id}', [SectionController::class, 'forceDelete'])->name('sections.destroypermanent');
+            Route::patch('sections/{id}/status', [SectionController::class, 'updateSectionAttributes'])->name('sections.updateStatus');
+            Route::patch('sections/{id}/course', [SectionController::class, 'updateSectionAttributes'])->name('sections.updateCourse');
+            Route::get('sections', [SectionController::class, 'getListAdmin'])->name('sections.getListAdmin');
+            Route::get('sections/edit-form/{id}', [SectionController::class, 'editForm'])->name('sections.editForm');
+            Route::get('show-sections-of-course/{id}', [SectionController::class, 'showSectionsByCourse'])->name('sections.showSectionsOfCourse');
+            Route::put('sort-sections-of-course', [SectionController::class, 'updateSectionOrder'])->name('sections.updateOrder');
+            
 
             // // Route Chương
             Route::controller(SectionController::class)->group(function () {
@@ -198,6 +216,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('show-content-of-section/{id}', [LectureController::class, 'showContentBySection'])->name('lectures.showContentBySection');
             Route::get('lectures', [LectureController::class, 'getListAdmin'])->name('lectures.getListAdmin');
             Route::get('lectures/edit-form/{id}', [LectureController::class, 'editForm'])->name('lectures.editForm');
+            Route::delete('lectures/permanent-delete/{id}', [LectureController::class, 'forceDelete'])->name('lectures.destroypermanent');
+
 
 
             Route::post('quizzes', [QuizController::class, 'store'])->name('quizzes.store');
@@ -205,7 +225,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('quizzes/{id}', [QuizController::class, 'update'])->name('quizzes.update');
             Route::get('quizzes/restore/{id}', [QuizController::class, 'restore'])->name('quizzes.restore');
             Route::delete('quizzes/{id}', [QuizController::class, 'destroy'])->name('quizzes.destroy');
-            Route::delete('quizzes/permanent-delete/{id}', [QuizController::class, 'forceDelete'])->name('quizzes.destroy');
+            Route::delete('quizzes/permanent-delete/{id}', [QuizController::class, 'forceDelete'])->name('quizzes.destroypermanent');
             Route::patch('quizzes/{id}/status', [QuizController::class, 'updateQuizStatus'])->name('quizzes.updateStatus');
             Route::patch('quizzes/{id}/section', [QuizController::class, 'updateQuizSection'])->name('quizzes.updateSection');
             Route::get('quizzes', [QuizController::class, 'getListAdmin'])->name('quizzes.getListAdmin');
@@ -216,7 +236,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::put('questions/{id}', [QuestionController::class, 'update'])->name('questions.update');
             Route::get('questions/restore/{id}', [QuestionController::class, 'restore'])->name('questions.restore');
             Route::delete('questions/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
-            Route::delete('questions/permanent-delete/{id}', [QuestionController::class, 'forceDelete'])->name('questions.destroy');
+            Route::delete('questions/permanent-delete/{id}', [QuestionController::class, 'forceDelete'])->name('questions.destroypermanent');
             Route::patch('questions/{id}/status', [QuestionController::class, 'updateQuestionAttributes'])->name('questions.updateStatus');
             Route::patch('questions/{id}/quiz', [QuestionController::class, 'updateQuestionAttributes'])->name('questions.updateQuestion');
             Route::get('questions', [QuestionController::class, 'getListAdmin'])->name('questions.getListAdmin');
