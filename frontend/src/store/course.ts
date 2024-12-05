@@ -8,7 +8,10 @@ import type {
   TCardMyCourse,
   TLecture,
   TSectionOfCourse,
-  TSection
+  TSection,
+  TSortLecture,
+  TQuiz,
+  TQuestionList
 } from '@/interfaces/course.interface'
 import type { TChangeContent } from '@/interfaces/ui.interface'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -204,8 +207,10 @@ export const useCourseStore = defineStore('courseStore', () => {
     }
   }
 
-  const updateLecture = async (id: number, id_lecture: number, data: TLecture) => {
+  const updateLecture = async (id: number, id_lecture: number, data: FormData) => {
     try {
+      loading.value = true
+
       const res = await api.post(`auth/lectures/${id_lecture}`, data)
 
       if (res.data.status === 'FAIL') {
@@ -218,11 +223,18 @@ export const useCourseStore = defineStore('courseStore', () => {
     } catch (error) {
       ElMessage.error('Cập nhật bài học thất bại')
       console.log(error)
+    } finally {
+      loading.value = false // Tắt trạng thái loading
     }
   }
 
   const deleteLecture = async (id: number, id_lecture: number) => {
     try {
+      await ElMessageBox.confirm('Bạn có chắc chắn muốn xóa bài học này không?', 'Xác nhận xóa', {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy',
+        type: 'info'
+      })
       const res = await api.delete(`auth/lectures/${id_lecture}`)
 
       if (res.data.status === 'FAIL') {
@@ -282,20 +294,17 @@ export const useCourseStore = defineStore('courseStore', () => {
       console.log(error)
     }
   }
-  const sortContentOfSection = async (
-    id: number,
-    data: { sorted_content: TContentOfSection[] }
-  ) => {
+  const sortContentOfSection = async (sorted_content: any[]) => {
     try {
       const res = await api.put('auth/sort-content-of-section', {
-        params: data
+        sorted_content: sorted_content
       })
 
       if (res.data.status === 'FAIL') {
         ElMessage.error('Cập nhật bài học thất bại')
       } else {
         ElMessage.success('Cập nhật bài học thành công')
-        await showContentOfSection(id)
+        // await showContentOfSection(id)
         // await fetchListLecturesAdmin()
       }
     } catch (error) {
@@ -303,8 +312,6 @@ export const useCourseStore = defineStore('courseStore', () => {
       console.log(error)
     }
   }
-
-  // quizz
 
   // section
 
@@ -403,6 +410,101 @@ export const useCourseStore = defineStore('courseStore', () => {
     }
   }
 
+  // quizz
+
+  const createQuiz = async (id: number, data: TQuiz) => {
+    try {
+      const res = await api.post('auth/quizzes', data)
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Thêm quiz thất bại')
+      } else {
+        ElMessage.success('Thêm quiz thành công')
+        await showContentOfSection(id)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const updateQuiz = async (id: number, id_quiz: number, data: TQuiz) => {
+    try {
+      loading.value = true
+
+      const res = await api.put(`auth/quizzes/${id_quiz}`, data)
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Cập nhật quiz thất bại')
+      } else {
+        ElMessage.success('Cập nhật quiz thành công')
+        await showContentOfSection(id)
+        // await fetchListLecturesAdmin()
+      }
+    } catch (error) {
+      ElMessage.error('Cập nhật quiz thất bại')
+      console.log(error)
+    } finally {
+      loading.value = false // Tắt trạng thái loading
+    }
+  }
+  const deleteQuiz = async (id: number, id_quiz: number) => {
+    try {
+      await ElMessageBox.confirm('Bạn có chắc chắn muốn xóa quiz này không?', 'Xác nhận xóa', {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy',
+        type: 'info'
+      })
+      const res = await api.delete(`auth/quizzes/${id_quiz}`)
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Xóa quiz thất bại')
+      } else {
+        ElMessage.success('Xóa quiz thành công')
+        await showContentOfSection(id)
+        // await fetchListLecturesAdmin()
+      }
+    } catch (error) {
+      ElMessage.error('Xóa quiz thất bại')
+      console.log(error)
+    }
+  }
+  const deletePermanentQuiz = async (id: number, id_quiz: number) => {
+    try {
+      await ElMessageBox.confirm(
+        'Bạn có chắc chắn muốn xóa vĩnh viễn quiz này không?',
+        'Xác nhận xóa',
+        {
+          confirmButtonText: 'Xóa',
+          cancelButtonText: 'Hủy',
+          type: 'info'
+        }
+      )
+      const res = await api.delete(`auth/quizzes/permanent-delete/${id_quiz}`)
+
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Xóa quiz thất bại')
+      } else {
+        ElMessage.success('Xóa quiz thành công')
+        await showContentOfSection(id)
+        // await fetchListLecturesAdmin()
+      }
+    } catch (error) {
+      ElMessage.error('Xóa quiz thất bại')
+      console.log(error)
+    }
+  }
+
+  // question
+  const listQuestion = ref<TQuestionList[]>([])
+
+  const showQuestionsOfQuiz = async (id: number) => {
+    try {
+      const res = await api.get(`auth/show-question-of-quiz/${id}`)
+      listQuestion.value = res.data.data
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   // Getter
   const getCourse = () => course.value
   fetchMyCourse()
@@ -447,6 +549,15 @@ export const useCourseStore = defineStore('courseStore', () => {
     updateSection,
     deleteSection,
 
-    sortSectionsOfCourse
+    sortSectionsOfCourse,
+
+    // quiz
+    createQuiz,
+    updateQuiz,
+    deleteQuiz,
+    deletePermanentQuiz,
+    // question
+    listQuestion,
+    showQuestionsOfQuiz
   }
 })

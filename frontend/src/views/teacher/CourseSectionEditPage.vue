@@ -1,11 +1,14 @@
 <template>
 
     <div class="p-6 bg-gray-50 min-h-screen">
-        <el-button type="info" plain>
-            <ChevronLeftIcon class="h-4 w-4 text-gray-500" />
+        <div class="mb-3">
 
-            Quay lại
-        </el-button>
+            <el-button type="info" plain>
+                <ChevronLeftIcon class="h-4 w-4 text-gray-500 " />
+
+                Quay lại
+            </el-button>
+        </div>
         <div class="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6 space-y-6">
             <!-- Header -->
             <header class="flex justify-between items-center">
@@ -18,7 +21,7 @@
                     <h3 class="text-md font-semibold mb-4">Nội dung bài học</h3>
                     <div class="flex gap-2">
                         <el-button type="primary" @click="openAddLectureDialog">+ Thêm video/file bài học</el-button>
-                        <el-button type="primary">+ Thêm quiz</el-button>
+                        <el-button type="primary" @click="openQuizDialog">+ Thêm quiz</el-button>
                         <el-button type="success">
                             <ArrowPathIcon class="mr-1 h-4 w-4 text-white" />
                             Khôi phục
@@ -54,10 +57,20 @@
                                 {{ item.total_contents || 0 }} bài học
                             </div> -->
                             <p class="text-white">{{ item.title }}</p>
-                            <div class="flex items-center gap-2">
-                                <PencilSquareIcon class="h-5 w-5 cursor-pointer text-white" />
-                                <TrashIcon class="h-5 w-5 cursor-pointer text-white" />
+                            <div class="flex items-center gap-2" v-if="item.type === 'video' || item.type === 'file'">
+                                <PencilSquareIcon @click="openUpdateLectureDialog(item)"
+                                    class="h-5 w-5 cursor-pointer text-white" />
+                                <TrashIcon @click="hanldeDelete(item.id || 0)"
+                                    class="h-5 w-5 cursor-pointer text-white" />
                                 <EyeIcon class="h-5 w-5 cursor-pointer text-white" />
+                            </div>
+                            <div class="flex items-center gap-2" v-else>
+                                <PencilSquareIcon @click="openUpdateQuizDialog(item)"
+                                    class="h-5 w-5 cursor-pointer text-white" />
+                                <TrashIcon @click="hanldeDeleteQuiz(item.id || 0)"
+                                    class="h-5 w-5 cursor-pointer text-white" />
+                                <EyeIcon @click="navigateToEditQuiz(item.id || 0)"
+                                    class="h-5 w-5 cursor-pointer text-white" />
                             </div>
                         </div>
                     </Draggable>
@@ -152,6 +165,136 @@
             <el-button type="primary" @click="addLecture">Thêm</el-button>
         </template>
     </el-dialog>
+    <!-- update -->
+    <el-dialog v-model="isUpdateDialogVisible" title="Cập Nhật Bài hoc" width="500px">
+        <el-form :model="updatedLecture" :rules="rules" ref="updateLectureForm">
+            <!-- Tiêu đề bài học -->
+            <el-form-item label="Tiêu đề bài học" prop="title" class="block">
+                <el-input v-model="updatedLecture.title" placeholder="Nhập tiêu đề bài học" class="w-full" />
+            </el-form-item>
+
+            <!-- Loại bài học -->
+            <el-form-item label="Loại bài học" prop="type" class="block">
+                <el-radio-group v-model="updatedLecture.type" class="space-x-4">
+                    <el-radio label="video">Video</el-radio>
+                    <el-radio label="file">File</el-radio>
+                </el-radio-group>
+            </el-form-item>
+
+
+
+            <el-form-item v-if="updatedLecture.type === 'video'" class="block">
+                <el-upload class="upload-demo" drag :action="null" :auto-upload="false"
+                    :before-upload="handleVideoUpload" :on-change="handleVideoUpload" multiple>
+                    <el-icon class="el-icon--upload">
+                        <UploadFilled />
+                    </el-icon>
+                    <div class="el-upload__text">
+                        Thả video vào đây hoặc <em>click để tải lên</em>
+                    </div>
+                    <template #tip>
+                        <div class="el-upload__tip">
+                            Định dạng mp4
+                        </div>
+                    </template>
+                </el-upload>
+            </el-form-item>
+
+            <el-form-item v-if="updatedLecture.type === 'file'" class="block">
+                <el-upload class="upload-demo" drag :action="null" :auto-upload="false"
+                    :before-upload="handleFileSelect" :on-change="handleFileSelect" multiple>
+                    <el-icon class="el-icon--upload">
+                        <UploadFilled />
+                    </el-icon>
+                    <div class="el-upload__text">
+                        Thả file PDF vào đây hoặc <em>click để tải lên</em>
+                    </div>
+                    <template #tip>
+                        <div class="el-upload__tip">
+                            Định dạng PDF
+                        </div>
+                    </template>
+                </el-upload>
+            </el-form-item>
+
+            <!-- new -->
+            <!-- <el-upload ref="uploadRef" class="upload-demo" :action="null" :auto-upload="false"
+                :before-upload="handleBeforeUpload" :on-change="handleFileSelect">
+                <template #trigger>
+                    <el-button type="primary">Chọn tệp</el-button>
+                </template>
+                <el-button class="ml-3" type="success" @click="addLecture">
+                    Tải lên
+                </el-button>
+            </el-upload> -->
+            <!-- Preview -->
+            <el-form-item label="Thời lượng/Trang" prop="duration" class="block">
+                <el-input v-model="updatedLecture.duration" :disabled="true" placeholder="Tự động tính toán"
+                    class="w-full" />
+            </el-form-item>
+
+            <!-- Trạng thái bài học -->
+            <el-form-item label="Trạng thái bài học" prop="status" class="block">
+                <el-select v-model="updatedLecture.status" placeholder="Chọn trạng thái" class="w-full">
+                    <el-option label="Hoạt động" value="active"></el-option>
+                    <el-option label="Không hoạt động" value="inactive"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="Cho phép xem trước" prop="preview" class="block">
+                <el-select v-model="updatedLecture.preview" placeholder="Chọn quyền xem trước" class="w-full">
+                    <el-option label="Không cho phép" value="cant"></el-option>
+                    <el-option label="Cho phép" value="can"></el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+
+        <template #footer>
+            <el-button @click="isUpdateDialogVisible = false">Hủy</el-button>
+            <el-button type="primary" @click="updateLectureHandler">Cập nhật</el-button>
+        </template>
+    </el-dialog>
+
+    <!-- create quiz -->
+    <el-dialog v-model="isQuizDialogVisible" title="Thêm Quiz" width="500px">
+        <el-form :model="newQuiz" :rules="quizRules" ref="quizForm">
+            <!-- Tên Quiz -->
+            <el-form-item label="Tên Quiz" prop="title" class="block">
+                <el-input v-model="newQuiz.title" placeholder="Nhập tên quiz" />
+            </el-form-item>
+            <!-- Trạng Thái -->
+            <el-form-item label="Trạng Thái" prop="status" class="block">
+                <el-select v-model="newQuiz.status" placeholder="Chọn trạng thái">
+                    <el-option label="Hoạt động" value="active"></el-option>
+                    <el-option label="Không hoạt động" value="inactive"></el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <el-button @click="isQuizDialogVisible = false">Hủy</el-button>
+            <el-button type="primary" @click="addQuiz">Thêm</el-button>
+        </template>
+    </el-dialog>
+
+    <!-- update quiz -->
+    <el-dialog v-model="isUpdateQuizDialogVisible" title="Cập Nhật Quiz" width="500px">
+        <el-form :model="updatedQuiz" :rules="quizRules" ref="updateQuizForm">
+            <!-- Tên Quiz -->
+            <el-form-item label="Tên Quiz" prop="title" class="block">
+                <el-input v-model="updatedQuiz.title" placeholder="Nhập tên quiz" />
+            </el-form-item>
+            <!-- Trạng Thái -->
+            <el-form-item label="Trạng Thái" prop="status" class="block">
+                <el-select v-model="updatedQuiz.status" placeholder="Chọn trạng thái">
+                    <el-option label="Hoạt động" value="active"></el-option>
+                    <el-option label="Không hoạt động" value="inactive"></el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <el-button @click="isUpdateQuizDialogVisible = false">Hủy</el-button>
+            <el-button type="primary" @click="updateQuizHandler">Cập nhật</el-button>
+        </template>
+    </el-dialog>
     <Loading :active="loading" :is-full-page="true" />
 </template>
 
@@ -161,10 +304,10 @@ import { ArrowPathIcon, ChevronLeftIcon, EyeIcon, PencilSquareIcon, TrashIcon, }
 import { VideoCameraIcon, QuestionMarkCircleIcon, DocumentIcon } from '@heroicons/vue/20/solid';
 import { storeToRefs } from 'pinia';
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
 import { UploadFilled } from '@element-plus/icons-vue';
-import type { TLecture } from '@/interfaces';
+import type { TLecture, TQuiz } from '@/interfaces';
 import { getDocument } from 'pdfjs-dist';
 import { ElMessage, type UploadFile } from 'element-plus';
 import Loading from 'vue-loading-overlay';
@@ -173,14 +316,33 @@ GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2
 const route = useRoute();
 const id_section = route.params.id ? Number(route.params.id) : null;
 const useCourse = useCourseStore()
-const { showContentOfSection, createLecture } = useCourse
+const { showContentOfSection, createLecture, deleteLecture, updateLecture, sortContentOfSection, createQuiz, updateQuiz, deleteQuiz } = useCourse
 const { listContentOfSection, loading } = storeToRefs(useCourse)
 onMounted(async () => {
     await showContentOfSection(id_section || 0)
 })
 
+const router = useRouter();
+const navigateToEditQuiz = (id: number) => {
+    router.push({ name: 'CourseQuizEditPage', params: { id: String(id) } });
+}
+
 const isDialogVisible = ref(false);
+const isUpdateDialogVisible = ref(false);
+const isQuizDialogVisible = ref(false);
+const isUpdateQuizDialogVisible = ref(false);
+
 const newLecture = ref<TLecture>({
+    title: '',
+    type: 'video',
+    content: undefined,
+    duration: 0,
+    preview: 'cant',
+    status: 'active',
+    section_id: id_section || 0,
+});
+const updatedLecture = ref<TLecture>({
+    id: 0,
     title: '',
     type: 'video',
     content: undefined,
@@ -200,7 +362,37 @@ const resetForm = () => {
         section_id: id_section || 0,
     };
 };
+const resetUpdateForm = () => {
+    updatedLecture.value = {
+        id: 0,
+        title: '',
+        type: 'video',
+        content: undefined,
+        duration: 0,
+        preview: 'cant',
+        status: 'active',
+        section_id: id_section || 0,
+    };
+};
+const newQuiz = ref<TQuiz>({
+    section_id: 0,
+    title: '',
+    status: 'active',
+});
+const updatedQuiz = ref<TQuiz>({
+    id: 0,
+    section_id: 0,
+    title: '',
+    status: 'active',
+});
+const quizForm = ref();
 const lectureForm = ref();
+const updateLectureForm = ref();
+const updateQuizForm = ref();
+const quizRules = {
+    title: [{ required: true, message: 'Tên quiz là bắt buộc', trigger: 'blur' }],
+    status: [{ required: true, message: 'Trạng thái là bắt buộc', trigger: 'change' }],
+};
 const rules = {
     title: [{ required: true, message: 'Tiêu đề bài học là bắt buộc', trigger: 'blur' }],
     type: [{ required: true, message: 'Loại bài học là bắt buộc', trigger: 'change' }],
@@ -210,6 +402,22 @@ const openAddLectureDialog = () => {
     isDialogVisible.value = true;
 };
 
+const openUpdateLectureDialog = (item: any) => {
+    isUpdateDialogVisible.value = true;
+    updatedLecture.value = { ...item };
+};
+const openQuizDialog = () => {
+    isQuizDialogVisible.value = true;
+    newQuiz.value = {
+        section_id: id_section || 0,
+        title: '',
+        status: 'active',
+    };
+};
+const openUpdateQuizDialog = (quiz: TQuiz) => {
+    isUpdateQuizDialogVisible.value = true;
+    updatedQuiz.value = { ...quiz };
+};
 // Hàm xử lý trước khi chọn file
 
 
@@ -254,6 +462,7 @@ const handleFileSelect = async (file: UploadFile) => {
             try {
                 const pdf = await loadingTask.promise;
                 newLecture.value.duration = pdf.numPages; // Số trang PDF
+                updatedLecture.value.duration = pdf.numPages; // Số trang PDF
                 console.log('Số trang PDF:', pdf.numPages);
             } catch (error: any) {
                 console.error('Lỗi khi đọc file PDF:', error.message);
@@ -267,6 +476,7 @@ const handleFileSelect = async (file: UploadFile) => {
     }
 
     newLecture.value.content = file.raw; // `file.raw` chứa file gốc
+    updatedLecture.value.content = file.raw; // `file.raw` chứa file gốc
     return false; // Ngăn upload tự động
 };
 
@@ -279,12 +489,14 @@ const handleVideoUpload = (file: UploadFile) => {
 
     video.onloadedmetadata = () => {
         newLecture.value.duration = Math.round(video.duration); // Tính thời lượng video
+        updatedLecture.value.duration = Math.round(video.duration); // Tính thời lượng video
         // console.log('Thời lượng video:', video.duration);
         URL.revokeObjectURL(video.src);
     };
 
     // Gán file video vào `newLecture.value.content`
     newLecture.value.content = file.raw; // `file.raw` chứa `File` gốc
+    updatedLecture.value.content = file.raw; // `file.raw` chứa `File` gốc
     // console.log('Video đã gán:', newLecture.value.content);
 
     return false; // Ngăn upload tự động
@@ -312,10 +524,74 @@ const addLecture = async () => {
     resetForm();
 
 };
-const handleSort = async () => {
+const updateLectureHandler = async () => {
+    await updateLectureForm.value.validate(); // Xác thực dữ liệu
+    const formData = new FormData();
+    formData.append('title', updatedLecture.value.title || '');
+    formData.append('type', updatedLecture.value.type || '');
+    formData.append('status', updatedLecture.value.status || '');
+    formData.append('preview', updatedLecture.value.preview || '');
+    formData.append('section_id', String(updatedLecture.value.section_id || 0));
+    formData.append('duration', String(updatedLecture.value.duration || 0));
 
+    if (updatedLecture.value.content instanceof File) {
+        formData.append('content', updatedLecture.value.content); // Thêm file nếu có
+    }
+
+    // console.log(id_section, updatedLecture.value.id, formData)
+    // Gửi API cập nhật bài học
+    await updateLecture(id_section || 0, updatedLecture.value.id || 0, formData);
+    // await updateLecture(id_section || 0, updatedLecture.value.id || 0, updatedLecture.value);
+    isUpdateDialogVisible.value = false;
+    resetUpdateForm()
+};
+
+const hanldeDelete = async (id: number) => {
+    await deleteLecture(id_section || 0, id,)
 }
 
+const handleSort = async () => {
+    if (!id_section) return;
+
+    // Cập nhật thứ tự mới dựa trên vị trí trong danh sách
+    const sortedData = listContentOfSection.value.map((item, index) => ({
+        id: item.id,
+        section_id: item.section_id,
+        type: item.type,
+        title: item.title,
+        content_link: item.content_link,
+        duration: item.duration,
+        preview: item.preview,
+        status: item.status,
+        content_type: item.content_type,
+        order: index + 1, // Thứ tự mới
+    }));
+
+    await sortContentOfSection(sortedData);
+
+};
+
+
+// quiz
+
+const addQuiz = async () => {
+    await quizForm.value.validate(); // Xác thực form
+
+    await createQuiz(id_section || 0, newQuiz.value);
+    isQuizDialogVisible.value = false; // Đóng dialog
+};
+
+// Logic Cập Nhật Quiz
+
+
+const updateQuizHandler = async () => {
+    await updateQuiz(id_section || 0, updatedQuiz.value.id || 0, updatedQuiz.value);
+    isUpdateQuizDialogVisible.value = false; // Đóng dialog
+};
+
+const hanldeDeleteQuiz = async (id: number) => {
+    await deleteQuiz(id_section || 0, id,)
+}
 
 </script>
 

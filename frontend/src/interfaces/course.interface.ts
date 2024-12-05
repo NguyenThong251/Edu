@@ -76,11 +76,30 @@ export interface TContentOfSection {
   updated_by?: number | null
   content_type?: string
 }
+export interface TSortLecture {
+  id?: number
+  section_id?: number
+  type?: string
+  title?: string
+  content_link?: string
+  duration?: number
+  preview?: string
+  status?: string
+  order?: number
+  deleted_at?: string
+  deleted_by?: string
+  created_at?: string
+  updated_at?: string
+  created_by?: number
+  updated_by?: string
+  content_type?: string
+}
 export interface TLecture {
+  id?: number
   section_id?: number
   type?: 'video' | 'file'
   title?: string
-  content?: File
+  content?: File | string
   content_type?: string
   duration?: number
   preview?: 'cant' | 'can'
@@ -107,4 +126,30 @@ export interface TSection {
   description?: string
   status?: 'active' | 'inactive'
   order?: number
+}
+// quiz
+
+export interface TQuiz {
+  id?: number
+  section_id?: number
+  title?: string
+  status?: 'active' | 'inactive'
+}
+
+// question
+
+export interface TQuestionList {
+  id: number
+  quiz_id: number
+  question: string
+  options: string[]
+  answer: string
+  status: 'active' | 'inactive'
+  order: number
+  deleted_at: string | null
+  deleted_by: number | null
+  created_at: string
+  updated_at: string
+  created_by: number
+  updated_by: number | null
 }

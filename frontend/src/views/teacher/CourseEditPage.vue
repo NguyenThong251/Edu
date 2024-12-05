@@ -46,13 +46,13 @@
     <!-- create -->
     <el-dialog v-model="isDialogVisible" title="Thêm Chương Học" width="500px">
         <el-form :model="newSection" :rules="rules" ref="sectionForm">
-            <el-form-item label="Tên chương học" prop="title">
+            <el-form-item label="Tên chương học" prop="title" class="block">
                 <el-input v-model="newSection.title" placeholder="Nhập tên chương học" />
             </el-form-item>
-            <el-form-item label="Mô tả" prop="description">
+            <el-form-item label="Mô tả" prop="description" class="block">
                 <el-input v-model="newSection.description" type="textarea" placeholder="Nhập mô tả" />
             </el-form-item>
-            <el-form-item label="Trạng thái" prop="status">
+            <el-form-item label="Trạng thái" prop="status" class="block">
                 <el-select v-model="newSection.status" placeholder="Chọn trạng thái">
                     <el-option label="Hoạt động" value="active"></el-option>
                     <el-option label="Không hoạt động" value="inactive"></el-option>
@@ -67,13 +67,13 @@
     <!-- update -->
     <el-dialog v-model="isUpdateDialogVisible" title="Cập Nhật Chương Học" width="500px">
         <el-form :model="updatedSection" :rules="rules" ref="updateSectionForm">
-            <el-form-item label="Tên chương học" prop="title">
+            <el-form-item label="Tên chương học" prop="title" class="block">
                 <el-input v-model="updatedSection.title" placeholder="Nhập tên chương học" />
             </el-form-item>
-            <el-form-item label="Mô tả" prop="description">
+            <el-form-item label="Mô tả" prop="description" class="block">
                 <el-input v-model="updatedSection.description" type="textarea" placeholder="Nhập mô tả" />
             </el-form-item>
-            <el-form-item label="Trạng thái" prop="status">
+            <el-form-item label="Trạng thái" prop="status" class="block">
                 <el-select v-model="updatedSection.status" placeholder="Chọn trạng thái">
                     <el-option label="Hoạt động" value="active"></el-option>
                     <el-option label="Không hoạt động" value="inactive"></el-option>
