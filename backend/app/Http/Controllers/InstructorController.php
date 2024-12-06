@@ -97,20 +97,49 @@ class InstructorController extends Controller
         $formattedCourses = $courses->map(function ($course) {
             $lectures_count = $course->sections->sum(fn($section) => $section->lectures->count());
             $total_duration = $course->sections->sum(fn($section) => $section->lectures->sum('duration'));
+            // return [
+            //     'id' => $course->id,
+            //     'title' => $course->title,
+            //     'old_price' => round($course->price, 0),
+            //     'current_price' => round(
+            //         $course->type_sale === 'price' ? $course->price - $course->sale_value : $course->price * (1 - $course->sale_value / 100),
+            //         0
+            //     ),
+            //     'thumbnail' => $course->thumbnail,
+            //     'level' => $course->level->name ?? null,
+            //     'language' => $course->language->name ?? null,
+            //     'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
+            //         ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
+            //         : ''),
+            //     'lectures_count' => $lectures_count,
+            //     'total_duration' => round($total_duration / 60 / 60, 1), // Đổi từ giây sang giờ
+            //     'rating_avg' => round($course->reviews_avg_rating, 2) ?? 0,
+            //     'reviews_count' => $course->reviews_count ?? 0,
+            //     'status' => $course->status,
+            // ];
             return [
                 'id' => $course->id,
+                'category_id' => $course->category_id,
+                'level_id' => $course->level_id,
+                'language_id' => $course->language_id,
                 'title' => $course->title,
-                'old_price' => round($course->price, 0),
+                'description' => $course->description,
+                'short_description' => $course->short_description,
+                'price' => round($course->price, 0),
+                'type_sale' => $course->type_sale ?? '',
+                'sale_value' => $course->sale_value ?? '',
                 'current_price' => round(
-                    $course->type_sale === 'price' ? $course->price - $course->sale_value : $course->price * (1 - $course->sale_value / 100),
+                    $course->type_sale === 'price'
+                        ? $course->price - $course->sale_value
+                        : $course->price * (1 - $course->sale_value / 100),
                     0
                 ),
                 'thumbnail' => $course->thumbnail,
                 'level' => $course->level->name ?? null,
                 'language' => $course->language->name ?? null,
-                'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
-                    ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
-                    : ''),
+                'creator' => $course->creator
+                    ? trim($course->creator->first_name . ' ' . $course->creator->last_name)
+                    : '',
                 'lectures_count' => $lectures_count,
                 'total_duration' => round($total_duration / 60 / 60, 1), // Đổi từ giây sang giờ
                 'rating_avg' => round($course->reviews_avg_rating, 2) ?? 0,

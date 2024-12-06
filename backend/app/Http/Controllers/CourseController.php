@@ -179,17 +179,15 @@ class CourseController extends Controller
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
 
-        if ($request->thumbnail) {
-            $this->deleteThumbnail($course->thumbnail);
-            $course->thumbnail = $this->uploadThumbnail($request);
+        if ($request->hasFile('thumbnail')) {
+            $this->deleteThumbnail($course->thumbnail); // Xóa thumbnail cũ nếu cần
+            $course->thumbnail = $this->uploadThumbnail($request); // Upload thumbnail mới
         }
-
-        $thumbnailPath = $this->uploadThumbnail($request);
-        $course = new Course();
-        $course->fill($request->all());
-        $course->thumbnail = $thumbnailPath;
-        $course->updated_by = auth()->id();
-        $course->save();
+    
+        // Cập nhật các thuộc tính từ request
+        $course->fill($request->except(['thumbnail'])); // Loại trừ thumbnail để không ghi đè nếu không upload mới
+        $course->updated_by = auth()->id(); // Gán người cập nhật
+        $course->save(); // Lưu thay đ
 
         return formatResponse(STATUS_OK, $course, '', __('messages.course_update_success'));
     }
