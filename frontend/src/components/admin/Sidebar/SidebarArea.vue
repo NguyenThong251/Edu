@@ -43,14 +43,6 @@ const menuGroups = ref<MenuGroup[]>([
             label: 'Quản lý khoá học',
             route: '/admin/course/manager-course'
           },
-          {
-            label: 'Thêm khoá học mới',
-            route: '/admin/course/add-course'
-          },
-          {
-            label: 'Phiếu giảm giá',
-            route: '/admin/course/manager-coupon'
-          },
         ]
       },
       {

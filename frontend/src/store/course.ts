@@ -36,6 +36,8 @@ export const useCourseStore = defineStore('courseStore', () => {
   const listLecturesAdmin = ref<TContentOfSection[]>([])
   const dataForm = ref<TContentOfSection>()
   const loading = ref(false)
+  const totalCourse = ref<number>(0)
+  const current_page = ref<number>(0)
   // Actions
 
   const fetchCourseDetail = async (courseId: string) => {
@@ -144,14 +146,56 @@ export const useCourseStore = defineStore('courseStore', () => {
   // Teacher
   const fetchTeacherCourse = async (params: any = {}) => {
     try {
-      const response = await api.get('/auth/instructor/course', { params })
-      listCourseTeacher.value = response.data.data
+      const response = await api.get('/auth/admin-courses', {
+        params: { is_instructor: 1, ...params }
+      })
+      listCourseTeacher.value = response.data.data.data
+      totalCourse.value = response.data.data.total || 0
+      current_page.value = response.data.data.current_page || 0
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  const fetchAdminCourse = async (params: any = {}) => {
+    try {
+      const response = await api.get('/auth/admin-courses', {
+        params
+      })
+      listCourseTeacher.value = response.data.data.data
+      totalCourse.value = response.data.data.total || 0
+      current_page.value = response.data.data.current_page || 0
     } catch (error) {
       console.error(error)
     }
   }
 
   // ADMIM COURSE
+
+  const updateStatusCourse = async (course_id: number, status: 'active' | 'inactive') => {
+    try {
+      await ElMessageBox.confirm(
+        'Bạn có chắc chắn muốn duyệt khóa học này không?',
+        'Xác nhận xóa',
+        {
+          confirmButtonText: 'Duyệt',
+          cancelButtonText: 'Hủy',
+          type: 'info'
+        }
+      )
+      const data = {
+        status: status
+      }
+      const res = await api.patch(`auth/courses/${course_id}/status`, data)
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Duyệt khóa học thất bại')
+      } else {
+        ElMessage.success('Duyệt khóa học thành công')
+        await fetchAdminCourse()
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   //course
   const createCourse = async (data: FormData) => {
@@ -174,6 +218,48 @@ export const useCourseStore = defineStore('courseStore', () => {
       console.log(error)
     } finally {
       loading.value = false // Tắt trạng thái loading
+    }
+  }
+
+  const updateCourse = async (id: number, data: FormData) => {
+    try {
+      loading.value = true
+      const res = await api.post(`auth/courses/${id}`, data, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      if (res.data.status === 'OK') {
+        ElMessage.success('Cập nhật khóa học thành công')
+        await fetchTeacherCourse()
+      } else {
+        ElMessage.error('Cập nhật khóa học thất bại')
+      }
+    } catch (error) {
+      ElMessage.error('Cập nhật bài khóa thất bại')
+      console.log(error)
+    } finally {
+      loading.value = false // Tắt trạng thái loading
+    }
+  }
+
+  const deleteCourse = async (id: number) => {
+    try {
+      await ElMessageBox.confirm('Bạn có chắc chắn muốn xóa khóa học này không?', 'Xác nhận xóa', {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy',
+        type: 'info'
+      })
+      const res = await api.delete(`auth/courses/${id}`)
+      if (res.data.status === 'FAIL') {
+        ElMessage.error('Xóa chương thất bại')
+      } else {
+        ElMessage.success('Xóa chương thành công')
+        await fetchTeacherCourse()
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
   // lecture
@@ -598,8 +684,10 @@ export const useCourseStore = defineStore('courseStore', () => {
   }
   // Getter
   const getCourse = () => course.value
-  fetchMyCourse()
+  // fetchMyCourse()
   return {
+    totalCourse,
+    current_page,
     loading,
     listCourseTeacher,
     courseStudySearch,
@@ -620,9 +708,12 @@ export const useCourseStore = defineStore('courseStore', () => {
     searchLetureStudy,
     fetchTeacherCourse,
     // admin
-
+    fetchAdminCourse,
+    updateStatusCourse,
     // course
     createCourse,
+    updateCourse,
+    deleteCourse,
     // lecture
     listContentOfSection,
     listLecturesAdmin,

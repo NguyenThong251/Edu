@@ -1,6 +1,6 @@
 <template>
     <div class="p-6 bg-gray-50 min-h-screen">
-        <div class="mx-auto bg-white shadow-lg rounded-lg p-6 space-y-2">
+        <div class="mx-auto bg-white shadow-lg rounded-lg flex flex-col gap-5 p-6 space-y-2">
             <!-- Bộ lọc -->
             <div class="flex flex-col gap-4 bg-gray-100 p-4 rounded-md">
                 <el-row :gutter="20">
@@ -81,7 +81,7 @@
                     :creator="course.creator" :tag="course.tag" :lectures_count="course.lectures_count"
                     :level="course.level" :current_price="course.current_price" :old_price="course.old_price" /> -->
             </div>
-            <div class="flex justify-center mt-10">
+            <div class="flex justify-center">
                 <el-pagination background layout="prev, pager, next" v-model:current-page="pagination.currentPage"
                     :page-size="pagination.perPage" :total="pagination.total" @current-change="handlePageChange" />
             </div>
@@ -194,7 +194,7 @@ const apiStore = apisStore()
 
 const courseStore = useCourseStore()
 const { listCourseTeacher, loading, totalCourse } = storeToRefs(courseStore)
-const { fetchTeacherCourse, createCourse, } = courseStore
+const { fetchAdminCourse, createCourse, } = courseStore
 
 
 const dialogCreateCourseVisible = ref(false)
@@ -285,7 +285,7 @@ const submitForm = async () => {
         });
         dialogCreateCourseVisible.value = false
         await createCourse(formData);
-        await fetchTeacherCourse()
+        await fetchAdminCourse()
         resetForm();
     });
 };
@@ -337,7 +337,7 @@ const fetchCourses = async () => {
         order_price: filters.order_price,
     };
 
-    await fetchTeacherCourse(params); // Gọi API
+    await fetchAdminCourse(params); // Gọi API
     pagination.total = totalCourse.value; // Cập nhật tổng số lượng
 };
 // Thay đổi trang

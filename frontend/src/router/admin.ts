@@ -22,6 +22,7 @@ import MyProfile from '@/views/user/MyProfile.vue'
 import Payment from '@/views/admin/Payment.vue'
 import Review from '@/views/admin/Review.vue'
 import ProcessRequest from '@/views/ProcessRequest.vue'
+import CourseAdminListPage from '@/views/teacher/CourseAdminListPage.vue'
 const admin = [
   {
     path: '/admin',
@@ -62,7 +63,7 @@ const admin = [
       {
         path: '/admin/course/manager-course',
         name: 'admin.manager-course',
-        component: ManagerCourse,
+        component: CourseAdminListPage,
         meta: { requiresAuth: true, role: 'admin', title: 'Quản lý khoá học | Edunity' }
       },
       {
