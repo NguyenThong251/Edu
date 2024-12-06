@@ -184,7 +184,10 @@ class CourseController extends Controller
             $course->thumbnail = $this->uploadThumbnail($request);
         }
 
+        $thumbnailPath = $this->uploadThumbnail($request);
+        $course = new Course();
         $course->fill($request->all());
+        $course->thumbnail = $thumbnailPath;
         $course->updated_by = auth()->id();
         $course->save();
 
