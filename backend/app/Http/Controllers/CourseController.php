@@ -123,7 +123,7 @@ class CourseController extends Controller
         ];
     });
 
-    if ($request->has('order_price')) {
+    if ($request->has('order_price') && !empty($request->order_price)) {
         $sortOrder = strtolower($request->order_price) === 'asc' ? SORT_ASC : SORT_DESC;
     
         // Sắp xếp nếu order_price là 'asc' hoặc 'desc'
@@ -133,6 +133,7 @@ class CourseController extends Controller
             $sortOrder === SORT_DESC
         )->values();
     }
+    
     
 
     $pagination = new \Illuminate\Pagination\LengthAwarePaginator(
