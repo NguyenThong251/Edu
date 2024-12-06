@@ -122,7 +122,7 @@ class InstructorController extends Controller
                 'category_id' => $course->category_id,
                 'level_id' => $course->level_id,
                 'language_id' => $course->language_id,
-                'title' => $course->title,
+                'title' => $course->title, 
                 'description' => $course->description,
                 'short_description' => $course->short_description,
                 'price' => round($course->price, 0),

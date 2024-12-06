@@ -67,19 +67,77 @@ class CourseController extends Controller
         }
 
         // Sắp xếp theo ngày tạo
-        $order = $request->order ?? 'desc';
-        $coursesQuery->orderBy('created_at', $order);
+        $orderTime = $request->order_time ?? 'desc';
+        $coursesQuery->orderBy('created_at', $orderTime);
 
         // Phân trang thủ công
-        $perPage = (int) $request->get('per_page', 10);
+        $perPage = (int) $request->get('per_page', 8);
         $page = (int) $request->get('page', 1);
-
+        $coursesQuery->with([
+            'category',
+            'level',
+            'language',
+            'creator:id,first_name,last_name',
+            'sections.lectures',
+            'reviews'
+        ])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating');
         $courses = $coursesQuery->get();
+
         $total = $courses->count();
         $paginatedCourses = $courses->forPage($page, $perPage)->values();
 
+        $formattedCourses = $paginatedCourses->map(function ($course) {
+            $lectures_count = $course->sections->sum(fn($section) => $section->lectures->count());
+            $total_duration = $course->sections->sum(fn($section) => $section->lectures->sum('duration'));
+
+            return [
+                'id' => $course->id,
+                'category_id' => $course->category_id,
+                'level_id' => $course->level_id,
+                'language_id' => $course->language_id,
+                'title' => $course->title,
+                'description' => $course->description,
+                'short_description' => $course->short_description,
+                'price' => round($course->price, 0),
+                'type_sale' => $course->type_sale ?? '',
+                'sale_value' => $course->sale_value ?? '',
+                'current_price' => round(
+                    $course->type_sale === 'price'
+                        ? $course->price - $course->sale_value
+                        : $course->price * (1 - $course->sale_value / 100),
+                    0
+                ),
+                'thumbnail' => $course->thumbnail,
+                'level' => $course->level->name ?? null,
+                'language' => $course->language->name ?? null,
+                'creator' => $course->creator
+                    ? trim($course->creator->first_name . ' ' . $course->creator->last_name)
+                    : '',
+                'lectures_count' => $lectures_count,
+                'total_duration' => round($total_duration / 60 / 60, 1), // Đổi từ giây sang giờ
+                'rating_avg' => round($course->reviews_avg_rating, 2) ?? 0,
+                'reviews_count' => $course->reviews_count ?? 0,
+                'status' => $course->status,
+            ];
+        });
+
+        if ($request->has('order_price') && !empty($request->order_price)) {
+            $sortOrder = strtolower($request->order_price) === 'asc' ? SORT_ASC : SORT_DESC;
+
+            // Sắp xếp nếu order_price là 'asc' hoặc 'desc'
+            $formattedCourses = $formattedCourses->sortBy(
+                fn($course) => $course['current_price'],
+                SORT_REGULAR,
+                $sortOrder === SORT_DESC
+            )->values();
+        }
+
+
+
         $pagination = new \Illuminate\Pagination\LengthAwarePaginator(
-            $paginatedCourses,
+            $formattedCourses,
             $total,
             $perPage,
             $page,
@@ -94,7 +152,6 @@ class CourseController extends Controller
         // Trả về response
         return formatResponse(STATUS_OK, $courses, '', __('messages.course_fetch_success'));
     }
-
 
     // Tạo mới một khóa học
     public function store(Request $request)
