@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PayoutController;
@@ -195,7 +196,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::delete('lectures/permanent-delete/{id}', [LectureController::class, 'forceDelete'])->name('lectures.destroypermanent');
 
 
-
             Route::post('quizzes', [QuizController::class, 'store'])->name('quizzes.store');
             Route::get('quizzes/{id}', [QuizController::class, 'show'])->name('quizzes.show');
             Route::put('quizzes/{id}', [QuizController::class, 'update'])->name('quizzes.update');
@@ -219,7 +219,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('questions/edit-form/{id}', [QuestionController::class, 'editForm'])->name('questions.editForm');
             Route::get('show-question-of-quiz/{id}', [QuestionController::class, 'showQuestionsByQuiz'])->name('questions.showQuestionOfQuiz');
             Route::put('sort-question-of-quiz', [QuestionController::class, 'updateQuestionOrder'])->name('questions.updateOrder');
-
 
 
             Route::get('instructor/course', [InstructorController::class, 'getListCourses']);
@@ -287,6 +286,14 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('reviews', [ReviewController::class, 'store']);
             Route::put('reviews/{id}', [ReviewController::class, 'update']);
             Route::delete('reviews/{id}', [ReviewController::class, 'destroy']);
+
+            //discussion threads
+            Route::get('/discussions', [DiscussionController::class, 'index'])->name('discussions.index');
+            Route::get('/discussions/{id}/answers', [DiscussionController::class, 'getAnswers'])->name('discussions.answers');
+            Route::post('/discussions', [DiscussionController::class, 'store'])->name('discussions.store');
+            Route::post('/discussions/{id}/like', [DiscussionController::class, 'like'])->name('discussions.like');
+            Route::delete('/discussions/{id}/like', [DiscussionController::class, 'unlike'])->name('discussions.unlike');
+
         });
     });
 });
