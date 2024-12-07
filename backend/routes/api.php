@@ -157,6 +157,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         // Routes cho instructor
         Route::middleware(['role:instructor'])->group(function () {
             Route::get('get-student-of-instructor', [ManangeStudentController::class, 'getStudentsByTeacher'])->name('manage.getStudentsByTeacher');
+            Route::get('get-progress-of-student', [ManangeStudentController::class, 'getProgressOfStudent'])->name('manage.getProgressOfStudent');
 
             Route::get('admin-courses', [CourseController::class, 'getListAdmin'])->name('courses.getListAdmin');
             Route::post('courses', [CourseController::class, 'store'])->name('courses.store');
