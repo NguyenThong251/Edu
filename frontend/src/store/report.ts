@@ -30,6 +30,7 @@ interface TListAuthPayout {
 
 export const useReportStore = defineStore('report', () => {
   const total_revenue = ref<number>(0)
+  const total_sales = ref<number>(0)
   const total_payouts = ref<number>(0)
   const net_revenue = ref<number>(0)
   const total_users = ref<number>(0)
@@ -99,6 +100,8 @@ export const useReportStore = defineStore('report', () => {
         }
       })
       chartDataTotal.value = res.data.data || []
+      total_revenue.value = res.data.total_revenue
+      total_sales.value = res.data.total_sales
     } catch (error) {
       console.error('Error fetching line chart:', error)
     }
@@ -167,6 +170,7 @@ export const useReportStore = defineStore('report', () => {
     }
   }
   return {
+    total_sales,
     listAuthPayout,
     total_revenue,
     total_payouts,

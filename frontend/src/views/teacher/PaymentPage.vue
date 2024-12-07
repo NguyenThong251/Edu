@@ -10,19 +10,23 @@
         <!-- Tổng quan -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-5">
             <div class="bg-white p-5 shadow rounded-lg flex flex-col items-center justify-center">
-                <h2 class="text-2xl font-bold text-indigo-500">{{ state.dataReportPayment.moneyReceived }}</h2>
+                <h2 class="text-2xl font-bold text-indigo-500">{{ formatPrice(state.dataReportPayment.moneyReceived) }}
+                </h2>
                 <p class="text-gray-600">Tiền đã nhận</p>
             </div>
             <div class="bg-white p-5 shadow rounded-lg flex flex-col items-center justify-center">
-                <h2 class="text-2xl font-bold text-indigo-500">{{ state.dataReportPayment.totalRevenue }}</h2>
+                <h2 class="text-2xl font-bold text-indigo-500">{{ formatPrice(state.dataReportPayment.totalRevenue) }}
+                </h2>
                 <p class="text-gray-600">Tổng thu nhập</p>
             </div>
             <div class="bg-white p-5 shadow rounded-lg flex flex-col items-center justify-center">
-                <h2 class="text-2xl font-bold text-indigo-500">{{ state.dataReportPayment.pendingPayouts }}</h2>
+                <h2 class="text-2xl font-bold text-indigo-500">{{ formatPrice(state.dataReportPayment.pendingPayouts) }}
+                </h2>
                 <p class="text-gray-600">Tiền đang yêu cầu</p>
             </div>
             <div class="bg-white p-5 shadow rounded-lg flex flex-col items-center justify-center">
-                <h2 class="text-2xl font-bold text-indigo-500">{{ state.dataReportPayment.availablePayout }}</h2>
+                <h2 class="text-2xl font-bold text-indigo-500">{{ formatPrice(state.dataReportPayment.availablePayout)
+                    }}</h2>
                 <p class="text-gray-600">Số tiền có thể rút</p>
             </div>
         </div>

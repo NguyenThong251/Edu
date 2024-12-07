@@ -106,7 +106,13 @@ export const useTeacherStore = defineStore('teacher', () => {
         await getListPaymentByUser()
         await fetchListTeacherPayout()
       } else {
-        ElMessage.error('Yêu cầu rút tiền thất bại. Vui lòng thử lại.')
+        if (res.data.message === 'messages.payment_method_not_found') {
+          ElMessage.error('Bạn phải cập nhật phương thức thanh toán.')
+        } else if (res.data.message === 'messages.amount_exceeds_balance') {
+          ElMessage.error('Bạn đã vượt quá số dư cho phép ')
+        } else {
+          ElMessage.error('Yêu cầu rút tiền thất bại. Vui lòng thử lại.')
+        }
       }
     } catch (error) {
       console.log(error)

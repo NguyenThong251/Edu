@@ -77,7 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
       // console.log(state.value.user)
       // return response.data.data
     } catch (err: any) {
-      state.value.error = err.response?.data?.message || 'Registration failed'
+      // state.value.error = err.response?.data?.message || 'Registration failed'
     } finally {
       state.value.loading = false
     }

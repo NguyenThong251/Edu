@@ -5,11 +5,10 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth';
-import { useRoute, useRouter } from 'vue-router';
-import { ElNotification } from 'element-plus';
+import { onMounted, ref } from 'vue';
 import Loading from 'vue-loading-overlay';
+import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();

@@ -1,8 +1,8 @@
-import { defineStore, storeToRefs } from 'pinia'
-import { ref, computed, watch } from 'vue'
 import api from '@/services/axiosConfig'
-import Cookies from 'js-cookie'
 import { ElNotification } from 'element-plus'
+import Cookies from 'js-cookie'
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 
 export const useCartStore = defineStore('cart', () => {
   const cartDb = ref<any[]>([])
@@ -78,6 +78,7 @@ export const useCartStore = defineStore('cart', () => {
       loading.value = false
     }
   }
+
   const fetchCartCourses = async () => {
     loading.value = true
     try {
@@ -162,24 +163,11 @@ export const useCartStore = defineStore('cart', () => {
   // Hàm xử lý khi người dùng đăng nhập
   const handleLogin = async () => {
     if (isAuthenticated.value) {
-      await fetchCartCourses()
+      // await fetchCartCourses()
       await syncLocalCartWithServer()
     }
   }
-  // Khi đăng xuất
-  const handleLogout = () => {
-    cartDb.value = []
-    loadCartFromLocalStorage()
-  }
 
-  // Theo dõi thay đổi trạng thái đăng nhập
-  watch(isAuthenticated, async (newValue) => {
-    if (newValue) {
-      await handleLogin()
-    } else {
-      handleLogout()
-    }
-  })
   loadCartFromLocalStorage()
   return {
     cart,

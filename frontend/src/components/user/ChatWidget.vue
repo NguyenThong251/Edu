@@ -1,5 +1,5 @@
 <template>
-    <div class="fixed bottom-5 right-5 z-50">
+    <div class="fixed bottom-10 right-8 z-50">
         <!-- Nút tròn hình robot -->
         <div class="  w-16 h-16 rounded-full bg-indigo-200 transition-all shadow-lg flex items-center justify-center cursor-pointer hover:bg-indigo-600"
             @click="toggleChat">
