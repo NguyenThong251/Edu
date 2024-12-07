@@ -178,7 +178,8 @@
 
     <div id="certificate">
 
-      <Certificate :courseName="currentContent.title" :issueDate="issueDate" :instructorName="studyCourse.creator" />
+      <Certificate :courseName="studyCourse.course_title" :issueDate="issueDate"
+        :instructorName="studyCourse.creator" />
     </div>
     <div class="flex justify-end mt-5">
       <Button variant="primary" @click="printCertificate">Print</Button>

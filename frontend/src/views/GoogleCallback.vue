@@ -30,7 +30,8 @@ onMounted(async () => {
         if (success) {
 
             // If login is successful, redirect to home
-            router.push('/');
+            await router.push('/');
+            location.reload();
         } else {
             // If there's an error, redirect to login page
             router.push('/login');
@@ -40,5 +41,6 @@ onMounted(async () => {
         router.push('/login');
     }
     loading.value = false;
+
 });
 </script>

@@ -10,7 +10,6 @@ import type {
 import Cookies from 'js-cookie'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElNotification } from 'element-plus'
-
 export const useAuthStore = defineStore('auth', () => {
   const state = ref<TAuthState>({
     user: null,
@@ -42,6 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
     state.value.user = null
     state.value.token = null
     Cookies.remove('token_user_edu')
+    location.reload()
     // router.push('/')
   }
   const register = async (userData: TUserAuth) => {

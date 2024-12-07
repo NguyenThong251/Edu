@@ -79,8 +79,7 @@
     <!-- Cart view -->
     <el-drawer v-model="isOpenCart" @update:modelValue="isOpenCart = false" title="Giỏ hàng">
         <div v-if="cart?.length > 0">
-
-            <ViewCart />
+            <ViewCart :data="cart" />
         </div>
         <div v-else class="flex items-center flex-col justify-center">
             <img class="w-48" src="https://cdn-icons-png.flaticon.com/512/11329/11329060.png" alt="">
@@ -97,8 +96,10 @@
 import Button from '@/components/ui/button/Button.vue';
 import { useCart } from '@/composables/user/useCart';
 import { useAuthStore } from '@/store/auth';
+import { useCartStore } from '@/store/cart';
+import { useVoucherStore } from '@/store/voucher';
 import { Bars3Icon, MagnifyingGlassIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
-import { ElNotification, type DrawerProps } from 'element-plus';
+import { type DrawerProps } from 'element-plus';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
@@ -107,7 +108,6 @@ import SearchProduct from '../ui/dialog/SearchProduct.vue';
 import ViewCart from '../ui/dialog/ViewCart.vue';
 import MenuDesktop from '../ui/menu/MenuDesktop.vue';
 import UserProfile from './UserProfile.vue';
-import { useVoucherStore } from '@/store/voucher';
 const direction = ref<DrawerProps['direction']>('ltr')
 const isOpenNav = ref(false)
 const isOpenCart = ref(false)
@@ -116,7 +116,6 @@ const searchDirection = ref<DrawerProps['direction']>('ttb')
 const toggleMenu = () => {
     isOpenNav.value = !isOpenNav.value
 }
-const { cart, loading } = useCart();
 const toggleCart = () => {
     isOpenCart.value = !isOpenCart.value
 }
@@ -126,8 +125,15 @@ const { state } = storeToRefs(authStore)
 const { userData } = authStore;
 const currentPath = router.currentRoute.value.fullPath
 localStorage.setItem('redirectAfterLogin', currentPath);
+
+const cartStore = useCartStore()
+const { loading, fetchCartCourses, clearCart, formattedTotalPrice, isAuthenticated } = useCart();
+const { cart } = storeToRefs(cartStore)
 onMounted(async () => {
     await userData()
+
+    await fetchCartCourses();
+
 })
 
 const voucherStore = useVoucherStore();

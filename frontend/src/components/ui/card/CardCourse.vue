@@ -59,18 +59,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, ref } from 'vue';
 import { formatPrice } from '@/utils/formatPrice';
-import { ClockIcon, BookOpenIcon, RocketLaunchIcon, HeartIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/vue/20/solid";
+import { BookOpenIcon, HeartIcon, RocketLaunchIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
+import { defineProps } from 'vue';
 
-import type { TCardCourse } from '@/interfaces/course.interface';
 import { useCart } from '@/composables/user/useCart';
-import { useRouter } from 'vue-router';
-import { useWishlistStore } from '@/store/wishlist';
-import { storeToRefs } from 'pinia';
-import { ElNotification } from 'element-plus';
+import type { TCardCourse } from '@/interfaces/course.interface';
 import { useAuthStore } from '@/store/auth';
+import { useWishlistStore } from '@/store/wishlist';
+import { ElNotification } from 'element-plus';
+import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 const useAuth = useAuthStore()
 const { state } = storeToRefs(useAuth)
 defineProps<TCardCourse>();
