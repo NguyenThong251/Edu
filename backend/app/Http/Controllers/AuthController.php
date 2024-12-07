@@ -26,7 +26,8 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api',
+        $this->middleware(
+            'auth:api',
             [
                 'except' => [
                     'login',
@@ -40,7 +41,8 @@ class AuthController extends Controller
                     'updateProfile',
                     'checkTokenResetPassword'
                 ]
-            ]);
+            ]
+        );
     }
 
     public function register()
@@ -140,8 +142,8 @@ class AuthController extends Controller
                 }
                 $redirectUrl = env('URL_DOMAIN') . "/google/call-back/{$token}";
                 return redirect($redirectUrl);
-//                $refreshToken = $this->createRefreshToken();
-//                return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
+                //                $refreshToken = $this->createRefreshToken();
+                //                return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
             }
 
             $user = User::create(
@@ -161,11 +163,11 @@ class AuthController extends Controller
             if (!$token = auth('api')->login($user)) {
                 return formatResponse(STATUS_FAIL, '', '', __('messages.create_token_failed'), CODE_FAIL);
             }
-//            $refreshToken = $this->createRefreshToken();
+            //            $refreshToken = $this->createRefreshToken();
             SendEmailWelcome::dispatch($user);
             $redirectUrl = env('URL_DOMAIN') . "/google/call-back/{$token}";
             return redirect($redirectUrl);
-//            return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
+            //            return formatResponse(STATUS_OK, $user, '', __('messages.user_login_success'), CODE_OK, $token, $refreshToken);
         } catch (\Exception $exception) {
             return formatResponse(STATUS_FAIL, '', $exception, __('messages.login_google_success'), CODE_BAD);
         }
@@ -311,7 +313,7 @@ class AuthController extends Controller
             $decode = JWTAuth::getJWTProvider()->decode($refresh_token);
 
             // Invalidate current access token
-//            auth('api')->invalidate();
+            //            auth('api')->invalidate();
 
             $user = User::find($decode['user_id']);
             if (!$user) {
@@ -321,9 +323,15 @@ class AuthController extends Controller
             $token = auth('api')->login($user);
             $refreshToken = $this->createRefreshToken();
 
-            return formatResponse(STATUS_OK, $user, '', 'Refresh access token thành công', CODE_OK, $token,
-                $refreshToken);
-
+            return formatResponse(
+                STATUS_OK,
+                $user,
+                '',
+                'Refresh access token thành công',
+                CODE_OK,
+                $token,
+                $refreshToken
+            );
         } catch (TokenExpiredException $e) {
             return formatResponse(STATUS_FAIL, '', '', 'Refresh token đã hết hạn');
         } catch (TokenInvalidException $e) {
@@ -339,23 +347,58 @@ class AuthController extends Controller
         if (!$user) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.user_not_found'));
         }
+        // $validator = Validator::make(request()->all(), [
+        //     'first_name' => 'string|max:50',
+        //     'last_name' => 'string|max:50',
+        //     'email' => 'string|email|max:100|unique:users,email,' . $user->id,
+        //     'phone_number' => 'regex:/^[0-9]+$/',
+        //     'address' => 'string',
+        //     'biography' => 'string',
+        //     'contact_info' => 'array',
+        //     'gender' => 'nullable|string|in:male,female,unknown',
+        //     'date_of_birth' => 'nullable|date',
+        //     'password' => 'string|min:8',
+        //     'role' => 'sometimes|in:instructor,student',
+        // ], [
+        //     'first_name.required' => __('messages.first_name_required'),
+        //     'first_name.string' => __('messages.first_name_string'),
+        //     'first_name.max' => __('messages.first_name_max'),
+        //     'last_name.required' => __('messages.last_name_required'),
+        //     'last_name.string' => __('messages.last_name_string'),
+        //     'last_name.max' => __('messages.last_name_max'),
+
+        //     'phone_number.regex' => __('messages.phone_number_update'),
+        //     'address.string' => __('messages.address_update'),
+        //     'contact_info.array' => __('messages.contactInfo_update'),
+
+        //     'email.required' => __('messages.email_required'),
+        //     'email.string' => __('messages.email_string'),
+        //     'email.email' => __('messages.email_email'),
+        //     'email.max' => __('messages.email_max'),
+        //     'email.unique' => __('messages.email_unique'),
+
+        //     'password.required' => __('messages.password_required'),
+        //     'password.string' => __('messages.password_string'),
+        //     'password.min' => __('messages.password_min'),
+
+        //     'gender.in' => __('messages.gender_invalid'),
+        //     'date_of_birth.date' => __('messages.date_of_birth_invalid'),
+        // ]);
         $validator = Validator::make(request()->all(), [
-            'first_name' => 'string|max:50',
-            'last_name' => 'string|max:50',
-            'email' => 'string|email|max:100|unique:users,email,' . $user->id,
-            'phone_number' => 'regex:/^[0-9]+$/',
-            'address' => 'string',
-            'biography' => 'string',
-            'contact_info' => 'array',
+            'first_name' => 'nullable|string|max:50',
+            'last_name' => 'nullable|string|max:50',
+            'email' => 'nullable|string|email|max:100|unique:users,email,' . $user->id,
+            'phone_number' => 'nullable|regex:/^[0-9]+$/',
+            'address' => 'nullable|string',
+            'biography' => 'nullable|string',
+            'contact_info' => 'nullable|array',
             'gender' => 'nullable|string|in:male,female,unknown',
             'date_of_birth' => 'nullable|date',
-            'password' => 'string|min:8',
-            'role' => 'sometimes|in:instructor,student',
+            'password' => 'nullable|string|min:8',
+            'role' => 'nullable|in:instructor,student',
         ], [
-            'first_name.required' => __('messages.first_name_required'),
             'first_name.string' => __('messages.first_name_string'),
             'first_name.max' => __('messages.first_name_max'),
-            'last_name.required' => __('messages.last_name_required'),
             'last_name.string' => __('messages.last_name_string'),
             'last_name.max' => __('messages.last_name_max'),
 
@@ -363,26 +406,31 @@ class AuthController extends Controller
             'address.string' => __('messages.address_update'),
             'contact_info.array' => __('messages.contactInfo_update'),
 
-            'email.required' => __('messages.email_required'),
             'email.string' => __('messages.email_string'),
             'email.email' => __('messages.email_email'),
             'email.max' => __('messages.email_max'),
             'email.unique' => __('messages.email_unique'),
 
-            'password.required' => __('messages.password_required'),
             'password.string' => __('messages.password_string'),
             'password.min' => __('messages.password_min'),
 
             'gender.in' => __('messages.gender_invalid'),
             'date_of_birth.date' => __('messages.date_of_birth_invalid'),
         ]);
-
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), __('messages.validation_error'));
         }
+        // $data = request()->except(['email_verified', 'reset_token', 'status']);
+        // if (isset($data['password'])) {
+        //     $data['password'] = Hash::make(request()->input('password'));
+        // }
         $data = request()->except(['email_verified', 'reset_token', 'status']);
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make(request()->input('password'));
+
+        // Chỉ mã hóa password nếu trường này được gửi
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']); // Loại bỏ trường password nếu không tồn tại
         }
         if (!$user->update($data)) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.update_fail'));
@@ -407,20 +455,20 @@ class AuthController extends Controller
             'role' => 'sometimes|in:admin,instructor,student',
             'status' => 'sometimes|in:active,inactive',
         ]);
-//        , [
-//        'user_id.required' => 'User ID là bắt buộc.',
-//        'user_id.integer' => 'User ID phải là số nguyên.',
-//        'user_id.exists' => 'Người dùng không tồn tại.',
-//        'first_name.string' => 'First name phải là chuỗi.',
-//        'first_name.max' => 'First name không được vượt quá 50 ký tự.',
-//        'last_name.string' => 'Last name phải là chuỗi.',
-//        'last_name.max' => 'Last name không được vượt quá 50 ký tự.',
-//        'email.email' => 'Email không hợp lệ.',
-//        'email.max' => 'Email không được vượt quá 255 ký tự.',
-//        'email.unique' => 'Email đã được sử dụng.',
-//        'role.in' => 'Role không hợp lệ.',
-//        'status.in' => 'Status không hợp lệ.',
-//    ]
+        //        , [
+        //        'user_id.required' => 'User ID là bắt buộc.',
+        //        'user_id.integer' => 'User ID phải là số nguyên.',
+        //        'user_id.exists' => 'Người dùng không tồn tại.',
+        //        'first_name.string' => 'First name phải là chuỗi.',
+        //        'first_name.max' => 'First name không được vượt quá 50 ký tự.',
+        //        'last_name.string' => 'Last name phải là chuỗi.',
+        //        'last_name.max' => 'Last name không được vượt quá 50 ký tự.',
+        //        'email.email' => 'Email không hợp lệ.',
+        //        'email.max' => 'Email không được vượt quá 255 ký tự.',
+        //        'email.unique' => 'Email đã được sử dụng.',
+        //        'role.in' => 'Role không hợp lệ.',
+        //        'status.in' => 'Status không hợp lệ.',
+        //    ]
         // Kiểm tra nếu validation thất bại
         if ($validator->fails()) {
             return formatResponse(STATUS_FAIL, '', $validator->errors(), 'Xác thực thất bại');
@@ -456,7 +504,6 @@ class AuthController extends Controller
             return formatResponse(STATUS_OK, '', '', 'Xóa tài khoản thành công');
         }
         return formatResponse(STATUS_FAIL, '', '', 'Xóa tài khoản thất bại');
-
     }
 
     public function restoreUser($id)
@@ -467,7 +514,7 @@ class AuthController extends Controller
         }
         if ($user->trashed()) {
             $user->restore();
-//            $user->is_deleted = User::STATUS_DEFAULT;
+            //            $user->is_deleted = User::STATUS_DEFAULT;
             $user->save();
             return formatResponse(STATUS_OK, $user, '', 'Khôi phục thành công');
         }
@@ -671,6 +718,4 @@ class AuthController extends Controller
             'expires_in' => auth('api')->factory()->getTTL() * 60
         ]);
     }
-
-
 }
