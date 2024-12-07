@@ -497,94 +497,287 @@ class CourseController extends Controller
 
 
     // Hiển thị một khóa học cụ thể
+    // public function detail($id, Request $request)
+    // {
+    //     $course = Course::with([
+    //         'category' => function ($query) {
+    //             $query->where('status', 'active');
+    //         },
+    //         'level' => function ($query) {
+    //             $query->where('status', 'active');
+    //         },
+    //         'creator' => function ($query) {
+    //             $query->where('status', 'active');
+    //         },
+    //         'sections' => function ($query) {
+    //             $query->where('status', 'active')->with([
+    //                 'lectures' => function ($query) {
+    //                     $query->where('status', 'active');
+    //                 },
+    //             ]);
+    //         },
+    //         'reviews' => function ($query) {
+    //             $query->where('status', 'active');
+    //         },
+    //         'language' => function ($query) {
+    //             $query->where('status', 'active');
+    //         },
+    //     ])
+    //         ->where('status', 'active')
+    //         ->where('id', $id)
+    //         ->first();
+
+    //     if (!$course) {
+    //         return formatResponse(STATUS_FAIL, '', '', __('messages.course_not_found'));
+    //     }
+
+    //     // Tính toán thông tin khóa học
+    //     $old_price = $course->price;
+    //     $sale_value = $course->sale_value;
+    //     $type_sale = $course->type_sale;
+
+    //     $sections = $course->sections->where('status', 'active');
+    //     $sections_count = $sections->count();
+    //     $lectures_count = $sections->reduce(function ($carry, $section) {
+    //         return $carry + $section->lectures->where('status', 'active')->count();
+    //     }, 0);
+
+    //     $total_duration = $this->formatDuration($sections->reduce(function ($carry, $section) {
+    //         return $carry + $section->lectures->where('status', 'active')->sum('duration');
+    //     }));
+
+    //     $preview_videos = Lecture::select('title', 'content_link')
+    //         ->where('status', 'active')
+    //         ->whereHas('section', function ($query) use ($course) {
+    //             $query->where('course_id', $course->id)
+    //                 ->where('preview', 'can')
+    //                 ->where('status', 'active');
+    //         })
+    //         ->where('type', 'video')
+    //         ->get();
+
+
+    //     // Thống kê instructor
+    //     $creatorId = $course->creator ? $course->creator->id : null;
+    //     $courseIds = Course::where('created_by', $creatorId)->where('status', 'active')->pluck('id');
+    //     $totalCourses = $courseIds->count();
+    //     $orderIds = OrderItem::whereIn('course_id', $courseIds)->pluck('order_id');
+    //     $usersCount = Order::whereIn('id', $orderIds)->distinct()->count();
+
+    //     $reviewsData = Review::whereIn('course_id', $courseIds)
+    //         ->where('status', 'active')
+    //         ->selectRaw('COUNT(*) as total_reviews, AVG(rating) as average_rating')
+    //         ->first();
+
+    //     $totalReviews = $reviewsData->total_reviews ?? 0;
+    //     $averageRating = $reviewsData->average_rating ?? 0;
+
+    //     $instructor = [
+    //         'info' => $course->creator,
+    //         'courses_count' => $totalCourses,
+    //         'students_count' => $usersCount,
+    //         'total_reviews' => $totalReviews,
+    //         'average_rating' => round($averageRating, 2),
+    //     ];
+
+    //     // Truy vấn reviews
+    //     $reviewsQuery = DB::table('reviews')
+    //         ->join('users', 'reviews.user_id', '=', 'users.id')
+    //         ->where('reviews.course_id', $id)
+    //         ->where('reviews.status', 'active')
+    //         ->select(
+    //             'reviews.rating',
+    //             'reviews.comment',
+    //             'reviews.created_at',
+    //             'users.first_name',
+    //             'users.last_name',
+    //             'users.avatar'
+    //         );
+    //     $comment_keyword = null;
+
+    //     // Kiểm tra và gán giá trị từ $request nếu tồn tại
+    //     if ($request->comment_keyword) {
+    //         $comment_keyword = $request->comment_keyword;
+    //     }
+    //     if ($comment_keyword) {
+    //         $reviewsQuery->where(function ($q) use ($comment_keyword) {
+    //             $q->where('reviews.comment', 'LIKE', '%' . $comment_keyword . '%')
+    //                 ->orWhere(DB::raw("CONCAT(users.last_name, ' ', users.first_name)"), 'LIKE', '%' . $comment_keyword . '%');
+    //         });
+    //     }
+
+    //     $reviews = $reviewsQuery->get();
+
+    //     // Xử lý dữ liệu reviews
+    //     $total_reviews = $reviews->count();
+    //     $average_rating = $total_reviews > 0 ? round($reviews->avg('rating'), 1) : null;
+
+    //     $rating_counts = $reviews->groupBy('rating')->map(function ($group) {
+    //         return count($group);
+    //     });
+
+    //     $rating_percentages = [];
+    //     for ($i = 1; $i <= 5; $i++) {
+    //         $count = $rating_counts->get($i, 0);
+    //         $rating_percentages[$i] = $total_reviews > 0 ? floor(($count / $total_reviews) * 100) : 0;
+    //     }
+
+    //     $review_list = $reviews->map(function ($review) {
+    //         $last_name = $review->last_name ?? '';
+    //         $first_name = $review->first_name ?? '';
+    //         $name = trim($last_name . ' ' . $first_name) ?: 'Người dùng không xác định';
+
+    //         $avatar = $review->avatar;
+
+    //         $created_at = Carbon::parse($review->created_at);
+    //         $now = Carbon::now();
+    //         $diff = $created_at->diff($now);
+
+    //         if ($diff->y > 0) {
+    //             $time_diff = $diff->y . ' năm trước';
+    //         } elseif ($diff->m > 0) {
+    //             $time_diff = $diff->m . ' tháng trước';
+    //         } elseif ($diff->d > 0) {
+    //             $time_diff = $diff->d . ' ngày trước';
+    //         } elseif ($diff->h > 0) {
+    //             $time_diff = $diff->h . ' giờ trước';
+    //         } elseif ($diff->i > 0) {
+    //             $time_diff = $diff->i . ' phút trước';
+    //         } else {
+    //             $time_diff = $diff->s . ' giây trước';
+    //         }
+
+    //         return [
+    //             'user_avatar' => $avatar,
+    //             'user_name' => $name,
+    //             'rating' => $review->rating,
+    //             'comment' => $review->comment,
+    //             'time_diff' => $time_diff,
+    //         ];
+    //     });
+    //     $study = new StudyController;
+    //     // Chuẩn bị dữ liệu trả về
+    //     $data = $this->search($request, $course->creator->id, $id)->getData(); // Lấy dữ liệu dạng object
+    //     $orderCourse = json_decode(json_encode($data), true)['data']['data'];
+
+    //     $course_data = [
+    //         'id' => $course->id,
+    //         'title' => $course->title,
+    //         'category' => $course->category->name,
+    //         'level' => $course->level->name,
+    //         'thumbnail' => $course->thumbnail,
+    //         'language' => $course->language->name,
+    //         'old_price' => round($course->price, 0),
+    //         'current_price' => round(
+    //             $course->type_sale === 'price'
+    //                 ? $course->price - $course->sale_value
+    //                 : $course->price * (1 - $course->sale_value / 100),
+    //             0
+    //         ),
+    //         'type_sale' => $type_sale,
+    //         'sale_value' => $sale_value,
+    //         'sections_count' => $sections_count,
+    //         'lectures_count' => $lectures_count,
+    //         'total_duration' => $total_duration,
+    //         'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
+    //             ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
+    //             : ''),
+    //         'average_rating' => $average_rating,
+    //         'total_reviews' => $total_reviews,
+    //         'preview_videos' => $preview_videos,
+    //         'course_contents' => $study->getAllContent(0, $id, '')['allContent'],
+    //         'order_course_of_instructor' => $orderCourse,
+    //         'instructor' => $instructor,
+    //         'status' => $course->status,
+    //         'reviews' => [
+    //             'total_reviews' => $total_reviews,
+    //             'average_rating' => $average_rating,
+    //             'rating_percentages' => $rating_percentages,
+    //             'review_list' => $review_list,
+    //         ],
+    //     ];
+
+    //     return formatResponse(STATUS_OK, $course_data, '', __('messages.course_detail_success'));
+    // }
     public function detail($id, Request $request)
     {
+        // Lấy thông tin khóa học
         $course = Course::with([
-            'category' => function ($query) {
-                $query->where('status', 'active');
-            },
-            'level' => function ($query) {
-                $query->where('status', 'active');
-            },
-            'creator' => function ($query) {
-                $query->where('status', 'active');
-            },
-            'sections' => function ($query) {
-                $query->where('status', 'active')->with([
-                    'lectures' => function ($query) {
-                        $query->where('status', 'active');
-                    },
-                ]);
-            },
-            'reviews' => function ($query) {
-                $query->where('status', 'active');
-            },
-            'language' => function ($query) {
-                $query->where('status', 'active');
-            },
-        ])
-            ->where('status', 'active')
-            ->where('id', $id)
-            ->first();
+            'category',
+            'level',
+            'creator',
+            'sections.lectures',
+            'reviews',
+            'language',
+        ])->find($id); // Tìm theo ID, không thêm điều kiện khác
 
+        // Kiểm tra nếu không tìm thấy khóa học
         if (!$course) {
             return formatResponse(STATUS_FAIL, '', '', __('messages.course_not_found'));
         }
 
         // Tính toán thông tin khóa học
-        $old_price = $course->price;
-        $sale_value = $course->sale_value;
-        $type_sale = $course->type_sale;
+        $old_price = $course->price ?? 0;
+        $sale_value = $course->sale_value ?? 0;
+        $type_sale = $course->type_sale ?? '';
 
-        $sections = $course->sections->where('status', 'active');
+        // Tính toán sections và lectures
+        $sections = $course->sections ?? collect();
         $sections_count = $sections->count();
         $lectures_count = $sections->reduce(function ($carry, $section) {
-            return $carry + $section->lectures->where('status', 'active')->count();
+            return $carry + ($section->lectures->count() ?? 0);
         }, 0);
 
+        // Tính tổng thời lượng
         $total_duration = $this->formatDuration($sections->reduce(function ($carry, $section) {
-            return $carry + $section->lectures->where('status', 'active')->sum('duration');
-        }));
+            return $carry + ($section->lectures->sum('duration') ?? 0);
+        }, 0));
 
+        // Lấy video preview
         $preview_videos = Lecture::select('title', 'content_link')
-            ->where('status', 'active')
             ->whereHas('section', function ($query) use ($course) {
                 $query->where('course_id', $course->id)
-                    ->where('preview', 'can')
-                    ->where('status', 'active');
+                    ->where('preview', 'can');
             })
             ->where('type', 'video')
             ->get();
 
+        // Thống kê thông tin creator
+        $creatorId = $course->creator->id ?? null;
+        if ($creatorId) {
+            $courseIds = Course::where('created_by', $creatorId)->pluck('id');
+            $totalCourses = $courseIds->count();
+            $orderIds = OrderItem::whereIn('course_id', $courseIds)->pluck('order_id');
+            $usersCount = Order::whereIn('id', $orderIds)->distinct()->count();
 
-        // Thống kê instructor
-        $creatorId = $course->creator ? $course->creator->id : null;
-        $courseIds = Course::where('created_by', $creatorId)->where('status', 'active')->pluck('id');
-        $totalCourses = $courseIds->count();
-        $orderIds = OrderItem::whereIn('course_id', $courseIds)->pluck('order_id');
-        $usersCount = Order::whereIn('id', $orderIds)->distinct()->count();
+            $reviewsData = Review::whereIn('course_id', $courseIds)
+                ->selectRaw('COUNT(*) as total_reviews, AVG(rating) as average_rating')
+                ->first();
 
-        $reviewsData = Review::whereIn('course_id', $courseIds)
-            ->where('status', 'active')
-            ->selectRaw('COUNT(*) as total_reviews, AVG(rating) as average_rating')
-            ->first();
+            $totalReviews = $reviewsData->total_reviews ?? 0;
+            $averageRating = $reviewsData->average_rating ?? 0;
 
-        $totalReviews = $reviewsData->total_reviews ?? 0;
-        $averageRating = $reviewsData->average_rating ?? 0;
+            $instructor = [
+                'info' => $course->creator,
+                'courses_count' => $totalCourses,
+                'students_count' => $usersCount,
+                'total_reviews' => $totalReviews,
+                'average_rating' => round($averageRating, 2),
+            ];
+        } else {
+            $instructor = [
+                'info' => null,
+                'courses_count' => 0,
+                'students_count' => 0,
+                'total_reviews' => 0,
+                'average_rating' => 0,
+            ];
+        }
 
-        $instructor = [
-            'info' => $course->creator,
-            'courses_count' => $totalCourses,
-            'students_count' => $usersCount,
-            'total_reviews' => $totalReviews,
-            'average_rating' => round($averageRating, 2),
-        ];
-
-        // Truy vấn reviews
-        $reviewsQuery = DB::table('reviews')
+        // Lấy danh sách reviews
+        $reviews = DB::table('reviews')
             ->join('users', 'reviews.user_id', '=', 'users.id')
             ->where('reviews.course_id', $id)
-            ->where('reviews.status', 'active')
             ->select(
                 'reviews.rating',
                 'reviews.comment',
@@ -592,21 +785,8 @@ class CourseController extends Controller
                 'users.first_name',
                 'users.last_name',
                 'users.avatar'
-            );
-        $comment_keyword = null;
-
-        // Kiểm tra và gán giá trị từ $request nếu tồn tại
-        if ($request->comment_keyword) {
-            $comment_keyword = $request->comment_keyword;
-        }
-        if ($comment_keyword) {
-            $reviewsQuery->where(function ($q) use ($comment_keyword) {
-                $q->where('reviews.comment', 'LIKE', '%' . $comment_keyword . '%')
-                    ->orWhere(DB::raw("CONCAT(users.last_name, ' ', users.first_name)"), 'LIKE', '%' . $comment_keyword . '%');
-            });
-        }
-
-        $reviews = $reviewsQuery->get();
+            )
+            ->get();
 
         // Xử lý dữ liệu reviews
         $total_reviews = $reviews->count();
@@ -623,29 +803,9 @@ class CourseController extends Controller
         }
 
         $review_list = $reviews->map(function ($review) {
-            $last_name = $review->last_name ?? '';
-            $first_name = $review->first_name ?? '';
-            $name = trim($last_name . ' ' . $first_name) ?: 'Người dùng không xác định';
-
-            $avatar = $review->avatar;
-
-            $created_at = Carbon::parse($review->created_at);
-            $now = Carbon::now();
-            $diff = $created_at->diff($now);
-
-            if ($diff->y > 0) {
-                $time_diff = $diff->y . ' năm trước';
-            } elseif ($diff->m > 0) {
-                $time_diff = $diff->m . ' tháng trước';
-            } elseif ($diff->d > 0) {
-                $time_diff = $diff->d . ' ngày trước';
-            } elseif ($diff->h > 0) {
-                $time_diff = $diff->h . ' giờ trước';
-            } elseif ($diff->i > 0) {
-                $time_diff = $diff->i . ' phút trước';
-            } else {
-                $time_diff = $diff->s . ' giây trước';
-            }
+            $name = trim(($review->last_name ?? '') . ' ' . ($review->first_name ?? '')) ?: 'Người dùng không xác định';
+            $avatar = $review->avatar ?? null;
+            $time_diff = Carbon::parse($review->created_at)->diffForHumans();
 
             return [
                 'user_avatar' => $avatar,
@@ -655,23 +815,20 @@ class CourseController extends Controller
                 'time_diff' => $time_diff,
             ];
         });
-        $study = new StudyController;
-        // Chuẩn bị dữ liệu trả về
-        $data = $this->search($request, $course->creator->id, $id)->getData(); // Lấy dữ liệu dạng object
-        $orderCourse = json_decode(json_encode($data), true)['data']['data'];
 
+        // Chuẩn bị dữ liệu trả về
         $course_data = [
             'id' => $course->id,
             'title' => $course->title,
-            'category' => $course->category->name,
-            'level' => $course->level->name,
+            'category' => $course->category->name ?? null,
+            'level' => $course->level->name ?? null,
             'thumbnail' => $course->thumbnail,
-            'language' => $course->language->name,
-            'old_price' => round($course->price, 0),
+            'language' => $course->language->name ?? null,
+            'old_price' => round($old_price, 0),
             'current_price' => round(
-                $course->type_sale === 'price'
-                    ? $course->price - $course->sale_value
-                    : $course->price * (1 - $course->sale_value / 100),
+                $type_sale === 'price'
+                    ? $old_price - $sale_value
+                    : $old_price * (1 - $sale_value / 100),
                 0
             ),
             'type_sale' => $type_sale,
@@ -679,14 +836,10 @@ class CourseController extends Controller
             'sections_count' => $sections_count,
             'lectures_count' => $lectures_count,
             'total_duration' => $total_duration,
-            'creator' => ($course->creator && ($course->creator->last_name || $course->creator->first_name)
-                ? trim($course->creator->last_name . ' ' . $course->creator->first_name)
-                : ''),
+            'creator' => $instructor['info'] ? trim($instructor['info']->last_name . ' ' . $instructor['info']->first_name) : '',
             'average_rating' => $average_rating,
             'total_reviews' => $total_reviews,
             'preview_videos' => $preview_videos,
-            'course_contents' => $study->getAllContent(0, $id, '')['allContent'],
-            'order_course_of_instructor' => $orderCourse,
             'instructor' => $instructor,
             'status' => $course->status,
             'reviews' => [
