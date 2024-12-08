@@ -114,8 +114,14 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Note::class);
     }
+
     public function paymentMethods()
     {
         return $this->hasMany(PaymentMethod::class);
+    }
+
+    public function likedThreads()
+    {
+        return $this->belongsToMany(DiscussionThread::class, 'discussion_likes', 'user_id', 'discussion_thread_id')->withTimestamps();
     }
 }
