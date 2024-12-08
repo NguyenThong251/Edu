@@ -132,7 +132,7 @@ export const apisStore = defineStore('fetchApi', () => {
       (category) => !category.children || category.children.length === 0
     )
   })
-
+  
   return {
     loading,
     coursesNew,

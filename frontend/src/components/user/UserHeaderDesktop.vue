@@ -73,7 +73,33 @@
         </div>
     </div>
     <el-drawer size="50%" v-model="isOpenNav" title="I am the title" :direction="direction">
-        <span>Hi, there!</span>
+        <RouterLink to="/">
+            <img class="w-32 absolute top-0 py-[16px]" :src="logo" alt="">
+        </RouterLink>
+        <el-row>
+            <el-col>
+                <el-menu default-active="2" class="" @open="handleOpen" @close="handleClose">
+                    <el-sub-menu index="1">
+                        <template #title>
+                            <span>Tất cả khoá học</span>
+                        </template>
+                        <el-menu-item-group>
+                            <el-menu-item v-for="(category, index) in apiStore.categoriesWithoutChildren"
+                                :key="category.id" :index="`2-${index}`" @click="filterByCategory(category.id || 0)">
+                                {{ category.name }}
+                            </el-menu-item>
+                        </el-menu-item-group>
+                        <el-sub-menu v-for="(category, index) in apiStore.categoriesWithChildren"
+                            :key="`sub-${category.id}`" :index="`2-${index}-sub`">
+                            <template #title>{{ category.name }}</template>
+                            <el-menu-item v-for="(child, childIndex) in category.children" :key="child.id"
+                                :index="`2-${index}-${childIndex}`" @click="filterByCategory(child.id || 0)">
+                                {{ child.name }}</el-menu-item>
+                        </el-sub-menu>
+                    </el-sub-menu>
+                </el-menu>
+            </el-col>
+        </el-row>
     </el-drawer>
 
     <!-- Cart view -->
@@ -108,6 +134,7 @@ import SearchProduct from '../ui/dialog/SearchProduct.vue';
 import ViewCart from '../ui/dialog/ViewCart.vue';
 import MenuDesktop from '../ui/menu/MenuDesktop.vue';
 import UserProfile from './UserProfile.vue';
+import { apisStore } from '@/store/apis';
 const direction = ref<DrawerProps['direction']>('ltr')
 const isOpenNav = ref(false)
 const isOpenCart = ref(false)
@@ -118,6 +145,21 @@ const loadingVoucher = ref(false);
 const toggleMenu = () => {
     isOpenNav.value = !isOpenNav.value
 }
+
+// const { coursesFilterSection, activeFilter, fetchCoursesSection, changeFilter } = useShop()
+const handleOpen = (key: string, keyPath: string[]) => {
+    //   console.log(key, keyPath)
+}
+const handleClose = (key: string, keyPath: string[]) => {
+    //   console.log(key, keyPath)
+}
+const filterByCategory = (categoryId: number) => {
+    router.push({
+        name: 'Course',
+        query: { category_ids: categoryId }, // Truyền ID danh mục vào query
+    });
+};
+
 // const toggleCart = () => {
 //     isOpenCart.value = !isOpenCart.value
 // }
@@ -161,5 +203,10 @@ const voucherStore = useVoucherStore();
 
 
 const firstActiveVoucher = computed(() => voucherStore.firstActiveVoucher);
-
+const apiStore = apisStore()
+onMounted(() => {
+    voucherStore.fetchVouchers()
+    apiStore.fetchCate()
+    apiStore.fetchCourse()
+})
 </script>
