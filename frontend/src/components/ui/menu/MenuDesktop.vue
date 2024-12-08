@@ -16,8 +16,8 @@
 
                 <!-- Lặp qua các danh mục từ dữ liệu -->
                 <el-menu-item v-for="(category, index) in apiStore.categoriesWithoutChildren" :key="category.id"
-                    :index="`2-${index}`">
-                    <!-- :index="`2-${index}`" @click="filterByCategory(category.id || 0)"> -->
+                    :index="`2-${index}`" 
+                    @click="filterByCategory(category.id || 0)">
                     {{ category.name }}
                 </el-menu-item>
 
@@ -26,8 +26,8 @@
                     :index="`2-${index}-sub`">
                     <template #title>{{ category.name }}</template>
                     <el-menu-item v-for="(child, childIndex) in category.children" :key="child.id"
-                        :index="`2-${index}-${childIndex}`">
-                        <!-- :index="`2-${index}-${childIndex}`" @click="filterByCategory(child.id || 0)"> -->
+                        :index="`2-${index}-${childIndex}`" 
+                        @click="filterByCategory(child.id || 0)">
                         {{ child.name }}
                     </el-menu-item>
                 </el-sub-menu>
@@ -59,13 +59,13 @@ onMounted(() => {
 // onMounted(() => {
 //     fetchCate();
 // });
-// const router = useRouter();
-// const filterByCategory = (categoryId: number) => {
-//     router.push({
-//         name: 'Course',
-//         query: { category_id: categoryId }, // Truyền ID danh mục vào query
-//     });
-// };
+const router = useRouter();
+const filterByCategory = (categoryId: number) => {
+    router.push({
+        name: 'Course',
+        query: { category_ids: categoryId }, // Truyền ID danh mục vào query
+    });
+};
 </script>
 
 <style scoped>
