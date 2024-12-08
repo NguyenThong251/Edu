@@ -85,7 +85,8 @@ class ManangeStudentController extends Controller
         if ($keyword) {
             $query->where(function ($subQuery) use ($keyword) {
                 $subQuery->whereRaw("CONCAT(users.first_name, ' ', users.last_name) LIKE ?", ["%$keyword%"])
-                        ->orWhere('users.email', 'LIKE', "%$keyword%");
+                        ->orWhere('users.email', 'LIKE', "%$keyword%")
+                        ->orWhere('courses.title', 'LIKE', "%$keyword%"); // Thêm điều kiện tìm kiếm theo course_title
             });
         }
 
