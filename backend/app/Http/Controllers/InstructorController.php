@@ -10,6 +10,7 @@ use App\Models\PayoutRequest;
 use App\Models\Wishlist;
 use App\Models\Review;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -122,7 +123,7 @@ class InstructorController extends Controller
                 'category_id' => $course->category_id,
                 'level_id' => $course->level_id,
                 'language_id' => $course->language_id,
-                'title' => $course->title, 
+                'title' => $course->title,
                 'description' => $course->description,
                 'short_description' => $course->short_description,
                 'price' => round($course->price, 0),
@@ -227,23 +228,32 @@ class InstructorController extends Controller
     public function getLineChartData(Request $request)
     {
         $user = auth()->user();
-
         // Lấy các tham số từ request
         $startDate = $request->input('start_date'); // Ngày bắt đầu
         $endDate = $request->input('end_date');     // Ngày kết thúc
         $filter = $request->input('filter', 'day'); // Lọc theo ngày, tháng, năm
 
         // Xử lý các tham số
-        $startDate = $startDate ? Carbon::parse($startDate) : Carbon::now()->startOfMonth();
-        $endDate = $endDate ? Carbon::parse($endDate) : Carbon::now()->endOfMonth();
+        $startDate = $startDate ? Carbon::parse($startDate) : Carbon::now()->startOfYear();
+        $endDate = $endDate ? Carbon::parse($endDate) : Carbon::now()->endOfYear();
 
-        $period = $filter === 'month'
-            ? $startDate->monthsUntil($endDate)
-            : $startDate->daysUntil($endDate);
+        // Xác định khoảng thời gian dựa trên bộ lọc
+        $period = match ($filter) {
+            'month' => CarbonPeriod::create($startDate->startOfMonth(), '1 month', $endDate->endOfMonth()),
+            'year' => CarbonPeriod::create($startDate->startOfYear(), '1 year', $endDate->endOfYear()),
+            default => CarbonPeriod::create($startDate, '1 day', $endDate),
+        };
+
+        // Xử lý nhóm dữ liệu theo bộ lọc
+        $groupBy = match ($filter) {
+            'month' => DB::raw("DATE_FORMAT(created_at, '%Y-%m') as date"),
+            'year' => DB::raw("DATE_FORMAT(created_at, '%Y') as date"),
+            default => DB::raw("DATE(created_at) as date"),
+        };
 
         // Lấy dữ liệu doanh thu
         $revenueData = OrderItem::select(
-            DB::raw("DATE(created_at) as date"),
+            $groupBy,
             DB::raw("SUM(price) as revenue"),
             DB::raw("COUNT(id) as total_sales")
         )
@@ -251,7 +261,7 @@ class InstructorController extends Controller
                 $query->where('created_by', $user->id); // Chỉ lấy dữ liệu của giáo viên hiện tại
             })
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy(DB::raw("DATE(created_at)"))
+            ->groupBy('date')
             ->get();
 
         // Chuyển dữ liệu thành dạng mảng [ngày => doanh thu]
@@ -262,10 +272,15 @@ class InstructorController extends Controller
             ];
         });
 
-        // Chuẩn bị dữ liệu kết quả với các ngày không có doanh thu hiển thị 0
+        // Chuẩn bị dữ liệu kết quả với các ngày/tháng/năm không có doanh thu hiển thị 0
         $result = [];
         foreach ($period as $date) {
-            $formattedDate = $filter === 'month' ? $date->format('Y-m') : $date->format('Y-m-d');
+            $formattedDate = match ($filter) {
+                'month' => $date->format('Y-m'),
+                'year' => $date->format('Y'),
+                default => $date->format('Y-m-d'),
+            };
+
             $result[] = [
                 'date' => $formattedDate,
                 'revenue' => $data->get($formattedDate)['revenue'] ?? 0,
@@ -284,6 +299,7 @@ class InstructorController extends Controller
             'code' => 200
         ]);
     }
+
 
     public function getCourseStatistics(Request $request)
     {
