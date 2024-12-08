@@ -90,7 +90,7 @@
               <UserSearch :course_id="idCourse || 0" />
             </el-tab-pane>
             <el-tab-pane label="Hỏi đáp" name="second">
-              <UserQuestion />
+              <UserQuestion :lecture_id="currentContent.id" :id_course="idCourse" :data="listAllQA" />
             </el-tab-pane>
             <el-tab-pane label="Ghi chú" name="third">
               <UserNote :course_id="idCourse || 0" :section_id="currentContent.section_id || 0"
@@ -211,6 +211,10 @@ const { studyCourse, currentContent, allContent, progress } = storeToRefs(course
 const { fetchStudyCourse, changeContent } = courseStore;
 const reviewStore = useReviewsStore()
 
+// question anwer
+const questionStore = useQuestionAnswer()
+const { fetchListAllQA } = questionStore
+const { listAllQA } = storeToRefs(questionStore)
 
 
 const { fetchReviews } = reviewStore
@@ -271,6 +275,7 @@ onUnmounted(() => {
 onMounted(async () => {
   await fetchStudyCourse(idCourse);
   await fetchReviews(idCourse)
+  await fetchListAllQA(idCourse)
 });
 
 const handleChangeContent = async (lesson: any) => {
@@ -438,6 +443,7 @@ import { ElNotification } from 'element-plus';
 import printJS from "print-js";
 import Certificate from '@/components/user/Certificate.vue';
 import { useMessageStore } from '@/store/message';
+import { useQuestionAnswer } from '@/store/question-answers';
 const printCertificate = () => {
   try {
     printJS({
@@ -474,6 +480,8 @@ const startChat = () => {
   messageStore.setWaitingUserChat(studyCourse.value.created_by); // Lưu ID giảng viên vào store
   router.push('/mymessage'); // Điều hướng sang trang chat
 }
+
+
 </script>
 <style scoped>
 .pdf-viewer {
