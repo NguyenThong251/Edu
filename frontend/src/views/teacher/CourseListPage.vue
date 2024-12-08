@@ -207,7 +207,7 @@ const courseForm = ref({
     price: "",
     type_sale: "",
     sale_value: "",
-    // status: "active",
+    status: "inactive",
     language_id: "",
     thumbnail: "",
 });
@@ -266,7 +266,7 @@ const resetForm = () => {
         price: "",
         type_sale: "",
         sale_value: "",
-        // status: "active",
+        status: "inactive",
         language_id: "",
         thumbnail: "",
     };

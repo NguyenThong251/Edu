@@ -88,6 +88,7 @@ const props = defineProps<{
 }>();
 const reviewsStore = useReviewsStore()
 const form = ref({
+    course_id: props.idCourse,
     rating: 0,
     comment: '',
 })

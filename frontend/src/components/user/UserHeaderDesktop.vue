@@ -1,6 +1,6 @@
 <template>
     <div class="z-10 bg-white drop-shadow-md shadow-sm sticky top-0">
-        <div v-if="firstActiveVoucher" class=" bg-indigo-600  ">
+        <div v-loading="loadingVoucher" v-if="firstActiveVoucher" class=" bg-indigo-600  ">
             <div class="text-white font-semibold container-user py-1 flex gap-1 items-center justify-center">
                 <span class="font-normal">Chương trình giảm giá</span>
                 <h2>{{ firstActiveVoucher.code }}</h2>
@@ -116,7 +116,7 @@
     </el-drawer>
 
     <!-- Cart view -->
-    <el-drawer v-model="isOpenCart" @update:modelValue="isOpenCart = false" title="Giỏ hàng">
+    <el-drawer v-loading="loadingCart" v-model="isOpenCart" @update:modelValue="isOpenCart = false" title="Giỏ hàng">
         <div v-if="cart?.length > 0">
             <ViewCart />
         </div>
@@ -135,8 +135,10 @@
 import Button from '@/components/ui/button/Button.vue';
 import { useCart } from '@/composables/user/useCart';
 import { useAuthStore } from '@/store/auth';
+import { useCartStore } from '@/store/cart';
+import { useVoucherStore } from '@/store/voucher';
 import { Bars3Icon, MagnifyingGlassIcon, ShoppingCartIcon } from "@heroicons/vue/24/outline";
-import { ElNotification, type DrawerProps } from 'element-plus';
+import { type DrawerProps } from 'element-plus';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
@@ -172,18 +174,43 @@ const filterByCategory = (categoryId: number) => {
 const toggleMenu = () => {
     isOpenNav.value = !isOpenNav.value
 }
-const { cart, loading } = useCart();
-const toggleCart = () => {
-    isOpenCart.value = !isOpenCart.value
-}
+// const toggleCart = () => {
+//     isOpenCart.value = !isOpenCart.value
+// }
+const toggleCart = async () => {
+    isOpenCart.value = !isOpenCart.value;
+    if (isOpenCart.value) {
+        loadingCart.value = true;
+        try {
+            await fetchCartCourses();
+        } finally {
+            loadingCart.value = false;
+        }
+    }
+};
 const router = useRouter()
 const authStore = useAuthStore()
 const { state } = storeToRefs(authStore)
 const { userData } = authStore;
 const currentPath = router.currentRoute.value.fullPath
 localStorage.setItem('redirectAfterLogin', currentPath);
+
+const cartStore = useCartStore()
+const { loading, fetchCartCourses, clearCart, formattedTotalPrice, isAuthenticated } = useCart();
+const { cart } = storeToRefs(cartStore)
 onMounted(async () => {
-    await userData()
+    loadingCart.value = true;
+    loadingVoucher.value = true;
+    try {
+        await userData();
+        await fetchCartCourses();
+        await voucherStore.fetchVouchers();
+    } catch (error) {
+        console.error('Error during onMounted:', error);
+    } finally {
+        loadingCart.value = false;
+        loadingVoucher.value = false;
+    }
 })
 
 const voucherStore = useVoucherStore();
