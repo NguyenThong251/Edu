@@ -94,19 +94,22 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('order-detail/{orderId}', [ManageController::class, 'getOrderDetail']);
 
             Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
-            Route::post('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
-            Route::put('categories/{id}/status', [CategoryController::class, 'updateStatus'])->name('categories.updateStatus');
+            Route::put('categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+            Route::post('categories/{id}/children', [CategoryController::class, 'addChildren'])->name('categories.addChildren');
+            Route::patch('categories/{id}/status', [CategoryController::class, 'updateStatus'])->name('categories.updateStatus');
             Route::get('categories/restore/{id}', [CategoryController::class, 'restore'])->name('categories.restore');
             Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
             Route::get('list-course-levels-admin', [CourseLevelController::class, 'getListAdmin'])->name('courselevels.getListAdmin');
             Route::post('course-levels', [CourseLevelController::class, 'store'])->name('courselevels.store');
             Route::put('course-levels/{id}', [CourseLevelController::class, 'update'])->name('courselevels.update');
+            Route::get('course-levels', [CourseLevelController::class, 'index'])->name('courselevels.index');
             Route::get('course-levels/restore/{id}', [CourseLevelController::class, 'restore'])->name('courselevels.restore');
             Route::delete('course-levels/{id}', [CourseLevelController::class, 'destroy'])->name('courselevels.destroy');
 
             Route::get('list-languages-admin', [LanguageController::class, 'getListAdmin'])->name('languages.getListAdmin');
             Route::post('languages', [LanguageController::class, 'store'])->name('languages.store');
+            Route::get('languages', [LanguageController::class, 'index'])->name('languages.index');
             Route::put('languages/{id}', [LanguageController::class, 'update'])->name('languages.update');
             Route::get('languages/restore/{id}', [LanguageController::class, 'restore'])->name('languages.restore');
             Route::delete('languages/{id}', [LanguageController::class, 'destroy'])->name('languages.destroy');

@@ -2,7 +2,7 @@
 
 ### Setup
 
-Step 1: <code> pnpm install </code>
+Step 1: <code>pnpm install </ code>
 
 Step 2: <code> pnpm format </code>
 

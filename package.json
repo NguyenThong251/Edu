@@ -1,0 +1,6 @@
+{
+	"dependencies": {
+		"axios": "^1.7.7",
+		"vue3-table-lite": "^1.4.0"
+	}
+}
