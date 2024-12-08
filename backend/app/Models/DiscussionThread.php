@@ -46,10 +46,7 @@ class DiscussionThread extends Model
 
     public function likedBy()
     {
-        return $this->belongsToMany(User::class, 'discussion_likes', 'discussion_thread_id', 'user_id')
-            ->withTimestamps()
-            ->select(['users.id', 'users.email']);
+        return $this->belongsToMany(User::class, 'discussion_likes', 'discussion_thread_id',
+            'user_id');
     }
-
-
 }
