@@ -289,11 +289,11 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::delete('reviews/{id}', [ReviewController::class, 'destroy']);
 
             //discussion threads
-            Route::get('/discussions', [DiscussionController::class, 'index'])->name('discussions.index');
-            Route::get('/discussions/{id}/answers', [DiscussionController::class, 'getAnswers'])->name('discussions.answers');
-            Route::post('/discussions', [DiscussionController::class, 'store'])->name('discussions.store');
-            Route::post('/discussions/{id}/like', [DiscussionController::class, 'like'])->name('discussions.like');
-            Route::delete('/discussions/{id}/like', [DiscussionController::class, 'unlike'])->name('discussions.unlike');
+            Route::get('/discussions', [DiscussionController::class, 'index']);
+            Route::get('/discussions/answers', [DiscussionController::class, 'getAnswersByQuestion']);
+            Route::post('/discussions', [DiscussionController::class, 'store']);
+            Route::post('/discussions/{id}/like', [DiscussionController::class, 'like']);
+            Route::delete('/discussions/{id}/like', [DiscussionController::class, 'unlike']);
 
         });
     });
