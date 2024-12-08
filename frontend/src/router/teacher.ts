@@ -10,6 +10,7 @@ import RedirectHandler from '@/views/RedirectHandler.vue'
 import CourseEditPage from '@/views/teacher/CourseEditPage.vue'
 import CourseSectionEditPage from '@/views/teacher/CourseSectionEditPage.vue'
 import CourseQuizEditPage from '@/views/teacher/CourseQuizEditPage.vue'
+import StudentManagerPage from '@/views/teacher/StudentManagerPage.vue'
 
 const teacher = [
   {
@@ -57,22 +58,32 @@ const teacher = [
       {
         path: '/teacher/payment-method/:status',
         name: 'RedirectHandler',
-        component: RedirectHandler
+        component: RedirectHandler,
+        meta: { requiresAuth: true, role: 'instructor', title: 'Phương thức | Edunity' }
       },
       {
         path: '/teacher/course/edit/:id',
         name: 'CourseEditPage',
-        component: CourseEditPage
+        component: CourseEditPage,
+        meta: { requiresAuth: true, role: 'instructor', title: 'Phương thức | Edunity' }
       },
       {
         path: '/teacher/course/section/edit/:id',
         name: 'CourseSectionEditPage',
-        component: CourseSectionEditPage
+        component: CourseSectionEditPage,
+        meta: { requiresAuth: true, role: 'instructor', title: 'Phương thức | Edunity' }
       },
       {
         path: '/teacher/course/quiz/edit/:id',
         name: 'CourseQuizEditPage',
-        component: CourseQuizEditPage
+        component: CourseQuizEditPage,
+        meta: { requiresAuth: true, role: 'instructor', title: 'Phương thức | Edunity' }
+      },
+      {
+        path: '/teacher/student-manager',
+        name: 'teacher.student-manager',
+        component: StudentManagerPage,
+        meta: { requiresAuth: true, role: 'instructor', title: 'Phương thức | Edunity' }
       }
     ]
   }

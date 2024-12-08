@@ -183,7 +183,7 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
       {
         icon: UserGroupIcon,
         label: 'Quản lí học viên',
-        route: '/teacher/student',
+        route: '/teacher/student-manager',
       }
       ,
       // {
