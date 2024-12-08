@@ -147,7 +147,6 @@ import SearchProduct from '../ui/dialog/SearchProduct.vue';
 import ViewCart from '../ui/dialog/ViewCart.vue';
 import MenuDesktop from '../ui/menu/MenuDesktop.vue';
 import UserProfile from './UserProfile.vue';
-import { useVoucherStore } from '@/store/voucher';
 // import { useShop } from '@/composables/user/useShop';
 import { apisStore } from '@/store/apis';
 
