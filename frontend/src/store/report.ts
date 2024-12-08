@@ -102,6 +102,8 @@ export const useReportStore = defineStore('report', () => {
       chartDataTotal.value = res.data.data || []
       total_revenue.value = res.data.total_revenue
       total_sales.value = res.data.total_sales
+
+      chartDataTotalTeacher.value = res.data.data
     } catch (error) {
       console.error('Error fetching line chart:', error)
     }

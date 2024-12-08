@@ -11,6 +11,7 @@ interface Ttotal {
 const props = defineProps<{
     data: Ttotal[], total_revenue: number, total_sales: number
 }>();
+console.log(props.data)
 const categories = computed(() => props.data.map((item: any) => item.period));
 const series = computed(() => [
     {

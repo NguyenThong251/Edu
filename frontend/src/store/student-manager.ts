@@ -67,8 +67,7 @@ export const useStudentManager = defineStore('studentManager', () => {
           course_id: courseId
         }
       })
-      progressOfStudent.value = response.data.data.data
-      console.log(response.data.data.data)
+      progressOfStudent.value = response.data
     } catch (err: any) {
       console.error('Error fetching student progress:', err)
     }
