@@ -8,11 +8,11 @@
         <div class=" border-2 bg-white  p-5 rounded-2xl">
           <!-- <VideoCourse :src="videoUrl" /> -->
           <div v-if="currentContent.type === 'video'" class="relative">
-            <div class="rounded-2xl w-full overflow-hidden">
+            <div class="rounded-2xl w-full overflow-hidden h-[700px] ">
               <vue-plyr>
                 <video controls preload="metadata" @pause="handlePause" @ended="handleVideoEnd"
                   @timeupdate="handleTimeUpdate" ref="videoElement">
-                  <source :src="currentContent.content_link" type="video/mp4" />
+                  <source class="!h-full" :src="currentContent.content_link" type="video/mp4" />
                   Trình duyệt của bạn không hỗ trợ video.
                 </video>
               </vue-plyr>
