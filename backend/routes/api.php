@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BannerController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\NoteController;
@@ -153,6 +154,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('admin/get-line-chart/revenue', [AdminController::class, 'getAdminLineChartData']);
             Route::get('admin/get-line-chart/user', [AdminController::class, 'getUserRegistrationLineChart']);
             Route::get('admin/get-line-chart/order', [AdminController::class, 'getOrderLineChartData']);
+
+            //banner
+            Route::get('/banners', [BannerController::class, 'index']);
+            Route::post('/banners', [BannerController::class, 'store']);
+            Route::post('/banners/{id}', [BannerController::class, 'update']);
+            Route::delete('/banners/{id}', [BannerController::class, 'destroy']);
+
         });
 
         // Routes cho instructor
