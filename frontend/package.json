@@ -35,7 +35,7 @@
     "js-cookie": "^3.0.5",
     "laravel-echo": "^1.16.1",
     "motion": "^11.13.1",
-    "pdfjs-dist": "^2.14.305",
+    "pdfjs-dist": "^2.16.105",
     "pinia": "^2.2.2",
     "print-js": "^1.6.0",
     "pusher-js": "8.4.0-rc2",

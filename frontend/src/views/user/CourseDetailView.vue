@@ -26,10 +26,10 @@
                 </div>
                 <el-tabs v-model="activeTab" class="mt-5">
                     <el-tab-pane label="Mô tả" name="description">
-                        <UserCourseDescribe :contents="course.course_contents" />
+                        <UserCourseDescribe :contents="course.course_contents || ''" />
                     </el-tab-pane>
                     <el-tab-pane label="Khóa học" name="course">
-                        <UserCourseOption :contents="course.course_contents" />
+                        <UserCourseOption :contents="course.course_contents || ''" />
                     </el-tab-pane>
                     <el-tab-pane label="Đánh giá" name="reviews">
                         <UserCourseReview :id="course.id" :reviews="course.reviews.review_list"
@@ -40,9 +40,8 @@
                     <el-tab-pane label="Giảng viên" name="lecturer">
                         <UserCourseLecturer :rate="course.instructor.average_rating"
                             :review="course.instructor.total_reviews" :students="course.instructor.students_count"
-                            :course="course.instructor.courses_count"
-                            :name="course.instructor.info.first_name + ' ' + course.instructor.info.last_name"
-                            :job="'Giảng viên'" :image="course.instructor.info.avatar"
+                            :course="course.instructor.courses_count" :name="course.creator" :job="'Giảng viên'"
+                            :image="course.instructor.info.avatar"
                             :introduce="course.instructor.info.biography || 'Chưa có mô tả'" />
                     </el-tab-pane>
                 </el-tabs>

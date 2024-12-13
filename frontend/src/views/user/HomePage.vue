@@ -21,7 +21,7 @@
             <div v-loading="loadingCategories" class="grid  md:grid-cols-2 lg:grid-cols-3 gap-5 mt-10">
                 <CardCategory v-for="category in apiStore.categories" :key="category.id" :name="category.name"
                     :image="category.image || 'https://demo.creativeitem.com/academy-laravel/public/uploads/category-logo/web-development-logo-1718273508.png'"
-                    :courses_count="category.id" />
+                    :courses_count="category.courses_count" />
 
             </div>
         </section>

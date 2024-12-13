@@ -326,7 +326,8 @@ import Loading from 'vue-loading-overlay';
 import { GlobalWorkerOptions } from 'pdfjs-dist';
 import { data } from 'autoprefixer';
 import ButtonGoBack from "@/components/ui/button/ButtonGoBack.vue";
-GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+// GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.min.mjs';
 const route = useRoute();
 const id_section = route.params.id ? Number(route.params.id) : null;
 const useCourse = useCourseStore()
