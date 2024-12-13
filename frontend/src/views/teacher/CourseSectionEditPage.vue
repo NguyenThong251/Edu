@@ -3,11 +3,7 @@
     <div class="p-6 bg-gray-50 min-h-screen">
         <div class="mb-3">
 
-            <el-button type="info" plain>
-                <ChevronLeftIcon class="h-4 w-4 text-gray-500 " />
-
-                Quay lại
-            </el-button>
+            <ButtonGoBack />
         </div>
         <div class="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6 space-y-6">
             <!-- Header -->
@@ -62,7 +58,7 @@
                                     class="h-5 w-5 cursor-pointer text-white" />
                                 <TrashIcon @click="hanldeDelete(item.id || 0)"
                                     class="h-5 w-5 cursor-pointer text-white" />
-                                <EyeIcon class="h-5 w-5 cursor-pointer text-white" />
+                                <EyeIcon @click="HandleReview(item)" class="h-5 w-5 cursor-pointer text-white" />
                             </div>
                             <div class="flex items-center gap-2" v-else>
                                 <PencilSquareIcon @click="openUpdateQuizDialog(item)"
@@ -295,10 +291,26 @@
             <el-button type="primary" @click="updateQuizHandler">Cập nhật</el-button>
         </template>
     </el-dialog>
+    <el-dialog v-model="outerVisible" class="!bg-gray-900  !rounded-lg " width="600">
+        <div class="mt-5 flex flex-col gap-5">
+            <div class="rounded-lg overflow-hidden  h-[400px]" v-if="currentContent.type === 'video'">
+                <vue-plyr>
+                    <video ref="videoElement">
+                        <source :src="currentContent.content_link" type="video/mp4" />
+                        Trình duyệt của bạn không hỗ trợ video.
+                    </video>
+                </vue-plyr>
+            </div>
+            <div class="" v-if="currentContent.type === 'file'">
+                <vue-pdf ref="pdfViewerRef" :url="currentContent.content_link" />
+            </div>
+        </div>
+    </el-dialog>
     <Loading :active="loading" :is-full-page="true" />
 </template>
 
 <script setup lang="ts">
+import VuePdf from "vue-pdf-next";
 import { useCourseStore } from '@/store/course';
 import { ArrowPathIcon, ChevronLeftIcon, EyeIcon, PencilSquareIcon, TrashIcon, } from '@heroicons/vue/24/outline';
 import { VideoCameraIcon, QuestionMarkCircleIcon, DocumentIcon } from '@heroicons/vue/20/solid';
@@ -312,6 +324,8 @@ import { getDocument } from 'pdfjs-dist';
 import { ElMessage, type UploadFile } from 'element-plus';
 import Loading from 'vue-loading-overlay';
 import { GlobalWorkerOptions } from 'pdfjs-dist';
+import { data } from 'autoprefixer';
+import ButtonGoBack from "@/components/ui/button/ButtonGoBack.vue";
 GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
 const route = useRoute();
 const id_section = route.params.id ? Number(route.params.id) : null;
@@ -321,7 +335,7 @@ const { listContentOfSection, loading } = storeToRefs(useCourse)
 onMounted(async () => {
     await showContentOfSection(id_section || 0)
 })
-
+const pdfViewerRef = ref(null);
 const router = useRouter();
 const navigateToEditQuiz = (id: number) => {
     router.push({ name: 'CourseQuizEditPage', params: { id: String(id) } });
@@ -331,6 +345,7 @@ const isDialogVisible = ref(false);
 const isUpdateDialogVisible = ref(false);
 const isQuizDialogVisible = ref(false);
 const isUpdateQuizDialogVisible = ref(false);
+const outerVisible = ref(false);
 
 const newLecture = ref<TLecture>({
     title: '',
@@ -389,6 +404,7 @@ const quizForm = ref();
 const lectureForm = ref();
 const updateLectureForm = ref();
 const updateQuizForm = ref();
+const currentContent = ref<any>()
 const quizRules = {
     title: [{ required: true, message: 'Tên quiz là bắt buộc', trigger: 'blur' }],
     status: [{ required: true, message: 'Trạng thái là bắt buộc', trigger: 'change' }],
@@ -592,6 +608,23 @@ const updateQuizHandler = async () => {
 const hanldeDeleteQuiz = async (id: number) => {
     await deleteQuiz(id_section || 0, id,)
 }
+// review
+const HandleReview = (data: any) => {
+    if (outerVisible.value) {
+        // Đóng dialog trước khi thay đổi nội dung
+        outerVisible.value = false;
+
+        // Đặt timeout để đảm bảo dialog được đóng hoàn toàn trước khi mở lại
+        setTimeout(() => {
+            currentContent.value = data; // Cập nhật nội dung mới
+            outerVisible.value = true; // Mở lại dialog
+        }, 300); // Khoảng thời gian đảm bảo dialog được đóng
+    } else {
+        currentContent.value = data; // Gán nội dung mới
+        outerVisible.value = true; // Mở dialog
+    }
+};
+
 
 </script>
 
@@ -605,5 +638,28 @@ const hanldeDeleteQuiz = async (id: number) => {
 
 .el-upload:hover {
     background-color: #f0f8ff;
+}
+
+.pdf-viewer {
+    height: 500px;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.pdf-page {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+#celebrationCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
 }
 </style>

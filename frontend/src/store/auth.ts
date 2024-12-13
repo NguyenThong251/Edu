@@ -66,11 +66,11 @@ export const useAuthStore = defineStore('auth', () => {
       if (isToken.status === 'FAIL') {
         logout()
         router.push('/')
-        ElNotification({
-          title: 'Thất bại',
-          message: isToken.message || 'Bạn không có quyền truy cập',
-          type: 'error'
-        })
+        // ElNotification({
+        //   title: 'Thất bại',
+        //   message: isToken.message || 'Bạn không có quyền truy cập',
+        //   type: 'error'
+        // })
         return null
       }
       state.value.user = await response.data.data

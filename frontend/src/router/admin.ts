@@ -23,6 +23,7 @@ import Payment from '@/views/admin/Payment.vue'
 import Review from '@/views/admin/Review.vue'
 import ProcessRequest from '@/views/ProcessRequest.vue'
 import CourseAdminListPage from '@/views/teacher/CourseAdminListPage.vue'
+import Banner from '@/views/admin/Banner.vue'
 const admin = [
   {
     path: '/admin',
@@ -185,6 +186,12 @@ const admin = [
         name: 'admin.user-review',
         component: Review,
         meta: { requiresAuth: true, role: 'admin', title: 'Đánh giá người dùng| Edunity' }
+      },
+      {
+        path: '/admin/banner',
+        name: 'admin.banner',
+        component: Banner,
+        meta: { requiresAuth: true, role: 'admin', title: 'Quản lý banner| Edunity' }
       }
     ]
   },

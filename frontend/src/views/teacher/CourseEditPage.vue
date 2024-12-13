@@ -2,11 +2,8 @@
     <div class="p-6 bg-gray-50 min-h-screen">
         <div class="mb-3">
 
-            <el-button type="info" plain>
-                <ChevronLeftIcon class="h-4 w-4 text-gray-500 " />
+            <ButtonGoBack />
 
-                Quay lại
-            </el-button>
         </div>
         <div class="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6 space-y-6">
             <!-- Header -->
@@ -106,6 +103,7 @@ import { VueDraggableNext as Draggable } from "vue-draggable-next";
 import { useMotion } from "@vueuse/motion";
 import { ArrowPathIcon, ChevronLeftIcon, EyeIcon, PencilSquareIcon, TrashIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { storeToRefs } from "pinia";
+import ButtonGoBack from "@/components/ui/button/ButtonGoBack.vue";
 const route = useRoute();
 const id_course = route.params.id ? Number(route.params.id) : null;
 const useCourse = useCourseStore()

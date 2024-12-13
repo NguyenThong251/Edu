@@ -3,7 +3,7 @@ import logo from '@/assets/images/logo2.svg'
 import logoMinimal from '@/assets/images/minimal-logo.svg'
 import SidebarItems from './SidebarItems.vue';
 import { computed, ref } from 'vue';
-import { WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon, TicketIcon, NewspaperIcon } from '@heroicons/vue/24/outline';
+import { WindowIcon, HomeIcon, SquaresPlusIcon, ArchiveBoxIcon, BanknotesIcon, UserGroupIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, DocumentTextIcon, TicketIcon, NewspaperIcon, FolderMinusIcon } from '@heroicons/vue/24/outline';
 import { Cog8ToothIcon, InboxStackIcon, LanguageIcon, UserCircleIcon, LockClosedIcon, CreditCardIcon } from '@heroicons/vue/20/solid';
 import type { MenuGroup } from '@/interfaces/admin.interface';
 
@@ -37,13 +37,13 @@ const menuGroups = ref<MenuGroup[]>([
       {
         icon: ArchiveBoxIcon,
         label: 'Khoá học',
-        route: '#',
-        children: [
-          {
-            label: 'Quản lý khoá học',
-            route: '/admin/course/manager-course'
-          },
-        ]
+        route: '/admin/course/manager-course',
+        // children: [
+        //   {
+        //     label: 'Quản lý khoá học',
+        //     route: '/admin/course/manager-course'
+        //   },
+        // ]
       },
       {
         icon: BanknotesIcon,
@@ -92,6 +92,12 @@ const menuGroups = ref<MenuGroup[]>([
       }
       ,
       {
+        icon: FolderMinusIcon,
+        label: 'Quản lý banner',
+        route: '/admin/banner',
+      }
+      ,
+      {
         icon: LanguageIcon,
         label: 'Ngôn ngữ',
         route: '/admin/language',
@@ -130,25 +136,25 @@ const menuGroupsTeacher = ref<MenuGroup[]>([
       {
         icon: ArchiveBoxIcon,
         label: 'Khoá học',
-        route: '#',
-        children: [
-          {
-            label: 'Danh sách khóa học',
-            route: '/teacher/course/list'
-          },
-          // {
-          //   label: 'Quản lý khoá học',
-          //   route: '/teacher/course/manager-course'
-          // },
-          // {
-          //   label: 'Thêm khoá học mới',
-          //   route: '/teacher/course/add-course'
-          // },
-          // {
-          //   label: 'Phiếu giảm giá',
-          //   route: '/teacher/course/manager-coupon'
-          // },
-        ]
+        route: '/teacher/course/list',
+        // children: [
+        //   {
+        //     label: 'Danh sách khóa học',
+        //     route: '/teacher/course/list'
+        //   },
+        //   // {
+        //   //   label: 'Quản lý khoá học',
+        //   //   route: '/teacher/course/manager-course'
+        //   // },
+        //   // {
+        //   //   label: 'Thêm khoá học mới',
+        //   //   route: '/teacher/course/add-course'
+        //   // },
+        //   // {
+        //   //   label: 'Phiếu giảm giá',
+        //   //   route: '/teacher/course/manager-coupon'
+        //   // },
+        // ]
       },
       // {
       //   icon: CubeIcon,

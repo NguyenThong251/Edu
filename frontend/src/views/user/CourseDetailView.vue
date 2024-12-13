@@ -66,7 +66,7 @@
                             <div class="text-2xl font-bold">{{ formatPrice(course.current_price) }}</div>
                             <del v-if="course.old_price" class="text-lg text-gray-400">{{
                                 formatPrice(course.old_price)
-                            }}</del>
+                                }}</del>
                         </div>
                         <div class="w-1/3">
 
@@ -112,7 +112,7 @@
             <h3 class="text-white text-xl font-medium">{{ course.title }}</h3>
         </div>
         <div class="mt-5 flex flex-col gap-5">
-            <div class="rounded-lg overflow-hidden">
+            <div class="rounded-lg overflow-hidden  h-[400px]">
                 <vue-plyr>
                     <video ref="videoElement">
                         <source :src="currentVideoLink" type="video/mp4" />
