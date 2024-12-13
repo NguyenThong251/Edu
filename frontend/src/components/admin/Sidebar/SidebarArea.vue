@@ -45,25 +45,25 @@ const menuGroups = ref<MenuGroup[]>([
         //   },
         // ]
       },
-      {
-        icon: BanknotesIcon,
-        label: 'Báo cáo doanh thu',
-        route: '#',
-        children: [
-          {
-            label: 'Doanh thu admin',
-            route: '/admin/reportpayment/admin-revenue'
-          },
-          {
-            label: 'Doanh thu giáo viên',
-            route: '/admin/reportpayment/teacher-revenue'
-          },
-          {
-            label: 'Lịch sử mua hàng',
-            route: '/admin/reportpayment/history'
-          },
-        ]
-      },
+      // {
+      //   icon: BanknotesIcon,
+      //   label: 'Báo cáo doanh thu',
+      //   route: '#',
+      //   children: [
+      //     {
+      //       label: 'Doanh thu admin',
+      //       route: '/admin/reportpayment/admin-revenue'
+      //     },
+      //     {
+      //       label: 'Doanh thu giáo viên',
+      //       route: '/admin/reportpayment/teacher-revenue'
+      //     },
+      //     {
+      //       label: 'Lịch sử mua hàng',
+      //       route: '/admin/reportpayment/history'
+      //     },
+      //   ]
+      // },
       {
         icon: CreditCardIcon,
         label: 'Thanh toán',
