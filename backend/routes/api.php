@@ -156,11 +156,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('admin/get-line-chart/order', [AdminController::class, 'getOrderLineChartData']);
 
             //banner
-            Route::get('/banners', [BannerController::class, 'index']);
             Route::post('/banners', [BannerController::class, 'store']);
             Route::post('/banners/{id}', [BannerController::class, 'update']);
             Route::delete('/banners/{id}', [BannerController::class, 'destroy']);
-
         });
 
         // Routes cho instructor
@@ -302,7 +300,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::post('/discussions', [DiscussionController::class, 'store']);
             Route::post('/discussions/{id}/like', [DiscussionController::class, 'like']);
             Route::delete('/discussions/{id}/like', [DiscussionController::class, 'unlike']);
-
         });
     });
 });
@@ -332,3 +329,5 @@ Route::get('get-popular-courses', [CourseController::class, 'getPopularCourses']
 Route::get('get-new-courses', [CourseController::class, 'getNewCourses'])->name('courses.getNewCourses');
 Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourses'])->name('courses.getTopRatedCourses');
 Route::get('get-favourite-courses', [CourseController::class, 'getFavouriteCourses'])->name('courses.getFavouriteCourses');
+
+Route::get('/banners', [BannerController::class, 'index']);
