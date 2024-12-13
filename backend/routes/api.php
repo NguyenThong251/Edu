@@ -122,6 +122,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 // Get all deleted vouchers
                 Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
                 Route::post('/restore', [VoucherController::class, 'restoreVoucher']);
+                Route::post('/create', [VoucherController::class, 'store']);
             });
 
             // Review in Admin

@@ -701,6 +701,8 @@ class CourseController extends Controller
     // }
     public function detail($id, Request $request)
     {
+
+        $study = new StudyController;
         // Lấy thông tin khóa học
         $course = Course::with([
             'category',
@@ -739,9 +741,7 @@ class CourseController extends Controller
                 $query->where('course_id', $course->id)
                     ->where('preview', 'can');
             })
-            ->where('type', 'video')
-            ->get();
-
+            ->where('type', 'video');
         // Thống kê thông tin creator
         $creatorId = $course->creator->id ?? null;
         if ($creatorId) {
@@ -842,6 +842,7 @@ class CourseController extends Controller
             'preview_videos' => $preview_videos,
             'instructor' => $instructor,
             'status' => $course->status,
+            'course_contents' => $study->getAllContent(0, $id, '')['allContent'],
             'reviews' => [
                 'total_reviews' => $total_reviews,
                 'average_rating' => $average_rating,
