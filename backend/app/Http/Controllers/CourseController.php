@@ -815,6 +815,8 @@ class CourseController extends Controller
                 'time_diff' => $time_diff,
             ];
         });
+        $data = $this->search($request, $course->creator->id, $id)->getData();
+        $orderCourse = json_decode(json_encode($data), true)['data']['data'];
 
         // Chuẩn bị dữ liệu trả về
         $course_data = [
@@ -842,6 +844,7 @@ class CourseController extends Controller
             'preview_videos' => $preview_videos,
             'instructor' => $instructor,
             'status' => $course->status,
+            'order_course_of_instructor' => $orderCourse,
             'course_contents' => $study->getAllContent(0, $id, '')['allContent'],
             'reviews' => [
                 'total_reviews' => $total_reviews,
