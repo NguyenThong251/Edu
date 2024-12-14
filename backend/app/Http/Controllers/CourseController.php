@@ -736,12 +736,23 @@ class CourseController extends Controller
         }, 0));
 
         // Lấy video preview
+        // $preview_videos = Lecture::select('title', 'content_link')
+        //     ->whereHas('section', function ($query) use ($course) {
+        //         $query->where('course_id', $course->id)
+        //             ->where('preview', 'can');
+        //     })
+        //     ->where('type', 'video');
+
+
         $preview_videos = Lecture::select('title', 'content_link')
+            ->where('status', 'active')
             ->whereHas('section', function ($query) use ($course) {
                 $query->where('course_id', $course->id)
-                    ->where('preview', 'can');
+                    ->where('preview', 'can')
+                    ->where('status', 'active');
             })
-            ->where('type', 'video');
+            ->where('type', 'video')
+            ->get();
         // Thống kê thông tin creator
         $creatorId = $course->creator->id ?? null;
         if ($creatorId) {
