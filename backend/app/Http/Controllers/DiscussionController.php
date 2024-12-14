@@ -191,7 +191,7 @@ class DiscussionController extends Controller
     public function getAnswersByQuestion(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'question_id' => 'required|exists:questions,id',
+            'question_id' => 'required|exists:discussion_threads,id',
             'per_page' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
         ]);
