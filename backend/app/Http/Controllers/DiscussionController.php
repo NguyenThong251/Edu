@@ -32,19 +32,26 @@ class DiscussionController extends Controller
 
         if ($validatedData['type'] === 'answer') {
             if (empty($validatedData['parent_id'])) {
-                return response()->json(['status' => 'FAIL', 'message' => 'An answer must have a valid parent_id pointing to a question.',
+                return response()->json([
+                    'status' => 'FAIL',
+                    'message' => 'An answer must have a valid parent_id pointing to a question.',
                 ], 400);
             }
             $parent = DiscussionThread::find($validatedData['parent_id']);
             if (!$parent || $parent->type !== 'question') {
-                return response()->json(['status' => 'FAIL', 'message' => 'Answers can only reply to questions.',
+                return response()->json([
+                    'status' => 'FAIL',
+                    'message' => 'Answers can only reply to questions.',
                 ], 400);
             }
         }
         $user = Auth::user();
         $discussion = DiscussionThread::create(array_merge($validatedData, ['user_id' => $user->id]));
-        return response()->json(['status' => 'SUCCESS', 'data' => $discussion, 'message' => 'Discussion created successfully.'
-            ,], 201);
+        return response()->json([
+            'status' => 'SUCCESS',
+            'data' => $discussion,
+            'message' => 'Discussion created successfully.',
+        ], 201);
     }
 
     public function index(Request $request)
@@ -191,6 +198,7 @@ class DiscussionController extends Controller
     public function getAnswersByQuestion(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            // 'question_id' => 'required|exists:questions,id',
             'question_id' => 'required|exists:discussion_threads,id',
             'per_page' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
@@ -243,7 +251,11 @@ class DiscussionController extends Controller
         });
 
         // Gắn pagination
-        $pagination = new \Illuminate\Pagination\LengthAwarePaginator($answers, $total, $perPage, $page,
+        $pagination = new \Illuminate\Pagination\LengthAwarePaginator(
+            $answers,
+            $total,
+            $perPage,
+            $page,
             [
                 'path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath(),
                 'query' => $request->query(),

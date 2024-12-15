@@ -852,6 +852,8 @@ class CourseController extends Controller
             'creator' => $instructor['info'] ? trim($instructor['info']->last_name . ' ' . $instructor['info']->first_name) : '',
             'average_rating' => $average_rating,
             'total_reviews' => $total_reviews,
+            'short_description' => $course->short_description,
+            'description' => $course->description,
             'preview_videos' => $preview_videos,
             'instructor' => $instructor,
             'status' => $course->status,
