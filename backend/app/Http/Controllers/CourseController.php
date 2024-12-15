@@ -820,6 +820,7 @@ class CourseController extends Controller
         $course_data = [
             'id' => $course->id,
             'title' => $course->title,
+            'description' => $course->description,
             'category' => $course->category->name ?? null,
             'level' => $course->level->name ?? null,
             'thumbnail' => $course->thumbnail,
