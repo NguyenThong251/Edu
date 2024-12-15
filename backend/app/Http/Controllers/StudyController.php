@@ -67,20 +67,20 @@ class StudyController extends Controller
                 // Lấy tổng số lecture của course qua Section và Lecture
 
                 $totalQuizzes = Quiz::where('status', 'active')
-                ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
-                ->count();
-                $totalLectures =$totalQuizzes + Lecture::where('status', 'active')
                     ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
                     ->count();
-                
-                $completedQuizzes = ProgressQuiz::where('user_id', $userId)
-                ->where('percent', '>=', 100) // Thêm điều kiện percent >= 100
-                ->whereIn('quiz_id', Quiz::where('status', 'active')
+                $totalLectures = $totalQuizzes + Lecture::where('status', 'active')
                     ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
-                    ->pluck('id'))
-                ->count();
+                    ->count();
+
+                $completedQuizzes = ProgressQuiz::where('user_id', $userId)
+                    ->where('percent', '>=', 100) // Thêm điều kiện percent >= 100
+                    ->whereIn('quiz_id', Quiz::where('status', 'active')
+                        ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
+                        ->pluck('id'))
+                    ->count();
                 // Lấy số lượng lecture đã hoàn thành trong ProgressLecture
-                $completedLectures =$completedQuizzes+ ProgressLecture::where('user_id', $userId)
+                $completedLectures = $completedQuizzes + ProgressLecture::where('user_id', $userId)
                     ->where('percent', '>=', 100) // Thêm điều kiện percent >= 100
                     ->whereIn('lecture_id', Lecture::where('status', 'active')
                         ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
@@ -277,7 +277,7 @@ class StudyController extends Controller
             $lectures = $section['section_content']->where('content_section_type', 'lecture');
 
             $contentCount = $lectures->count(); // Tổng số lecture trong section
-            $contentDone = $lectures->where('percent', '>=', 100)->count(); // Tổng số lecture hoàn thành
+            $contentDone = $lectures->where('percent', '>=', 97)->count(); // Tổng số lecture hoàn thành
 
             $section['content_count'] = $contentCount;
             $section['content_done'] = $contentDone;
@@ -288,19 +288,19 @@ class StudyController extends Controller
             // Lọc lecture và quiz trong section_content
             $lectures = $section['section_content']->where('content_section_type', 'lecture');
             $quizzes = $section['section_content']->where('content_section_type', 'quiz');
-        
+
             // Tổng số lecture và lecture hoàn thành
             $contentCount = $lectures->count();
-            $contentDone = $lectures->where('percent', '>=', 100)->count();
-        
+            $contentDone = $lectures->where('percent', '>=', 97)->count();
+
             // Tổng số quiz và quiz hoàn thành
             $quizCount = $quizzes->count();
-            $quizDone = $quizzes->where('percent', '>=', 100)->count();
-        
+            $quizDone = $quizzes->where('percent', '>=', 97)->count();
+
             // Tổng cộng tất cả nội dung và hoàn thành
             $totalCount = $contentCount + $quizCount; // Tổng số nội dung (lecture + quiz)
             $totalDone = $contentDone + $quizDone;   // Tổng số nội dung hoàn thành
-        
+
             // Gắn thông tin vào section
             $section['content_count'] = $contentCount;
             $section['content_done'] = $contentDone;
@@ -308,10 +308,10 @@ class StudyController extends Controller
             $section['quiz_done'] = $quizDone;
             $section['total_count'] = $totalCount;
             $section['total_done'] = $totalDone;
-        
+
             return $section;
         });
-        
+
 
         // Tổng hợp từ tất cả các section
         $totalContentCount = $sections->sum('total_count'); // Tổng số lecture
@@ -327,20 +327,20 @@ class StudyController extends Controller
             if (empty($contentKeyword)) {
                 return $section;
             }
-        
+
             // Kiểm tra từ khóa có khớp với tiêu đề section không
             $sectionMatches = stripos($section['title'], $contentKeyword) !== false;
-        
+
             // Lọc lecture và quiz trong section_content dựa trên từ khóa
             $filteredLectures = $section['section_content']->filter(function ($content) use ($contentKeyword) {
                 return stripos($content['title'], $contentKeyword) !== false;
             });
-        
+
             // Nếu từ khóa khớp với tiêu đề section, trả về toàn bộ section
             if ($sectionMatches) {
                 return $section; // Trả về toàn bộ section và nội dung bên trong
             }
-        
+
             // Nếu từ khóa khớp với nội dung lecture hoặc quiz
             if ($filteredLectures->isNotEmpty()) {
                 // Trả về section, nhưng chỉ giữ các nội dung khớp
@@ -352,12 +352,12 @@ class StudyController extends Controller
                     'section_content' => $filteredLectures->values(), // Nội dung khớp
                 ];
             }
-        
+
             // Nếu không có gì khớp, bỏ qua section này (trả về null)
             return null;
         })->filter(); // Lọc bỏ các giá trị null
-         // Lọc bỏ các giá trị null
-        
+        // Lọc bỏ các giá trị null
+
 
         // Chuẩn bị dữ liệu trả về
         $responseData = [
@@ -395,10 +395,11 @@ class StudyController extends Controller
 
         return "{$hours} giờ"; // Chỉ hiển thị giờ nếu không có phút và giây
     }
-    public function searchContent(Request $request){
+    public function searchContent(Request $request)
+    {
         $userId = Auth::user()->id;
         $courseId = $request->input('course_id');
-        $contentKeyword='';
+        $contentKeyword = '';
         $contentKeyword = $request->input('content_keyword');
         return $this->getAllContent($userId, $courseId, $contentKeyword);
     }
@@ -413,7 +414,7 @@ class StudyController extends Controller
 
         // Lấy course_id từ request
         $courseId = $request->input('course_id');
-        $contentKeyword='';
+        $contentKeyword = '';
         $contentKeyword = $request->input('content_keyword');
 
         // Kiểm tra xem user đã mua khóa học chưa
@@ -649,7 +650,7 @@ class StudyController extends Controller
 
         // Lấy course_id từ request
         $courseId = $request->input('course_id');
-        $contentKeyword='';
+        $contentKeyword = '';
         $contentKeyword = $request->input('content_keyword');
 
         // Kiểm tra xem user đã mua khóa học chưa

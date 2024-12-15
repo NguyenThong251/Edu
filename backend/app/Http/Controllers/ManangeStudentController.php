@@ -48,10 +48,10 @@ class ManangeStudentController extends Controller
         // Lấy tham số các bộ lọc
         $courseId = $request->get('course_id'); // Lọc theo ID khóa học
         $keyword = $request->get('keyword'); // Từ khóa để lọc theo email hoặc full_name
-        $progressMin = (float) ($request->get('progress_min') && !empty($request->get('progress_min')) 
-        ? $request->get('progress_min') && !empty($request->get('progress_min')) : 0); // Tiến độ tối đa
-        $progressMax = (float) ($request->get('progress_max') && !empty($request->get('progress_max')) 
-        ? $request->get('progress_max') && !empty($request->get('progress_max')) : 100); // Tiến độ tối đa
+        $progressMin = (float) ($request->get('progress_min') && !empty($request->get('progress_min'))
+            ? $request->get('progress_min') && !empty($request->get('progress_min')) : 0); // Tiến độ tối đa
+        $progressMax = (float) ($request->get('progress_max') && !empty($request->get('progress_max'))
+            ? $request->get('progress_max') && !empty($request->get('progress_max')) : 100); // Tiến độ tối đa
         $purchaseDateMin = $request->get('purchase_date_min'); // Ngày mua tối thiểu
         $purchaseDateMax = $request->get('purchase_date_max'); // Ngày mua tối đa
         $sortColumn = $request->get('sort_column', 'course_purchase_date'); // Mặc định sắp xếp theo ngày mua
@@ -85,8 +85,8 @@ class ManangeStudentController extends Controller
         if ($keyword) {
             $query->where(function ($subQuery) use ($keyword) {
                 $subQuery->whereRaw("CONCAT(users.first_name, ' ', users.last_name) LIKE ?", ["%$keyword%"])
-                        ->orWhere('users.email', 'LIKE', "%$keyword%")
-                        ->orWhere('courses.title', 'LIKE', "%$keyword%"); // Thêm điều kiện tìm kiếm theo course_title
+                    ->orWhere('users.email', 'LIKE', "%$keyword%")
+                    ->orWhere('courses.title', 'LIKE', "%$keyword%"); // Thêm điều kiện tìm kiếm theo course_title
             });
         }
 
@@ -183,9 +183,9 @@ class ManangeStudentController extends Controller
     public function getProgressOfStudent(Request $request)
     {
 
-        $userId=$request->user_id;
-        $courseId=$request->course_id;
-        $contentKeyword=$request->keyword;
+        $userId = $request->user_id;
+        $courseId = $request->course_id;
+        $contentKeyword = $request->keyword;
         $sections = Section::where('course_id', $courseId)
             ->where('status', 'active')
             ->orderBy('order', 'asc')
@@ -294,27 +294,27 @@ class ManangeStudentController extends Controller
             // Lọc lecture và quiz trong section_content
             $lectures = $section['section_content']->where('content_section_type', 'lecture');
             $quizzes = $section['section_content']->where('content_section_type', 'quiz');
-        
+
             // Tổng số lecture và lecture hoàn thành
             $contentCount = $lectures->count();
             $contentDone = $lectures->where('percent', '>=', 100)->count();
-        
+
             // Tổng số quiz và quiz hoàn thành
             $quizCount = $quizzes->count();
             $quizDone = $quizzes->where('percent', '>=', 100)->count();
-        
+
             // Tổng cộng tất cả nội dung và hoàn thành
             $totalCount = $contentCount + $quizCount; // Tổng số nội dung (lecture + quiz)
             $totalDone = $contentDone + $quizDone;   // Tổng số nội dung hoàn thành
-        
+
             // Gắn thông tin vào section
             $section['total_count'] = $totalCount;
             $section['total_done'] = $totalDone;
             $section['percent'] = $totalDone * 100 / $totalCount;
-        
+
             return $section;
         });
-        
+
 
         // Tổng hợp từ tất cả các section
         $totalContentCount = $sections->sum('total_count'); // Tổng số lecture
@@ -330,20 +330,20 @@ class ManangeStudentController extends Controller
             if (empty($contentKeyword)) {
                 return $section;
             }
-        
+
             // Kiểm tra từ khóa có khớp với tiêu đề section không
             $sectionMatches = stripos($section['title'], $contentKeyword) !== false;
-        
+
             // Lọc lecture và quiz trong section_content dựa trên từ khóa
             $filteredLectures = $section['section_content']->filter(function ($content) use ($contentKeyword) {
                 return stripos($content['title'], $contentKeyword) !== false;
             });
-        
+
             // Nếu từ khóa khớp với tiêu đề section, trả về toàn bộ section
             if ($sectionMatches) {
                 return $section; // Trả về toàn bộ section và nội dung bên trong
             }
-        
+
             // Nếu từ khóa khớp với nội dung lecture hoặc quiz
             if ($filteredLectures->isNotEmpty()) {
                 // Trả về section, nhưng chỉ giữ các nội dung khớp
@@ -355,12 +355,12 @@ class ManangeStudentController extends Controller
                     'section_content' => $filteredLectures->values(), // Nội dung khớp
                 ];
             }
-        
+
             // Nếu không có gì khớp, bỏ qua section này (trả về null)
             return null;
         })->filter(); // Lọc bỏ các giá trị null
-         // Lọc bỏ các giá trị null
-        
+        // Lọc bỏ các giá trị null
+
 
         // Chuẩn bị dữ liệu trả về
         $responseData = [
@@ -372,7 +372,4 @@ class ManangeStudentController extends Controller
 
         return $responseData;
     }
-
-
-
 }
