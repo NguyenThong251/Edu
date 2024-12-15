@@ -45,7 +45,7 @@
                 <Button variant="primary" @click="handleExitReviewLesson()">Thoát ôn tập</Button>
               </div>
             </div>
-            <div v-if="currentContent.percent < 100" class="bg-white p-4 rounded-lg shadow-md max-w-md w-full">
+            <div v-if="currentContent.percent < 90" class="bg-white p-4 rounded-lg shadow-md max-w-md w-full">
               <h2 class="text-xl font-semibold mb-4 text-center">Bài tập: {{ currentContent.title }}</h2>
               <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
                 <div class="bg-blue-500 h-2.5 rounded-full" :style="{ width: progressQuizz + '%' }">
@@ -149,7 +149,7 @@
                   @click="handleChangeContent(lesson)" :class="{ 'bg-gray-100': currentContent.id === lesson.id }">
                   <!-- Icon Section -->
                   <div class="flex-shrink-0">
-                    <CheckOuline :class="lesson.percent >= 100 ? 'text-green-500' : 'text-gray-400'" class="h-6 w-6" />
+                    <CheckOuline :class="lesson.percent >= 90 ? 'text-green-500' : 'text-gray-400'" class="h-6 w-6" />
                   </div>
 
                   <!-- Lesson Details -->
