@@ -111,12 +111,12 @@ class ReviewController extends Controller
             ->with('user')
             ->latest();
 
-        if ($request->has('rating')) {
+        if ($request->filled('rating')) { // Đảm bảo không rỗng
             $query->where('rating', $request->rating);
         }
 
-
-        if ($request->has('comment')) {
+        // Lọc theo comment nếu có
+        if ($request->filled('comment')) {
             $query->where('comment', 'like', '%' . $request->comment . '%');
         }
 
@@ -131,6 +131,8 @@ class ReviewController extends Controller
             200
         );
     }
+
+
 
     public function getDeletedReviews($courseId)
     {
