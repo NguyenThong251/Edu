@@ -144,6 +144,11 @@ return [
     'name_course_level_max' => 'The name may not be greater than 100 characters',
     'name_course_level_unique' => 'The name has already been taken',
 
+    //Chatbot 
+    'chat_bot_messages_required' => 'The chat bot message is required.',
+    'chat_bot_messages_string' => 'The chat bot message must be a string.',
+    'chat_bot_messages_max' => 'The chat bot message may not be greater than 500 characters.',
+
     //Message for Language
     'name_language_required' => 'The language name is required.',
     'name_language_string' => 'The language name must be a string.',

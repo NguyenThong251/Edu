@@ -132,6 +132,11 @@ return [
     'update_fail' => 'Cập nhật thành công.',
     'update_success' => 'Cập nhật thành công.',
 
+    //Chatbot
+    'chat_bot_messages_required' => 'Tin nhắn từ chatbot là bắt buộc.',
+    'chat_bot_messages_string' => 'Tin nhắn từ chatbot phải là một chuỗi ký tự.',
+    'chat_bot_messages_max' => 'Tin nhắn từ chatbot không được vượt quá 500 ký tự.',
+
     //Message for Course Level
     'course_level_fetch_success' => 'Lấy danh sách cấp độ khóa học thành công',
     'course_level_not_found' => 'Cấp độ khóa học không được tìm thấy',
