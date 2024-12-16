@@ -499,7 +499,7 @@ class AuthController extends Controller
         }
 
         if ($user->delete()) {
-            $user->is_deleted = User::STATUS_DELETED;
+            $user->softDeletes();
             $user->save();
             return formatResponse(STATUS_OK, '', '', 'Xóa tài khoản thành công');
         }

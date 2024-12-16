@@ -123,6 +123,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 Route::get('/', [VoucherController::class, 'index']);
                 Route::get('list-vouchers-admin', [VoucherController::class, 'getListAdmin']);
                 Route::get('/filter', [VoucherController::class, 'filter']);
+                Route::put('/{Lineid}', [VoucherController::class, 'update']);
+
                 // Get all deleted vouchers
                 Route::get('/deleted', [VoucherController::class, 'getDeletedVouchers']);
                 Route::post('/restore', [VoucherController::class, 'restoreVoucher']);
