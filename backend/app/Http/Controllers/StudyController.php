@@ -295,7 +295,7 @@ class StudyController extends Controller
 
             // Tổng số quiz và quiz hoàn thành
             $quizCount = $quizzes->count();
-            $quizDone = $quizzes->where('percent', '>=', 97)->count();
+            $quizDone = $quizzes->where('percent', '>=', 100)->count();
 
             // Tổng cộng tất cả nội dung và hoàn thành
             $totalCount = $contentCount + $quizCount; // Tổng số nội dung (lecture + quiz)
