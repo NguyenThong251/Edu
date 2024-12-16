@@ -179,7 +179,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
             Route::get('courses/restore/{id}', [CourseController::class, 'restore'])->name('courses.restore');
             Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
             Route::delete('courses/permanent-delete/{id}', [CourseController::class, 'forceDelete'])->name('courses.destroypermanent');
-            Route::patch('courses/{id}/status', [CourseController::class, 'updateStatus'])->name('courses.updateStatus');
+            Route::put('courses/{id}/status', [CourseController::class, 'updateStatus'])->name('courses.updateStatus');
 
 
             Route::post('sections', [SectionController::class, 'store'])->name('sections.store');
@@ -338,4 +338,3 @@ Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourse
 Route::get('get-favourite-courses', [CourseController::class, 'getFavouriteCourses'])->name('courses.getFavouriteCourses');
 
 Route::get('/banners', [BannerController::class, 'index']);
-
