@@ -59,6 +59,10 @@ class PayoutController extends Controller
             ->whereIn('status', ['pending', 'processing'])
             ->sum('amount');
 
+        $paidPayouts = PayoutRequest::where('user_id', $userId)
+            ->whereIn('status', ['paid', 'processing'])
+            ->sum('amount');
+
         $totalRevenue = \App\Models\Order::join('order_items', 'orders.id', '=', 'order_items.order_id')
             ->join('courses', 'order_items.course_id', '=', 'courses.id')
             ->where('courses.created_by', $userId)
@@ -71,7 +75,7 @@ class PayoutController extends Controller
         return formatResponse('OK', [
             'pendingPayouts' => $pendingPayouts,
             'totalRevenue' => $totalRevenue,
-            'availablePayout' => $totalRevenue * 0.7 - $pendingPayouts,
+            'availablePayout' => $totalRevenue * 0.7 - $pendingPayouts - $paidPayouts,
             'moneyReceived' => $moneyReceived,
         ]);
     }
@@ -159,7 +163,7 @@ class PayoutController extends Controller
 
         // Trừ đi các yêu cầu rút tiền đã được duyệt nhưng chưa hoàn thành
         $pendingPayouts = PayoutRequest::where('user_id', $userId)
-            ->whereIn('status', ['pending', 'processing'])
+            ->whereIn('status', ['pending', 'processing', 'paid'])
             ->sum('amount');
         return $availableBalance - $pendingPayouts;
     }
