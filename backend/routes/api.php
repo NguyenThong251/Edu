@@ -26,6 +26,10 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\ManangeStudentController;
+use App\Http\Controllers\ChatBotController;
+
+Route::post('/chat-bot/save', [ChatBotController::class, 'saveChat']);
+Route::get('/chat-bot/history', [ChatBotController::class, 'getChatHistory']);
 
 /*
 |--------------------------------------------------------------------------
@@ -332,3 +336,4 @@ Route::get('get-top-rated-courses', [CourseController::class, 'getTopRatedCourse
 Route::get('get-favourite-courses', [CourseController::class, 'getFavouriteCourses'])->name('courses.getFavouriteCourses');
 
 Route::get('/banners', [BannerController::class, 'index']);
+
