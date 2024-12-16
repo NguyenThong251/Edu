@@ -24,7 +24,7 @@ class ChatBotController extends Controller
         // Lấy user hiện tại đang đăng nhập
         $user = auth()->user();
         if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Bạn chưa đăng nhập'], 401);
         }
         $validator = Validator::make($request->all(), [
             'chat_bot_message' => 'required|string|max:500',
@@ -77,6 +77,10 @@ class ChatBotController extends Controller
     // Lấy lịch sử trò chuyện của user
     public function getChatHistory()
     {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['error' => 'Bạn chưa đăng nhập'], 401);
+        }
         $chat = ChatBot::where('user_id', auth()->user()->id)->first();
         if (!$chat) {
             return response()->json(['message' => 'Chưa có lịch sử trò chuyện'], 404);
