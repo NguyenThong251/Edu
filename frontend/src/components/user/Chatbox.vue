@@ -18,15 +18,22 @@
                 <img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" alt="Bot"
                     class="w-8 h-8 rounded-full mr-2" />
                 <div class="bg-indigo-200 text-indigo-900 p-3 rounded-xl shadow-md max-w-xs">
-                    <template v-if="msg.text.includes('http://')">
-                        <!-- <ul>
-                            <li v-for="(link, index) in msg.text.split('\\n').slice(1)" :key="index">
-                                <a :href="link.split(': ')[1]" target="_blank" class="text-blue-500 underline">
-                                    {{ link.split(': ')[0] }}
-                                </a>
-                            </li>
-                        </ul> -->
+                    <!-- <template v-if="msg.text.includes('http://')">
                         <p>{{ msg.text }}</p>
+                    </template> -->
+                    <template v-if="msg.text.includes('http://')">
+                        <p v-for="(line, index) in msg.text.split('\n')" :key="index">
+                            <!-- Kiểm tra dòng chứa link và xử lý -->
+                            <template v-if="line.includes(': http')">
+                                <a :href="line.split(': ')[1]" target="_blank"
+                                    class="text-blue-600 underline hover:text-blue-800">
+                                    {{ line.split(': ')[0] }}
+                                </a>
+                            </template>
+                            <template v-else>
+                                {{ line }}
+                            </template>
+                        </p>
                     </template>
                     <template v-else>
                         <p>{{ msg.text }}</p>

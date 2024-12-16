@@ -24,8 +24,11 @@
                             <div class="" v-if="section.type === 'video'">
                                 <PlayCircleIcon class="h-6 w-6 text-indigo-500" />
                             </div>
-                            <div class="" v-else>
+                            <div class="" v-else-if="section.type === 'file'">
                                 <DocumentIcon class="h-6 w-6 text-indigo-500" />
+                            </div>
+                            <div class="" v-else>
+                                <QuestionMarkCircleIcon class="h-6 w-6 text-indigo-500" />
                             </div>
 
                             <div>
@@ -47,7 +50,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { DocumentIcon, PlayCircleIcon } from '@heroicons/vue/24/outline';
+import { DocumentIcon, PlayCircleIcon, QuestionMarkCircleIcon } from '@heroicons/vue/24/outline';
 
 // Props nhận từ cha
 defineProps<{
@@ -62,6 +65,7 @@ defineProps<{
             title: string;
             type: string;
             duration_display: string;
+            content_section_type?: string;
             learned: boolean | null;
             percent: number | null;
         }>;
