@@ -81,7 +81,7 @@ class StudyController extends Controller
                     ->count();
                 // Lấy số lượng lecture đã hoàn thành trong ProgressLecture
                 $completedLectures = $completedQuizzes + ProgressLecture::where('user_id', $userId)
-                    ->where('percent', '>=', 100) // Thêm điều kiện percent >= 100
+                    ->where('percent', '>=', 97) // Thêm điều kiện percent >= 100
                     ->whereIn('lecture_id', Lecture::where('status', 'active')
                         ->whereIn('section_id', Section::where('course_id', $course->id)->pluck('id'))
                         ->pluck('id'))
