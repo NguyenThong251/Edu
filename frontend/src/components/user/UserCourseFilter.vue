@@ -1,6 +1,6 @@
 <template>
     <div>
-        <span @click="clearFilters" class=" cursor-pointer text-indigo-600 font-medium">Clear filters</span>
+        <span @click="clearFilters" class=" cursor-pointer text-indigo-600 font-medium">Xóa bộ lọc</span>
         <div class="flex flex-col gap-5 mt-5">
             <!-- RATE -->
             <div>

@@ -185,7 +185,7 @@ export const useCourseStore = defineStore('courseStore', () => {
       const data = {
         status: status
       }
-      const res = await api.patch(`auth/courses/${course_id}/status`, data)
+      const res = await api.put(`auth/courses/${course_id}/status`, data)
       if (res.data.status === 'FAIL') {
         ElMessage.error('Duyệt khóa học thất bại')
       } else {
