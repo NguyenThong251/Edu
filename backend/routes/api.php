@@ -26,7 +26,6 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\ManangeStudentController;
-use App\Http\Controllers\DataTrainController;
 use App\Http\Controllers\ChatBotController;
 
 Route::post('/chat-bot/save', [ChatBotController::class, 'saveChat']);
@@ -338,4 +337,3 @@ Route::get('get-favourite-courses', [CourseController::class, 'getFavouriteCours
 
 Route::get('/banners', [BannerController::class, 'index']);
 
-Route::get('get-courses-data', [DataTrainController::class, 'search'])->name('courses.data');
