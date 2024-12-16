@@ -106,6 +106,9 @@
                 <Button @click="startChat">Bắt đầu trò chuyện</Button>
               </div>
             </el-tab-pane>
+            <el-tab-pane label="Hỗ trợ AI" name="six">
+              <UserChatSupport />
+            </el-tab-pane>
           </el-tabs>
         </div>
       </div>
@@ -293,13 +296,19 @@ const handleTimeUpdate = () => {
 
 // Theo dõi khi nội dung thay đổi
 watch(currentContent, (newContent, oldContent) => {
-  if (newContent?.type === "file" && duration.value > (currentContent.value?.learned || 0)) {
+  // if (newContent?.type === "file") {
+  if (newContent?.type === "file" && duration.value >= (currentContent.value?.learned || 0)) {
     startLearning();
   } else {
     stopLearning();
   }
 });
-
+watch(currentContent, (newContent) => {
+  if (newContent?.type === 'video' && videoElement.value) {
+    videoElement.value.src = newContent.content_link; // Cập nhật link video mới
+    videoElement.value.load(); // Load lại video
+  }
+});
 // Xóa timer khi component bị hủy
 onUnmounted(() => {
   stopLearning();
@@ -477,6 +486,7 @@ import printJS from "print-js";
 import Certificate from '@/components/user/Certificate.vue';
 import { useMessageStore } from '@/store/message';
 import { useQuestionAnswer } from '@/store/question-answers';
+import UserChatSupport from '@/components/user/UserChatSupport.vue';
 const printCertificate = () => {
   try {
     printJS({

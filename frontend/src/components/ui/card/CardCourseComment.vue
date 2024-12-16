@@ -94,7 +94,11 @@ const editFormRef = ref(null);
 
 // Open edit dialog
 const openEditDialog = () => {
-    isEditDialogVisible.value = true;
+    editForm.value = {
+        rating: props.rate, // Đồng bộ rating
+        comment: props.content, // Đồng bộ comment
+    };
+    isEditDialogVisible.value = true; // Hiển thị dialog
 };
 
 // Close edit dialog

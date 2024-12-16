@@ -10,7 +10,8 @@
         <!-- Main Content -->
         <div class="text-center mb-12">
             <p class="text-2xl font-medium text-gray-800 mb-6">Chúng tôi xin chứng nhận rằng</p>
-            <h2 class="text-4xl font-bold text-gray-800 my-4 uppercase">{{ state.user?.last_name }}</h2>
+            <h2 class="text-4xl font-bold text-gray-800 my-4 uppercase">{{
+                state.user?.first_name }} {{ state.user?.last_name }}</h2>
             <p class="text-xl text-gray-700 mb-6">
                 Đã hoàn thành khóa học <span class="font-semibold italic">{{ courseName }}</span>
             </p>
