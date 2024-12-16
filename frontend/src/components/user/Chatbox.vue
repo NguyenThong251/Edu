@@ -104,7 +104,8 @@ const sendMessage = async () => {
         const data = await res.json();
         chatHistory.value.push({
             sender: 'bot',
-            text: data.response || 'Bot không phản hồi!',
+            text: data.message || 'Bot không phản hồi!',
+            // text: data.response || 'Bot không phản hồi!',
         });
     } catch (error: any) {
         chatHistory.value.push({
