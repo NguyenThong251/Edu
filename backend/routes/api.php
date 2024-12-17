@@ -292,8 +292,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
                 Route::get('/', [OrderController::class, 'index']);
                 Route::post('/', [OrderController::class, 'store']);
                 Route::get('/{id}', [OrderController::class, 'show']);
-                Route::patch('/{id}', [OrderController::class, 'cancel']);
-                Route::patch('/{id}/restore', [OrderController::class, 'restore']);
+                Route::put('/{id}', [OrderController::class, 'cancel']);
+                Route::put('/{id}/restore', [OrderController::class, 'restore']);
             });
 
             // Review
