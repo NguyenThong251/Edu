@@ -16,7 +16,7 @@ export function useBill() {
   // Logic hủy đơn hàng
   const cancelOrder = async (orderId: number) => {
     try {
-      await api.patch(`auth/orders/${orderId}`)
+      await api.put(`auth/orders/${orderId}`)
       await fetchBillData()
       ElNotification({
         title: 'Thành công',

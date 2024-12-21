@@ -55,7 +55,7 @@ const router = useRouter()
 
 
 const BillRestore = async (id: number) => {
-    const response = await api.patch(`/auth/orders/${id}/restore`)
+    const response = await api.put(`/auth/orders/${id}/restore`)
     if (response.data.status === 'success') {
         const checkUrl = response.data.checkout_url;
         if (checkUrl) {
